@@ -6,6 +6,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import android.os.Bundle;
 
 import com.android.volley.RequestQueue;
+import com.android.volley.toolbox.Volley;
 
 public class MostrarListaChats extends AppCompatActivity {
 
@@ -21,5 +22,8 @@ public class MostrarListaChats extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_mostrar_lista_chats);
+
+        recyclerView=findViewById(R.id.milistadechats);
+        requestQueue= Volley.newRequestQueue(getApplicationContext());
     }
 }
