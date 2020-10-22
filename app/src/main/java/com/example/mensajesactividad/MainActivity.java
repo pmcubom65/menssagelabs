@@ -2,6 +2,7 @@ package com.example.mensajesactividad;
 
 import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.Toolbar;
 import androidx.core.app.NotificationCompat;
 import androidx.core.app.NotificationManagerCompat;
 import androidx.core.app.RemoteInput;
@@ -96,6 +97,7 @@ public class MainActivity extends AppCompatActivity  {
     Usuario usuarioemisor;
     Usuario usuarioreceptor;
 
+    private Toolbar toolbar;
 
 
     private BroadcastReceiver onMessage= new BroadcastReceiver() {
@@ -131,6 +133,10 @@ public class MainActivity extends AppCompatActivity  {
         requestQueue= Volley.newRequestQueue(getApplicationContext());
         recyclerView = (RecyclerView) findViewById(R.id.my_recycler_view);
         mFirebaseAnalytics = FirebaseAnalytics.getInstance(this);
+
+        toolbar=findViewById(R.id.mitoolbarmensajes);
+        toolbar.setTitle("Conversando con "+usuarioreceptor.getNombre());
+        setSupportActionBar(toolbar);
 
         recyclerView.setHasFixedSize(false);
 

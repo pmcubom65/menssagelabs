@@ -1,4 +1,27 @@
 <?xml version="1.0" encoding="utf-8"?>
+
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:orientation="vertical"
+>
+
+    <androidx.appcompat.widget.Toolbar
+        android:id="@+id/mitoolbarmensajes"
+        android:layout_width="match_parent"
+        android:layout_height="56dp"
+        android:background="@color/colorPrimary"
+        android:contentInsetStart="0dp"
+        android:contentInsetLeft="0dp"
+        android:minHeight="?attr/actionBarSize"
+        android:theme="@style/ThemeOverlay.AppCompat.Dark"
+        app:contentInsetLeft="0dp"
+        app:contentInsetStart="0dp"
+        app:contentInsetStartWithNavigation="0dp"></androidx.appcompat.widget.Toolbar>
+
+
+
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
@@ -8,6 +31,10 @@
     android:gravity="center_horizontal|bottom"
     android:background="@drawable/sky"
     >
+
+
+
+
 
 
 
@@ -63,5 +90,7 @@
 
 
 
+
+</LinearLayout>
 
 </LinearLayout>
