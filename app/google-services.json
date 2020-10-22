@@ -1,0 +1,40 @@
+{
+  "project_info": {
+    "project_number": "455111097656",
+    "firebase_url": "https://mensajes-actividad.firebaseio.com",
+    "project_id": "mensajes-actividad",
+    "storage_bucket": "mensajes-actividad.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:455111097656:android:f9d1f6fe1eca60ee0d55cd",
+        "android_client_info": {
+          "package_name": "com.example.mensajesactividad"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "455111097656-hb6ls0kl1tlib2l3251tfsfaap2qjotu.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCdfZlkVEx4ElXJrJIPnF59SCftZMHxfi8"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "455111097656-hb6ls0kl1tlib2l3251tfsfaap2qjotu.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

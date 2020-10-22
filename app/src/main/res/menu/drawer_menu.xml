@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <group android:checkableBehavior="single">
+
+        <item
+            android:id="@+id/mihome"
+            android:title="Pantalla inicial"
+            android:icon="@drawable/home"
+
+
+            />
+
+        <item
+            android:id="@+id/perfilicono"
+            android:title="Mi Perfil"
+            android:icon="@drawable/profile"
+
+            />
+
+
+
+        <item
+            android:id="@+id/menuchat"
+            android:title="Ver mis chats"
+            android:icon="@drawable/chat"
+
+            />
+
+
+
+
+
+
+        <item
+            android:id="@+id/miexit"
+            android:title="Salir"
+            android:icon="@drawable/exit"
+
+            />
+
+
+    </group>
+
+</menu>
