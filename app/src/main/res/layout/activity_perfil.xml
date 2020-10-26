@@ -7,14 +7,14 @@
     tools:context=".Perfil"
     android:orientation="vertical"
     android:background="@drawable/logotipo"
-    android:padding="10dp"
+
     >
 
     <androidx.appcompat.widget.Toolbar
         android:id="@+id/mitoolbarperfil"
         android:layout_width="match_parent"
         android:layout_height="56dp"
-        android:background="@drawable/gradiente"
+        android:background="@color/colorPrimary"
         android:contentInsetStart="0dp"
         android:contentInsetLeft="0dp"
         android:minHeight="?attr/actionBarSize"
@@ -25,6 +25,10 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"></androidx.appcompat.widget.Toolbar>
+
+
+
+
 
     <TextView
         android:id="@+id/perfilnombre"

@@ -77,8 +77,6 @@ public class MyFirebaseInstanceService extends FirebaseMessagingService {
         receptor=new Usuario(telefonoreceptor, nombrereceptor, null, tokenreceptor);
 
 
-        System.out.println(data);
-
         notificationChannel();
         crearNotificacion();
     }

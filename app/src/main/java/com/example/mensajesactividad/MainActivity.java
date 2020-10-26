@@ -290,6 +290,7 @@ public class MainActivity extends AppCompatActivity  {
                     JSONObject jsnobject = new JSONObject(response.toString());
 
                     String contenido = jsnobject.getString("contenido");
+                    textoenviar.setText("");
 
                     mAdapter.notifyDataSetChanged();
                 } catch (JSONException e) {
@@ -418,7 +419,7 @@ public class MainActivity extends AppCompatActivity  {
                     for (int i = 0; i < jsonArray.length(); i++) {
                         JSONObject explrObject = jsonArray.getJSONObject(i);
                         Mensaje m=new Mensaje(explrObject.getString("CONTENIDO"), explrObject.getString("DIA").replace('T', ' '), explrObject.getString("TELEFONO"), explrObject.getString("NOMBRE"));
-                        System.out.println(m);
+
 
                         if (!datosAmostrar.contains(m)) {
                             datosAmostrar.add(m);
@@ -431,7 +432,7 @@ public class MainActivity extends AppCompatActivity  {
                     e.printStackTrace();
                 }
 
-                System.out.println(response);
+
 
             }
         }, new Response.ErrorListener() {
@@ -537,12 +538,12 @@ public class MainActivity extends AppCompatActivity  {
             case android.R.id.home:
                 Intent volveracontactos=new Intent(this, MostrarContactos.class);
                 volveracontactos.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-                System.out.println("boton back");
+
 
                 Bundle args = new Bundle();
                 args.putSerializable("ARRAYLIST",(Serializable) contactos);
 
-                System.out.println("boton back"+contactos.toString());
+
                 volveracontactos.putExtra("BUNDLE",args);
                 startActivity(volveracontactos);
 

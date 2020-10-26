@@ -156,7 +156,7 @@ public class Autenticacion extends AppCompatActivity  {
 
 
                         tokenorigen = task.getResult().getToken();
-                        System.out.println(tokenorigen);
+
 
                         guardarUsuario(numerotelefono.replaceAll("[\\D]", ""), ponernombre.getText().toString(), tokenorigen.toString());
                     }
@@ -178,7 +178,7 @@ public class Autenticacion extends AppCompatActivity  {
                     String mensaje = respuesta.getString("mensaje");
 
                     Snackbar.make(findViewById(R.id.autenticacionlayout), response.toString(), Snackbar.LENGTH_LONG).show();
-                    System.out.println("codigo");
+
 
 
                 } catch (JSONException e) {
@@ -209,7 +209,7 @@ public class Autenticacion extends AppCompatActivity  {
                         // Now you can use any deserializer to make sense of data
 
                         JSONObject obj = new JSONObject(res);
-                        System.out.println(obj.toString());
+
                     } catch (UnsupportedEncodingException e1) {
                         // Couldn't properly decode data to string
                         Log.e("JSON Parser", "Error parsing data " + e1.toString());
@@ -344,10 +344,7 @@ public class Autenticacion extends AppCompatActivity  {
                     while (pCur.moveToNext()) {
                         String phoneNo = pCur.getString(pCur.getColumnIndex(
                                 ContactsContract.CommonDataKinds.Phone.NUMBER));
-                        System.out.println( "Name: " + name);
-                       System.out.println( "Name: " + phoneNo);
 
-                        System.out.println( "my_contact_Uri: " + my_contact_Uri);
 
                         listacontactos.add(new Usuario(phoneNo, name, my_contact_Uri.toString()));
 

@@ -5,6 +5,7 @@ import android.net.Uri;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.CheckBox;
 import android.widget.ImageView;
 import android.widget.TextView;
 
@@ -32,12 +33,15 @@ public class AdaptadorContactos extends RecyclerView.Adapter<AdaptadorContactos.
 
         TextView contacto1,contacto2;
         ImageView imageView;
+        CheckBox checkBox;
 
         public ViewHolder(@NonNull View itemView) {
             super(itemView);
             contacto1=itemView.findViewById(R.id.contacto1);
             contacto2=itemView.findViewById(R.id.contacto2);
             imageView=itemView.findViewById(R.id.imageView);
+            checkBox=itemView.findViewById(R.id.checkBox);
+            checkBox.setVisibility(View.GONE);
         }
     }
 

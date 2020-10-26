@@ -15,8 +15,10 @@ import android.content.Intent;
 import android.os.Build;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.LinearLayout;
 import android.widget.Toast;
 
 
@@ -90,6 +92,8 @@ public class MostrarContactos extends AppCompatActivity {
     private NavigationView navigationView;
     public ArrayList<Usuario> contactos;
 
+    static ArrayList<Usuario> alGrupo;
+
     Bundle args;
 
     @Override
@@ -108,6 +112,8 @@ public class MostrarContactos extends AppCompatActivity {
         final ActionBar actionBar=getSupportActionBar();
         actionBar.setDisplayHomeAsUpEnabled(true);
         actionBar.setHomeAsUpIndicator(R.drawable.hamburguesa);
+
+        alGrupo=new ArrayList<>();
 
 
         navigationView.setNavigationItemSelectedListener(new NavigationView.OnNavigationItemSelectedListener() {
@@ -182,6 +188,19 @@ public class MostrarContactos extends AppCompatActivity {
 
                     @Override
                     public void onLongItemClick(View view, int position) {
+
+                        if (view.findViewById(R.id.checkBox).getVisibility()==View.GONE) {
+                            view.setBackgroundColor(getResources().getColor(R.color.colorPrimary));
+
+                            view.findViewById(R.id.checkBox).setVisibility(View.VISIBLE);
+
+                            alGrupo.add(contactos.get(position));
+                        } else {
+                            view.findViewById(R.id.checkBox).setVisibility(View.GONE);
+                            view.setBackgroundColor(getResources().getColor(R.color.lightblanco));
+                            alGrupo.remove(contactos.get(position));
+                        }
+
 
                     }
                 })
@@ -481,6 +500,15 @@ public class MostrarContactos extends AppCompatActivity {
             case android.R.id.home:
                 drawerLayout.openDrawer(GravityCompat.START);
                 return true;
+
+
+            case R.id.Crear_grupo: {
+
+                DialogoGrupo dialogoGrupo=new DialogoGrupo();
+                dialogoGrupo.show(getSupportFragmentManager(), " dialogoGrupo");
+
+                break;
+            }
         }
 
         return super.onOptionsItemSelected(item);
@@ -503,6 +531,16 @@ public class MostrarContactos extends AppCompatActivity {
 
         }
     }
+
+
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.toolbar_menu, menu);
+        return true;
+    }
+
+
 
 
 }
