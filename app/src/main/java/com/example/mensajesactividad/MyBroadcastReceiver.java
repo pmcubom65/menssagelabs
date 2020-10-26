@@ -40,8 +40,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
 import java.util.Map;
 
-//http://lessons.livecode.com/m/4069/l/59312-how-do-i-use-push-notifications-with-android
-//https://stackoverflow.com/questions/16386392/android-hello-world-pushnotification-example
+
 
 public class MyBroadcastReceiver extends BroadcastReceiver {
 
@@ -184,6 +183,7 @@ public class MyBroadcastReceiver extends BroadcastReceiver {
                     jsonBody.put("dia", m.getFecha().toString());
                     jsonBody.put("usuarioid", m.getTelefono().toString());
                     jsonBody.put("chatid", chat_id);
+                    jsonBody.put("idusuariorecepcion", usuarioreceptor.getTelefono().toString());
 
 
                 } catch (JSONException e) {

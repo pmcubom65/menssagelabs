@@ -76,8 +76,8 @@ public class Mensaje {
         if (!(o instanceof Mensaje)) return false;
         Mensaje mensaje = (Mensaje) o;
         return getContenido().equals(mensaje.getContenido()) &&
-                getFecha().equals(mensaje.getFecha()) &&
-                getTelefono().equals(mensaje.getTelefono());
+                getFecha().equals(mensaje.getFecha()); //&&
+          //      getTelefono().equals(mensaje.getTelefono());
     }
 
     @RequiresApi(api = Build.VERSION_CODES.KITKAT)

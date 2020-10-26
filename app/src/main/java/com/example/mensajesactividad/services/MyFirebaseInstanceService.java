@@ -24,7 +24,7 @@ import com.google.firebase.messaging.RemoteMessage;
 
 
 import java.util.Map;
-//https://stackoverflow.com/questions/37358462/firebase-onmessagereceived-not-called-when-app-in-background
+
 public class MyFirebaseInstanceService extends FirebaseMessagingService {
 
 

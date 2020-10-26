@@ -1,4 +1,4 @@
-package com.example.mensajesactividad;
+package com.example.mensajesactividad.modelos;
 
 public class Chat {
     private String inicio;

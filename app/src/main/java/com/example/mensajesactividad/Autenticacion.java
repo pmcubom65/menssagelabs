@@ -367,11 +367,7 @@ public class Autenticacion extends AppCompatActivity  {
 
         getPermissionToSendSMS();
 
-      /*  Intent intent=new Intent(this, MostrarContactos.class);
-        Bundle args = new Bundle();
-        args.putSerializable("ARRAYLIST",(Serializable) listacontactos);
-        intent.putExtra("BUNDLE",args);
-        startActivity(intent);*/
+
     }
 
 
@@ -383,7 +379,7 @@ public class Autenticacion extends AppCompatActivity  {
             Intent intent=new Intent(this, MostrarContactos.class);
             Bundle args = new Bundle();
             args.putSerializable("ARRAYLIST",(Serializable) listacontactos);
-            intent.putExtra("BUNDLE",args);
+            intent.putExtra("BUNDLE2",args);
             startActivity(intent);
 
         }else {

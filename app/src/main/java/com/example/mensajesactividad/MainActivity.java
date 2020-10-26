@@ -1,5 +1,6 @@
 package com.example.mensajesactividad;
 
+import androidx.annotation.NonNull;
 import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
@@ -21,6 +22,7 @@ import android.content.IntentFilter;
 import android.os.Build;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.TextView;
 
@@ -47,6 +49,7 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.Serializable;
 import java.io.UnsupportedEncodingException;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
@@ -56,7 +59,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
-// https://stackoverflow.com/questions/22252065/refreshing-activity-on-receiving-gcm-push-notification
+
 
 public class MainActivity extends AppCompatActivity  {
 
@@ -87,6 +90,7 @@ public class MainActivity extends AppCompatActivity  {
     // [START declare_analytics]
     private FirebaseAnalytics mFirebaseAnalytics;
     Mensaje mensaje;
+    ArrayList<Usuario> contactos;
 
  /*   String tokenaenviarlosmensajes;
     String tokenemisor;
@@ -117,6 +121,8 @@ public class MainActivity extends AppCompatActivity  {
         Intent llegada=getIntent();
         michatid=(String) llegada.getExtras().get("chat_id");
 
+        contactos=(ArrayList<Usuario>) llegada.getExtras().get("contactos");
+
    /*     tokenaenviarlosmensajes= (String) llegada.getExtras().get("tokenaenviar");
         tokenemisor=(String) llegada.getExtras().get("tokenorigen");
         nombreemisor=(String) llegada.getExtras().get("nombreemisor");
@@ -137,6 +143,7 @@ public class MainActivity extends AppCompatActivity  {
         toolbar=findViewById(R.id.mitoolbarmensajes);
         toolbar.setTitle("Conversando con "+usuarioreceptor.getNombre());
         setSupportActionBar(toolbar);
+        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
         recyclerView.setHasFixedSize(false);
 
@@ -348,6 +355,7 @@ public class MainActivity extends AppCompatActivity  {
                     jsonBody.put("dia", m.getFecha().toString());
                     jsonBody.put("usuarioid", m.getTelefono().toString());
                     jsonBody.put("chatid", michatid);
+                    jsonBody.put("idusuariorecepcion", usuarioreceptor.getTelefono().toString());
 
 
                 } catch (JSONException e) {
@@ -391,31 +399,6 @@ public class MainActivity extends AppCompatActivity  {
 
 
 
-  /*      StringRequest request=new StringRequest(Request.Method.POST, urlcrearmensaje, new Response.Listener<String>() {
-            @Override
-            public void onResponse(String response) {
-
-            }
-        }, new Response.ErrorListener(){
-
-            @Override
-            public void onErrorResponse(VolleyError error) {
-                System.out.println(error);
-            }
-        }) {
-            @Override
-            protected Map<String, String> getParams() throws AuthFailureError {
-                Map<String, String> parameters=new HashMap<>();
-                parameters.put("mensaje_id",id);
-                parameters.put("contenido", m.getContenido());
-                parameters.put("dia", m.getFecha());
-                parameters.put("chat_id", michatid);
-                parameters.put("telefono", m.getTelefono());
-                return parameters;
-            }
-        };
-
-        requestQueue.add(request);*/
     }
 
 
@@ -543,69 +526,35 @@ public class MainActivity extends AppCompatActivity  {
         MySingleton.getInstance(getBaseContext()).addToRequest(request);
 
 
-     //   requestQueue.add(request);
 
-
-
-
-
- /*       StringRequest request=new StringRequest(Request.Method.POST, urlcargarmensajeschat, new Response.Listener<String>() {
-            @Override
-            public void onResponse(String response) {
-
-                try {
-                    JSONObject jsnobject = new JSONObject(response.toString());
-                    JSONArray jsonArray = jsnobject.getJSONArray("mensajes_del_chat");
-                    for (int i = 0; i < jsonArray.length(); i++) {
-                        JSONObject explrObject = jsonArray.getJSONObject(i);
-                        Mensaje m=new Mensaje(explrObject.getString("contenido"), explrObject.getString("dia"), explrObject.getString("telefono"), explrObject.getString("nombre"));
-                        System.out.println(m);
-
-                        if (!datosAmostrar.contains(m)) {
-                            datosAmostrar.add(m);
-                        }
-
-
-                    }
-                    mAdapter.notifyDataSetChanged();
-                } catch (JSONException e) {
-                    e.printStackTrace();
-                }
-            }
-        }, new Response.ErrorListener(){
-
-            @Override
-            public void onErrorResponse(VolleyError error) {
-                System.out.println(error);
-            }
-        }) {
-            @Override
-            protected Map<String, String> getParams() throws AuthFailureError {
-                Map<String, String> parameters=new HashMap<>();
-                System.out.println("busco este chat "+michatid);
-                parameters.put("chat_id", michatid);
-
-                return parameters;
-            }
-
-            @Override
-            public Map<String, String> getHeaders() throws AuthFailureError {
-                Map<String,String> param = new HashMap<String, String>();
-                param.put("Content-Type","application/x-www-form-urlencoded");
-                return param;
-            }
-        };
-
-        requestQueue.add(request);*/
     }
 
 
+    @Override
+    public boolean onOptionsItemSelected(@NonNull MenuItem item) {
 
+        switch (item.getItemId()) {
+            case android.R.id.home:
+                Intent volveracontactos=new Intent(this, MostrarContactos.class);
+                volveracontactos.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+                System.out.println("boton back");
+
+                Bundle args = new Bundle();
+                args.putSerializable("ARRAYLIST",(Serializable) contactos);
+
+                System.out.println("boton back"+contactos.toString());
+                volveracontactos.putExtra("BUNDLE",args);
+                startActivity(volveracontactos);
+
+        }
+
+
+
+
+        return super.onOptionsItemSelected(item);
+    }
 
     public void notificationFirebase()   {
-
-        //https://stackoverflow.com/questions/37731275/display-specific-activity-when-firebase-notification-is-tapped/38195369
-
 
         Bundle bundle = new Bundle();
         bundle.putString(FirebaseAnalytics.Param.ITEM_ID, michatid);

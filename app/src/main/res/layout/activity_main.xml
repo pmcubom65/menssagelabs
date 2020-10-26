@@ -12,12 +12,10 @@
         android:layout_width="match_parent"
         android:layout_height="56dp"
         android:background="@color/colorPrimary"
-        android:contentInsetStart="0dp"
-        android:contentInsetLeft="0dp"
+
         android:minHeight="?attr/actionBarSize"
         android:theme="@style/ThemeOverlay.AppCompat.Dark"
-        app:contentInsetLeft="0dp"
-        app:contentInsetStart="0dp"
+
         app:contentInsetStartWithNavigation="0dp"></androidx.appcompat.widget.Toolbar>
 
 

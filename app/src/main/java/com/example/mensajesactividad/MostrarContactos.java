@@ -59,10 +59,7 @@ public class MostrarContactos extends AppCompatActivity {
 
  //   "http://10.0.2.2:54119/api/smartchat/crearusuario/"
 
-  //  String urlcrearusuario="http://10.0.2.2/api/crearusuario.php";
-     /*   String insertchat="http://10.0.2.2/api/crearchat.php";
-    String showchat="http://10.0.2.2/api/chats_service.php";
-    String buscarusuario="http://10.0.2.2/api/buscarusuario.php";*/
+
 
     String insertchat="http://10.0.2.2:54119/api/smartchat/crearchat";
 
@@ -91,6 +88,9 @@ public class MostrarContactos extends AppCompatActivity {
     private Toolbar toolbar;
     private DrawerLayout drawerLayout;
     private NavigationView navigationView;
+    public ArrayList<Usuario> contactos;
+
+    Bundle args;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -132,6 +132,8 @@ public class MostrarContactos extends AppCompatActivity {
                     case R.id.perfilicono:
                         System.out.println("profile");
                         drawerLayout.closeDrawers();
+                        Intent i=new Intent(MostrarContactos.this, Perfil.class);
+                        startActivity(i);
                         return true;
                 }
 
@@ -140,8 +142,16 @@ public class MostrarContactos extends AppCompatActivity {
         });
 
         Intent intent = getIntent();
-        Bundle args = intent.getBundleExtra("BUNDLE");
-        ArrayList<Usuario> contactos = (ArrayList<Usuario>) args.getSerializable("ARRAYLIST");
+        args = intent.getBundleExtra("BUNDLE");
+
+            if (args!=null) {
+                contactos = (ArrayList<Usuario>) args.getSerializable("ARRAYLIST");
+
+            }
+
+
+
+
 
 
         recyclerView=findViewById(R.id.miscontactos);
@@ -306,56 +316,7 @@ public class MostrarContactos extends AppCompatActivity {
         });
 
         MySingleton.getInstance(getBaseContext()).addToRequest(request);
-   //     requestQueue.add(request);
 
-
-
-
-
-
-
-
-
-
-    /*    StringRequest request=new StringRequest(Request.Method.POST, insertchat, new Response.Listener<String>() {
-            @Override
-            public void onResponse(String response) {
-
-            }
-        }, new Response.ErrorListener(){
-
-            @Override
-            public void onErrorResponse(VolleyError error) {
-                System.out.println(error);
-            }
-        }) {
-            @Override
-            protected Map<String, String> getParams() throws AuthFailureError {
-                Map<String, String> parameters=new HashMap<>();
-                parameters.put("chat_id",id);
-
-                parameters.put("inicio", inicio);
-                return parameters;
-            }
-        };
-
-        requestQueue.add(request);
-        Intent intent=new Intent(getApplicationContext(), MainActivity.class);
-        intent.putExtra("chat_id", id);
-       /* intent.putExtra("tokenaenviar", usuario.getToken().toString());
-        intent.putExtra("tokenorigen", Autenticacion.tokenorigen);
-        intent.putExtra("nombreemisor", Autenticacion.nombredelemisor);
-
-        intent.putExtra("nombrereceptor", usuario.getNombre().toString());
-
-        intent.putExtra("numerodetelefono", Autenticacion.numerotelefono);
-        intent.putExtra("numerodetelefonoreceptor", usuario.getTelefono().toString());*/
-
-  /*     intent.putExtra("usuarioemisor", new Usuario(Autenticacion.numerotelefono, Autenticacion.nombredelemisor, null, Autenticacion.tokenorigen));
-       intent.putExtra("usuarioreceptor", usuario);
-
-
-        startActivity(intent);*/
     }
 
 
@@ -443,8 +404,10 @@ public class MostrarContactos extends AppCompatActivity {
             public byte[] getBody() throws AuthFailureError {
 
                 JSONObject jsonBody = new JSONObject();
+
                 try {
                     jsonBody.put("telefono", telefonobuscar);
+                    System.out.println("Busco este telefono "+jsonBody.toString());
 
                 } catch (JSONException e) {
                     e.printStackTrace();
@@ -486,58 +449,6 @@ public class MostrarContactos extends AppCompatActivity {
     }
 
 
- /*   private void buscarUsuario(String telefonobuscar) {
-
-        System.out.println("buscando al usuario....");
-
-        StringRequest request=new StringRequest(Request.Method.POST, buscarusuario, new Response.Listener<String>() {
-            @Override
-            public void onResponse(String response) {
-
-                try {
-                    JSONObject jsnobject = new JSONObject(response.toString());
-                    JSONArray jsonArray = jsnobject.getJSONArray("usuario");
-                    if (jsonArray.length()==0) {
-                        Toast.makeText(getBaseContext(), "El usuario no se encuentra registrado", Toast.LENGTH_LONG).show();
-                    } else {
-                        for (int i = 0; i < jsonArray.length(); i++) {
-                            JSONObject explrObject = jsonArray.getJSONObject(i);
-                            usuario=new Usuario(explrObject.getString("telefono"), explrObject.getString("nombre"), null, explrObject.getString("token"));
-                            crearChat(id, inicio);
-                        }
-                    }
-
-                } catch (JSONException e) {
-                    e.printStackTrace();
-                }
-            }
-        }, new Response.ErrorListener(){
-
-            @Override
-            public void onErrorResponse(VolleyError error) {
-                System.out.println(error);
-
-            }
-        }) {
-            @Override
-            protected Map<String, String> getParams() throws AuthFailureError {
-                Map<String, String> parameters=new HashMap<>();
-
-                parameters.put("telefono", telefonobuscar);
-
-                return parameters;
-            }
-
-            @Override
-            public Map<String, String> getHeaders() throws AuthFailureError {
-                Map<String,String> param = new HashMap<String, String>();
-                param.put("Content-Type","application/x-www-form-urlencoded");
-                return param;
-            }
-        };
-
-        requestQueue.add(request);
-    }*/
 
 
  public void crearIntent(String id, String inicio) {
@@ -556,6 +467,9 @@ public class MostrarContactos extends AppCompatActivity {
        intent.putExtra("usuarioreceptor", usuario);
 
 
+       intent.putExtra("contactos", contactos);
+
+
         startActivity(intent);
  }
 
@@ -571,4 +485,24 @@ public class MostrarContactos extends AppCompatActivity {
 
         return super.onOptionsItemSelected(item);
     }
+
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        Intent intent = getIntent();
+        args = intent.getBundleExtra("BUNDLE2");
+
+
+
+        if (args!=null) {
+            contactos = (ArrayList<Usuario>) args.getSerializable("ARRAYLIST");
+            System.out.println("ONRESUME " +contactos.toString());
+            myAdapter=new AdaptadorContactos(this, contactos);
+            recyclerView.setAdapter(myAdapter);
+
+        }
+    }
+
+
 }
