@@ -9,4 +9,10 @@
         android:id="@+id/Crear_grupo"
         android:title="Crear Grupo"
         app:showAsAction="never"/>
+
+
+    <item
+        android:id="@+id/Anadir_grupo"
+        android:title="Añadir a un Grupo"
+        app:showAsAction="never"/>
 </menu>
