@@ -82,7 +82,7 @@ public class MainActivity extends AppCompatActivity  {
 
  //   String urlcargarmensajeschat="http://10.0.2.2:54119/api/smartchat/mostrarmensajeschat";
 
-        String urlcargarmensajeschat="http://10.0.2.2:54119/api/smartchat/buscarmensajeschat";
+    String urlcargarmensajeschat="http://10.0.2.2:54119/api/smartchat/buscarmensajeschat";
 
     String url="https://fcm.googleapis.com/fcm/send";
 
@@ -127,11 +127,6 @@ public class MainActivity extends AppCompatActivity  {
 
         contactos=(ArrayList<Usuario>) llegada.getExtras().get("contactos");
 
-   /*     tokenaenviarlosmensajes= (String) llegada.getExtras().get("tokenaenviar");
-        tokenemisor=(String) llegada.getExtras().get("tokenorigen");
-        nombreemisor=(String) llegada.getExtras().get("nombreemisor");
-        nombrereceptor=(String) llegada.getExtras().get("nombrereceptor");
-        telefonoreceptor=(String) llegada.getExtras().get("numerodetelefonoreceptor");*/
 
         usuarioemisor=(Usuario) llegada.getSerializableExtra("usuarioemisor");
         usuarioreceptor=(Usuario) llegada.getSerializableExtra("usuarioreceptor");
@@ -148,7 +143,7 @@ public class MainActivity extends AppCompatActivity  {
 
         if (esgrupo) {
             grupo=(Grupo) llegada.getSerializableExtra("grupoinfo");
-            toolbar.setTitle("Conversando con "+grupo.getNombre().toString());
+            toolbar.setTitle("Conversando con Grupo "+grupo.getNombre().toString());
         }else {
             toolbar.setTitle("Conversando con "+usuarioreceptor.getNombre());
         }
