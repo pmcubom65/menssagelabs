@@ -72,9 +72,6 @@ public class MostrarContactos extends AppCompatActivity {
     String mostrargrupos="http://10.0.2.2:54119/api/smartchat/misgrupos";
 
 
- //   String mostrarmiembros="http://10.0.2.2:54119/api/smartchat/miembrosgrupo";
-
-
     RequestQueue requestQueue;
 
 
@@ -750,7 +747,7 @@ public class MostrarContactos extends AppCompatActivity {
 
                             Usuario usuariomiembro=new Usuario(miembro.getString("TELEFONO").toString(), miembro.getString("NOMBRE").toString(), null, miembro.getString("TOKEN").toString());
 
-                            if (!mg.contains(usuariomiembro)){
+                            if (!mg.contains(usuariomiembro) && usuariomiembro.getTelefono()!=Autenticacion.numerotelefono){
                                 mg.add(usuariomiembro);
                             }
                         }

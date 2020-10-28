@@ -38,6 +38,7 @@ import com.android.volley.toolbox.HttpHeaderParser;
 import com.android.volley.toolbox.JsonObjectRequest;
 import com.android.volley.toolbox.StringRequest;
 import com.android.volley.toolbox.Volley;
+import com.example.mensajesactividad.modelos.Grupo;
 import com.example.mensajesactividad.modelos.Mensaje;
 import com.example.mensajesactividad.modelos.Usuario;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
@@ -103,6 +104,9 @@ public class MainActivity extends AppCompatActivity  {
 
     private Toolbar toolbar;
 
+    boolean esgrupo=false;
+    Grupo grupo;
+
 
     private BroadcastReceiver onMessage= new BroadcastReceiver() {
         @Override
@@ -133,7 +137,7 @@ public class MainActivity extends AppCompatActivity  {
         usuarioreceptor=(Usuario) llegada.getSerializableExtra("usuarioreceptor");
 
 
-
+        esgrupo=llegada.getExtras().getBoolean("grupo", false);
 
 
         requestQueue= Volley.newRequestQueue(getApplicationContext());
@@ -141,7 +145,14 @@ public class MainActivity extends AppCompatActivity  {
         mFirebaseAnalytics = FirebaseAnalytics.getInstance(this);
 
         toolbar=findViewById(R.id.mitoolbarmensajes);
-        toolbar.setTitle("Conversando con "+usuarioreceptor.getNombre());
+
+        if (esgrupo) {
+            grupo=(Grupo) llegada.getSerializableExtra("grupoinfo");
+            toolbar.setTitle("Conversando con "+grupo.getNombre().toString());
+        }else {
+            toolbar.setTitle("Conversando con "+usuarioreceptor.getNombre());
+        }
+
         setSupportActionBar(toolbar);
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
@@ -177,17 +188,45 @@ public class MainActivity extends AppCompatActivity  {
                 DateTimeFormatter dtf=DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
                 String dia=ahora.format(dtf);
 
+                if (esgrupo){
 
-                mensaje=new Mensaje(textoenviar.getText().toString(), dia, usuarioemisor.getTelefono().toString(), usuarioemisor.getNombre().toString());
-                datosAmostrar.add(datosAmostrar.size(), mensaje);
-                mAdapter.notifyItemChanged(datosAmostrar.size());
-                String id_mensaje=String.valueOf(zdt.toInstant().toEpochMilli());
-                grabarMensaje(mensaje, id_mensaje);
-                cargarMensajesChat();
+                    mensaje=new Mensaje(textoenviar.getText().toString(), dia, usuarioemisor.getTelefono().toString(), usuarioemisor.getNombre().toString());
+                    datosAmostrar.add(datosAmostrar.size(), mensaje);
+                    mAdapter.notifyItemChanged(datosAmostrar.size());
+                    String id_mensaje=String.valueOf(zdt.toInstant().toEpochMilli());
 
-                notificationFirebase();
-           //     notificationChannel();
-          //      crearNotificacion();
+                    cargarMensajesChat();
+
+
+                    for (int g=0; g<grupo.getDetallesmiembros().size(); g++) {
+                        usuarioreceptor=(Usuario) grupo.getDetallesmiembros().get(g);
+                        grabarMensaje(mensaje, id_mensaje);
+                        notificationFirebase();
+                    }
+
+
+
+
+
+
+
+                }else {
+
+                    mensaje=new Mensaje(textoenviar.getText().toString(), dia, usuarioemisor.getTelefono().toString(), usuarioemisor.getNombre().toString());
+                    datosAmostrar.add(datosAmostrar.size(), mensaje);
+                    mAdapter.notifyItemChanged(datosAmostrar.size());
+                    String id_mensaje=String.valueOf(zdt.toInstant().toEpochMilli());
+                    grabarMensaje(mensaje, id_mensaje);
+                    cargarMensajesChat();
+
+                    notificationFirebase();
+
+
+
+                }
+
+
+
             }
         });
 

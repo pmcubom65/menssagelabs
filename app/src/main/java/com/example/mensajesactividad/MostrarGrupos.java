@@ -31,6 +31,7 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.Serializable;
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -85,7 +86,7 @@ public class MostrarGrupos extends AppCompatActivity {
                     @Override
                     public void onItemClick(View view, int position) {
                         System.out.println("click item");
-                    //    crearIntent(position);
+                        crearIntent(position);
                     }
 
                     @Override
@@ -109,27 +110,32 @@ public class MostrarGrupos extends AppCompatActivity {
 
 
 
-  /*  public void crearIntent(String id, String inicio) {
+    public void crearIntent(int posicion) {
         Intent intent=new Intent(getApplicationContext(), MainActivity.class);
-        intent.putExtra("chat_id", id);
-        intent.putExtra("tokenaenviar", usuario.getToken().toString());
+        intent.putExtra("chat_id", listadogrupos.get(posicion).getId().toString());
+
+        intent.putExtra("grupo", true);
+
+        intent.putExtra("grupoinfo", listadogrupos.get(posicion));
+
+   //     intent.putExtra("tokenaenviar", usuario.getToken().toString());
         intent.putExtra("tokenorigen", Autenticacion.tokenorigen);
         intent.putExtra("nombreemisor", Autenticacion.nombredelemisor);
 
-        intent.putExtra("nombrereceptor", usuario.getNombre().toString());
+     //   intent.putExtra("nombrereceptor", usuario.getNombre().toString());
 
         intent.putExtra("numerodetelefono", Autenticacion.numerotelefono);
-        intent.putExtra("numerodetelefonoreceptor", usuario.getTelefono().toString());
+      //  intent.putExtra("numerodetelefonoreceptor", usuario.getTelefono().toString());
 
         intent.putExtra("usuarioemisor", new Usuario(Autenticacion.numerotelefono, Autenticacion.nombredelemisor, null, Autenticacion.tokenorigen));
-        intent.putExtra("usuarioreceptor", usuario);
+      //  intent.putExtra("usuarioreceptor", usuario);
 
 
-        intent.putExtra("contactos", contactos);
+        intent.putExtra("contactos", MostrarContactos.contactos);
 
 
         startActivity(intent);
-    }*/
+    }
 
 
 
