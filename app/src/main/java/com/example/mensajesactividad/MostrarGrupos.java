@@ -71,6 +71,7 @@ public class MostrarGrupos extends AppCompatActivity {
         setSupportActionBar(toolbar);
 
         getSupportActionBar().setTitle(null);
+        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         toolbar.setLogo(R.drawable.smart_prod);
 
 

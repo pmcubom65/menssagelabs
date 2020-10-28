@@ -21,11 +21,13 @@
         android:supportsRtl="true"
         android:theme="@style/AppTheme"
         android:usesCleartextTraffic="true">
-        <activity android:name=".MostrarGrupos"></activity>
+        <activity android:name=".MostrarGrupos"
+            android:parentActivityName=".MostrarContactos"></activity>
         <activity
             android:name=".Perfil"
             android:parentActivityName=".MostrarContactos" />
-        <activity android:name=".MostrarListaChats" />
+        <activity android:name=".MostrarListaChats"
+            android:parentActivityName=".MostrarContactos"/>
         <activity android:name=".Autenticacion" />
 
         <meta-data

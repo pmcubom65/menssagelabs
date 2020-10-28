@@ -73,6 +73,7 @@ public class MostrarListaChats extends AppCompatActivity{
 
         toolbar=findViewById(R.id.mitoolbar2);
         setSupportActionBar(toolbar);
+        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
         getSupportActionBar().setTitle(null);
         toolbar.setLogo(R.drawable.smart_prod);

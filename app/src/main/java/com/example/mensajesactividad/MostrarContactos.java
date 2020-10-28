@@ -762,7 +762,7 @@ public class MostrarContactos extends AppCompatActivity {
                                 mg
 
                         );
-
+                        nombremiembros="Miembros: ";
 
                         if (!listadogrupos.contains(grupoaincluir)){
                             listadogrupos.add(grupoaincluir);
