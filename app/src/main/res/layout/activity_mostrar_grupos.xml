@@ -14,7 +14,7 @@
 
 
     <androidx.appcompat.widget.Toolbar
-        android:id="@+id/mitoolbar2"
+        android:id="@+id/mitoolbar3"
         android:layout_width="match_parent"
         android:layout_height="56dp"
         android:background="?attr/colorPrimary"
@@ -22,7 +22,7 @@
         android:theme="?attr/actionBarTheme" />
 
     <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/milistadechats"
+        android:id="@+id/misgrupos"
         android:layout_width="match_parent"
         android:verticalScrollbarPosition="defaultPosition"
         android:layout_height="match_parent"

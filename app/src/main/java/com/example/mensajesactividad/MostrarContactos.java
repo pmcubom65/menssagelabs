@@ -18,8 +18,6 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.widget.LinearLayout;
-import android.widget.Toast;
 
 
 import com.android.volley.AuthFailureError;
@@ -35,6 +33,7 @@ import com.android.volley.toolbox.StringRequest;
 import com.android.volley.toolbox.Volley;
 import com.example.mensajesactividad.controladores.Presentacion;
 import com.example.mensajesactividad.modelos.Chat;
+import com.example.mensajesactividad.modelos.Grupo;
 import com.example.mensajesactividad.modelos.Usuario;
 import com.google.android.material.navigation.NavigationView;
 import com.google.android.material.snackbar.Snackbar;
@@ -61,23 +60,19 @@ public class MostrarContactos extends AppCompatActivity {
     RecyclerView.Adapter myAdapter;
     RecyclerView.LayoutManager layoutManager;
 
- //   "http://10.0.2.2:54119/api/smartchat/crearusuario/"
-
-
 
     String insertchat="http://10.0.2.2:54119/api/smartchat/crearchat";
 
     String mostrarlistadochats="http://10.0.2.2:54119/api/smartchat/detallesmischats";
 
-    //http://10.0.2.2:54119/api/smartchat/crearchat
 
     String buscarusuario="http://10.0.2.2:54119/api/smartchat/buscarusuario";
 
 
-    String showchat="http://10.0.2.2:54119/api/chats_service.php";
+    String mostrargrupos="http://10.0.2.2:54119/api/smartchat/misgrupos";
 
 
-    String mostrarlistadochat1s="http://localhost:54119/api/smartchat/listadochats";
+ //   String mostrarmiembros="http://10.0.2.2:54119/api/smartchat/miembrosgrupo";
 
 
     RequestQueue requestQueue;
@@ -92,13 +87,15 @@ public class MostrarContactos extends AppCompatActivity {
     private Toolbar toolbar;
     private DrawerLayout drawerLayout;
     private NavigationView navigationView;
-    public ArrayList<Usuario> contactos;
+    public static ArrayList<Usuario> contactos;
+
+    String miembros="";
 
     ArrayList<Chat> listadodechats;
 
+    ArrayList<Grupo> listadogrupos;
+
     static ArrayList<Usuario> alGrupo;
-
-
 
     Bundle args;
 
@@ -121,6 +118,7 @@ public class MostrarContactos extends AppCompatActivity {
 
         alGrupo=new ArrayList<>();
         listadodechats=new ArrayList<>();
+        listadogrupos=new ArrayList<>();
 
 
         navigationView.setNavigationItemSelectedListener(new NavigationView.OnNavigationItemSelectedListener() {
@@ -138,7 +136,7 @@ public class MostrarContactos extends AppCompatActivity {
                         return true;
 
                     case R.id.menuchat:
-                        System.out.println("chats");
+
                         drawerLayout.closeDrawers();
                         recogerListadoChats();
 
@@ -146,8 +144,9 @@ public class MostrarContactos extends AppCompatActivity {
 
 
                     case R.id.menugrupo:
-                        System.out.println("grupos");
+
                         drawerLayout.closeDrawers();
+                        recogerMisGruposChats();
                         return true;
 
                     case R.id.perfilicono:
@@ -588,14 +587,21 @@ public class MostrarContactos extends AppCompatActivity {
                         e = jsonArray.getJSONObject(j);
 
                        // String inicio, String codigo, String telefono, String nombre, String token
-                        listadodechats.add(new Chat(
+
+                        Chat chataincluir=new Chat(
                                 e.getString("INICIO").toString(),
                                 e.getString("CODIGO").toString(),
 
                                 e.getString("TELEFONO").toString(),
                                 e.getString("NOMBRE").toString(),
                                 e.getString("TOKEN").toString()
-                                ));
+                        );
+
+                        if (!listadodechats.contains(chataincluir)){
+                            listadodechats.add(chataincluir);
+                        }
+
+
 
                     }
 
@@ -705,5 +711,176 @@ public class MostrarContactos extends AppCompatActivity {
 
         MySingleton.getInstance(getBaseContext()).addToRequest(request);
     }
+
+
+
+
+
+
+
+
+
+    public void recogerMisGruposChats() {
+
+        StringRequest request = new StringRequest(Request.Method.POST, mostrargrupos, new Response.Listener<String>() {
+            @RequiresApi(api = Build.VERSION_CODES.O)
+            @Override
+            public void onResponse(String response) {
+
+                try {
+
+                    JSONObject respuesta = new JSONObject(response);
+
+                    JSONArray jsonArray=respuesta.getJSONArray("GRUPOS");
+
+                    JSONObject e = null;
+                    String nombremiembros="Miembros: ";
+                    ArrayList<Usuario> mg=new ArrayList<>();
+
+                    for (int j=0; j < jsonArray.length(); j++){
+                        e = jsonArray.getJSONObject(j);
+
+                        JSONArray todoslosmiembros=e.getJSONArray("MIEMBROS");
+
+                        for (int k=0; k<todoslosmiembros.length(); k++) {
+                            JSONObject miembro=todoslosmiembros.getJSONObject(k);
+                            nombremiembros=String.format("%s %s,", nombremiembros, miembro.getString("NOMBRE"));
+
+                            //String telefono, String nombre, String uri, String token
+
+                            Usuario usuariomiembro=new Usuario(miembro.getString("TELEFONO").toString(), miembro.getString("NOMBRE").toString(), null, miembro.getString("TOKEN").toString());
+
+                            if (!mg.contains(usuariomiembro)){
+                                mg.add(usuariomiembro);
+                            }
+                        }
+
+                        Grupo grupoaincluir =new Grupo(
+                                e.getString("NOMBRE").toString(),
+                                e.getString("ID").toString(),
+                                nombremiembros,
+                                mg
+
+                        );
+
+
+                        if (!listadogrupos.contains(grupoaincluir)){
+                            listadogrupos.add(grupoaincluir);
+                        }
+
+
+
+                    }
+
+
+                }catch (JSONException e) {
+
+                    System.out.println(e.toString());
+                }
+
+                Bundle args = new Bundle();
+                args.putSerializable("ARRAYLISTGRUPO",(Serializable) listadogrupos);
+
+
+                Intent intentlistagrupos=new Intent(MostrarContactos.this, MostrarGrupos.class);
+                intentlistagrupos.putExtra("BUNDLE",args);
+                startActivity( intentlistagrupos);
+
+            }
+        }, new Response.ErrorListener() {
+
+            @Override
+            public void onErrorResponse(VolleyError error) {
+
+                System.out.println("volley error");
+                error.printStackTrace();
+
+                NetworkResponse response = error.networkResponse;
+                if (error instanceof ServerError && response != null) {
+                    try {
+                        String res = new String(response.data,
+                                HttpHeaderParser.parseCharset(response.headers, "utf-8"));
+                        // Now you can use any deserializer to make sense of data
+
+                        JSONObject obj = new JSONObject(res);
+                        System.out.println(obj.toString());
+                    } catch (UnsupportedEncodingException e1) {
+                        // Couldn't properly decode data to string
+                        Log.e("JSON Parser", "Error parsing data " + e1.toString());
+                        e1.printStackTrace();
+                    } catch (JSONException e2) {
+                        // returned data is not JSONObject?
+                        Log.e("JSON Parser", "Error parsing data " + e2.toString());
+                        e2.printStackTrace();
+                    }
+                }
+
+
+
+            }
+        }) {
+
+
+            @Override
+            public String getBodyContentType() {
+                return "application/json";
+            }
+
+            @Override
+            public Map<String, String> getHeaders() throws AuthFailureError {
+                HashMap<String, String> headers = new HashMap<String, String>();
+                headers.put("Content-Type", "application/json; charset=utf-8");
+                return headers;
+            }
+
+
+            @Override
+            public byte[] getBody() throws AuthFailureError {
+
+                JSONObject jsonBody = new JSONObject();
+                try {
+                    jsonBody.put("telefono", Autenticacion.numerotelefono);
+
+
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+
+
+                try {
+
+                    return jsonBody == null ? null : jsonBody.toString().getBytes("UTF-8");
+                } catch (UnsupportedEncodingException uee) {
+
+                    return null;
+                }
+
+
+            }
+        };
+
+        request.setRetryPolicy(new RetryPolicy() {
+            @Override
+            public int getCurrentTimeout() {
+                return 50000;
+            }
+
+            @Override
+            public int getCurrentRetryCount() {
+                return 50000;
+            }
+
+            @Override
+            public void retry(VolleyError error) throws VolleyError {
+
+            }
+        });
+
+        MySingleton.getInstance(getBaseContext()).addToRequest(request);
+    }
+
+
+
+
 
 }

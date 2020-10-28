@@ -177,7 +177,6 @@ public class MainActivity extends AppCompatActivity  {
                 DateTimeFormatter dtf=DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
                 String dia=ahora.format(dtf);
 
-                System.out.println("voy a enviar un mensaje "+usuarioemisor);
 
                 mensaje=new Mensaje(textoenviar.getText().toString(), dia, usuarioemisor.getTelefono().toString(), usuarioemisor.getNombre().toString());
                 datosAmostrar.add(datosAmostrar.size(), mensaje);
@@ -559,20 +558,15 @@ public class MainActivity extends AppCompatActivity  {
 
         Bundle bundle = new Bundle();
         bundle.putString(FirebaseAnalytics.Param.ITEM_ID, michatid);
-   //     bundle.putString(FirebaseAnalytics.Param.ITEM_NAME, name);
+
+
         bundle.putString(FirebaseAnalytics.Param.CONTENT_TYPE, "String");
         mFirebaseAnalytics.logEvent(FirebaseAnalytics.Event.SELECT_CONTENT, bundle);
 
-
-
-        //our json object
         JSONObject mainObj=new JSONObject();
         String token="";
+
         try {
-
-
-      //      String tokensegundo="dbMjzbyeRvK7H7X0JPFRml:APA91bGnxgY1r1waKY2Knmbc5kiSjtK12Z_IJkDmjKsJ7YuDvSN5w6phiWoIhGbTeEMOx89_78FUbluUr9CxMdb-vhnpp61IYwaJipBh4m0O66n0SSDlKl4hQT57uhdllhmL6rJacmFB";
-     //       mainObj.put("to", tokenaenviarlosmensajes);
 
             mainObj.put("to", usuarioreceptor.getToken().toString());
             JSONObject notificationObj=new JSONObject();
@@ -591,14 +585,7 @@ public class MainActivity extends AppCompatActivity  {
             jData.put("telefonoemisor", usuarioemisor.getTelefono().toString());
             jData.put("telefonoreceptor", usuarioreceptor.getTelefono().toString());
 
-     /*       notificationObj.put("title", mensaje.getContenido());
 
-            notificationObj.put("body", mensaje.getContenido());
-            notificationObj.put("sound", "default");
-            notificationObj.put("click_action", "CLICK_ACTION");*/
-
-
-     //       mainObj.put("notification", notificationObj);
             mainObj.put("priority","high");
 
             mainObj.put("data", jData);
@@ -623,7 +610,6 @@ public class MainActivity extends AppCompatActivity  {
                 }
             };
 
-         //   requestQueue.add(request);
 
             MySingleton.getInstance(getBaseContext()).addToRequest(request);
         } catch (JSONException e) {

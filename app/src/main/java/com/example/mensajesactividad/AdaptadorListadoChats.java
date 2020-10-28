@@ -61,8 +61,8 @@ public class AdaptadorListadoChats  extends RecyclerView.Adapter<AdaptadorListad
     public void onBindViewHolder(@NonNull AdaptadorListadoChats.ViewHolder holder, int position) {
         holder.itemView.setTag(datos.get(position));
 
-        holder.codigo.setText(datos.get(position).getNombre().toString());
-        holder.inicio.setText("Inicio: "+datos.get(position).getInicio().replace('T', ' ').toString());
+        holder.codigo.setText("Chat con " +datos.get(position).getNombre().toString());
+        holder.inicio.setText("Iniciado: "+datos.get(position).getInicio().replace('T', ' ').toString());
 
 
     }

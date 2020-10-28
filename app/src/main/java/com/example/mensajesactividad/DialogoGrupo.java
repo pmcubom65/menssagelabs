@@ -162,6 +162,14 @@ public class DialogoGrupo extends DialogFragment {
 
                     if (crear && miedit.getText().toString().length()>0) {
                         crearGrupo(miedit.getText().toString());
+                        Usuario owner=new Usuario(Autenticacion.numerotelefono, Autenticacion.nombredelemisor, null, Autenticacion.tokenorigen);
+                        if (!MostrarContactos.alGrupo.contains(owner)) {
+                            MostrarContactos.alGrupo.add(new Usuario(Autenticacion.numerotelefono, Autenticacion.nombredelemisor, null, Autenticacion.tokenorigen));
+                        }
+
+                        anadirGrupo(miedit.getText().toString(), MostrarContactos.alGrupo);
+
+
                     } else if (!crear && miedit.getText().toString().length()>0) {
                         anadirGrupo(miedit.getText().toString(), MostrarContactos.alGrupo);
                     }

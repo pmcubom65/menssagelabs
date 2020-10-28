@@ -1,6 +1,7 @@
 package com.example.mensajesactividad.modelos;
 
 import java.io.Serializable;
+import java.util.Objects;
 
 public class Chat implements Serializable {
     private String inicio;
@@ -73,5 +74,19 @@ public class Chat implements Serializable {
                 "inicio='" + inicio + '\'' +
                 ", codigo='" + codigo + '\'' +
                 '}';
+    }
+
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof Chat)) return false;
+        Chat chat = (Chat) o;
+        return getCodigo().equals(chat.getCodigo());
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(getCodigo());
     }
 }

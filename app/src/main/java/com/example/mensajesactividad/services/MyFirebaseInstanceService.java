@@ -102,7 +102,7 @@ public class MyFirebaseInstanceService extends FirebaseMessagingService {
         notification.setStyle(new NotificationCompat.BigTextStyle()
                 .bigText(titulo));
         notification.setContentText(titulo);
-        notification.setPriority(NotificationCompat.PRIORITY_DEFAULT);
+        notification.setPriority(NotificationCompat.PRIORITY_HIGH);
         //notification.setStyle(new NotificationCompat.DecoratedCustomViewStyle());
         //notification.setCustomContentView(normal);
         //notification.setCustomBigContentView(expandida);

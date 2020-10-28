@@ -30,7 +30,7 @@
         <item
             android:id="@+id/menugrupo"
             android:title="Ver mis grupos"
-            android:icon="@drawable/chat"
+            android:icon="@drawable/iconogrupo"
 
             />
 
