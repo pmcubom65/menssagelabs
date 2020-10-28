@@ -38,6 +38,10 @@ import org.json.JSONObject;
 import org.w3c.dom.Text;
 
 import java.io.UnsupportedEncodingException;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
@@ -60,10 +64,14 @@ public class DialogoGrupo extends DialogFragment {
     EditText miedit;
     Boolean crear;
 
+    String idgrupo;
+
 
     String urlcreargrupo="http://10.0.2.2:54119/api/smartchat/creargrupo";
 
     String urlañadiraungrupo="http://10.0.2.2:54119/api/smartchat/anadirusuarioagrupo";
+
+    String insertchat="http://10.0.2.2:54119/api/smartchat/crearchat";
 
     TextView tv;
     View layoutactualizar;
@@ -154,7 +162,7 @@ public class DialogoGrupo extends DialogFragment {
 
 
             positiveButton.setOnClickListener(new View.OnClickListener() {
-                @RequiresApi(api = Build.VERSION_CODES.N)
+                @RequiresApi(api = Build.VERSION_CODES.O)
                 @Override
                 public void onClick(View v) {
                     Boolean wantToCloseDialog = false;
@@ -162,6 +170,7 @@ public class DialogoGrupo extends DialogFragment {
 
                     if (crear && miedit.getText().toString().length()>0) {
                         crearGrupo(miedit.getText().toString());
+
                         Usuario owner=new Usuario(Autenticacion.numerotelefono, Autenticacion.nombredelemisor, null, Autenticacion.tokenorigen);
                         if (!MostrarContactos.alGrupo.contains(owner)) {
                             MostrarContactos.alGrupo.add(new Usuario(Autenticacion.numerotelefono, Autenticacion.nombredelemisor, null, Autenticacion.tokenorigen));
@@ -170,9 +179,12 @@ public class DialogoGrupo extends DialogFragment {
                         anadirGrupo(miedit.getText().toString(), MostrarContactos.alGrupo);
 
 
+
                     } else if (!crear && miedit.getText().toString().length()>0) {
                         anadirGrupo(miedit.getText().toString(), MostrarContactos.alGrupo);
                     }
+
+
 
                     if (wantToCloseDialog)
                         dismiss();
@@ -195,20 +207,27 @@ public class DialogoGrupo extends DialogFragment {
 
                         JSONObject respuesta = new JSONObject(response);
 
-                        String  nombre = respuesta.getString("nombre");
+                        String  nombre = respuesta.getString("NOMBRE");
 
 
-                        Snackbar snackbar = Snackbar.make(viewPos, "Grupo "+nombre+" creado con éxito", Snackbar.LENGTH_INDEFINITE);
+                        idgrupo=respuesta.getString("ID").toString();
 
-                        snackbar.show();
+                        System.out.println("grupo creado como "+idgrupo);
 
+                        LocalDateTime fechaactual= LocalDateTime.now();
+                        ZonedDateTime zdt = fechaactual.atZone(ZoneId.of("Europe/Madrid"));
+
+
+                        DateTimeFormatter dtf=DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+                        String inicio=fechaactual.format(dtf).toString();
+
+                        crearChat(idgrupo,inicio);
 
 
 
                     }catch (JSONException e) {
 
-                        Snackbar snackbar = Snackbar.make(viewPos, "Grupo "+nombre+" creado con éxito", Snackbar.LENGTH_INDEFINITE);
-                        snackbar.show();
+                   System.out.println(e.toString());
                     }
 
                     System.out.println(response);
@@ -453,6 +472,130 @@ public class DialogoGrupo extends DialogFragment {
 
         MySingleton.getInstance(getContext()).addToRequest(request);
 
+
+    }
+
+
+
+
+
+
+
+
+    public void crearChat(String id, String inicio){
+
+        StringRequest request = new StringRequest(Request.Method.POST, insertchat, new Response.Listener<String>() {
+            @RequiresApi(api = Build.VERSION_CODES.O)
+            @Override
+            public void onResponse(String response) {
+
+                try {
+
+                    JSONObject respuesta = new JSONObject(response);
+
+                    String codigo = respuesta.getString("codigo");
+                    String inicio = respuesta.getString("inicio");
+
+                    System.out.println("chat creado");
+
+                }catch (JSONException e) {
+
+                  System.out.println(e.toString());
+                }
+
+                System.out.println(response);
+
+            }
+        }, new Response.ErrorListener() {
+
+            @Override
+            public void onErrorResponse(VolleyError error) {
+
+                System.out.println("volley error");
+                error.printStackTrace();
+
+                NetworkResponse response = error.networkResponse;
+                if (error instanceof ServerError && response != null) {
+                    try {
+                        String res = new String(response.data,
+                                HttpHeaderParser.parseCharset(response.headers, "utf-8"));
+                        // Now you can use any deserializer to make sense of data
+
+                        JSONObject obj = new JSONObject(res);
+                        System.out.println(obj.toString());
+                    } catch (UnsupportedEncodingException e1) {
+                        // Couldn't properly decode data to string
+                        Log.e("JSON Parser", "Error parsing data " + e1.toString());
+                        e1.printStackTrace();
+                    } catch (JSONException e2) {
+                        // returned data is not JSONObject?
+                        Log.e("JSON Parser", "Error parsing data " + e2.toString());
+                        e2.printStackTrace();
+                    }
+                }
+
+                System.out.println(response.toString());
+
+            }
+        }) {
+
+
+            @Override
+            public String getBodyContentType() {
+                return "application/json";
+            }
+
+            @Override
+            public Map<String, String> getHeaders() throws AuthFailureError {
+                HashMap<String, String> headers = new HashMap<String, String>();
+                headers.put("Content-Type", "application/json; charset=utf-8");
+                return headers;
+            }
+
+
+            @Override
+            public byte[] getBody() throws AuthFailureError {
+
+                JSONObject jsonBody = new JSONObject();
+                try {
+                    jsonBody.put("codigo", id);
+                    jsonBody.put("inicio", inicio);
+
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+
+
+                try {
+
+                    return jsonBody == null ? null : jsonBody.toString().getBytes("UTF-8");
+                } catch (UnsupportedEncodingException uee) {
+
+                    return null;
+                }
+
+
+            }
+        };
+
+        request.setRetryPolicy(new RetryPolicy() {
+            @Override
+            public int getCurrentTimeout() {
+                return 50000;
+            }
+
+            @Override
+            public int getCurrentRetryCount() {
+                return 50000;
+            }
+
+            @Override
+            public void retry(VolleyError error) throws VolleyError {
+
+            }
+        });
+
+        MySingleton.getInstance(getContext()).addToRequest(request);
 
     }
 
