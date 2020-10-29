@@ -6,15 +6,15 @@
     android:layout_height="match_parent"
     tools:context=".Perfil"
     android:orientation="vertical"
-    android:background="@drawable/logotipo"
 
+    android:background="#000000"
     >
 
     <androidx.appcompat.widget.Toolbar
         android:id="@+id/mitoolbarperfil"
         android:layout_width="match_parent"
         android:layout_height="56dp"
-        android:background="@color/colorPrimary"
+        android:background="@drawable/gradiente"
         android:contentInsetStart="0dp"
         android:contentInsetLeft="0dp"
         android:minHeight="?attr/actionBarSize"
@@ -27,23 +27,20 @@
         app:layout_constraintTop_toTopOf="parent"></androidx.appcompat.widget.Toolbar>
 
 
-
-
-
     <TextView
         android:id="@+id/perfilnombre"
         android:layout_width="match_parent"
         android:layout_height="30dp"
-        android:textColor="#ffffff"
         android:gravity="center"
+        android:textColor="#ffffff"
 
         android:textSize="25sp"
         android:textStyle="bold"
 
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/perfiltelefono"
-        app:layout_constraintVertical_bias="0.251"
-        tools:layout_editor_absoluteX="0dp" />
+        app:layout_constraintVertical_bias="0.074"
+        tools:layout_editor_absoluteX="5dp" />
 
     <TextView
         android:id="@+id/perfiltelefono"
@@ -51,12 +48,12 @@
         android:layout_height="30dp"
         android:gravity="center"
 
-        android:textSize="25sp"
         android:textColor="#ffffff"
+        android:textSize="25sp"
         android:textStyle="bold"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="0.205"
+        app:layout_constraintVertical_bias="0.114"
         tools:layout_editor_absoluteX="0dp" />
 
     <TextView
@@ -74,4 +71,45 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="@+id/mitoolbarperfil"
         app:layout_constraintVertical_bias="0.731" />
+
+    <Button
+        android:id="@+id/subirimagen"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:background="@color/colorPrimary"
+        android:onClick="subirimagenonclick"
+        android:text="Subir Imagen Perfil"
+        android:textColor="#ffffff"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.498"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="@+id/mitoolbarperfil"
+        app:layout_constraintVertical_bias="0.329"
+        android:padding="5dp"/>
+
+    <TextView
+        android:id="@+id/ruta"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="TextView"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.498"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="0.408" />
+
+    <ImageView
+        android:id="@+id/imageView4"
+        android:layout_width="500dp"
+        android:layout_height="500dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.505"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/perfilchats"
+        app:layout_constraintVertical_bias="0.653" />
+
+
 </androidx.constraintlayout.widget.ConstraintLayout>

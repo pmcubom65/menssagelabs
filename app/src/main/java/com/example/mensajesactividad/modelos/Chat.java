@@ -1,5 +1,9 @@
 package com.example.mensajesactividad.modelos;
 
+import android.os.Build;
+
+import androidx.annotation.RequiresApi;
+
 import java.io.Serializable;
 import java.util.Objects;
 
@@ -85,6 +89,7 @@ public class Chat implements Serializable {
         return getCodigo().equals(chat.getCodigo());
     }
 
+    @RequiresApi(api = Build.VERSION_CODES.KITKAT)
     @Override
     public int hashCode() {
         return Objects.hash(getCodigo());

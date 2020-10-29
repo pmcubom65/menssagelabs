@@ -1,14 +1,26 @@
 package com.example.mensajesactividad;
 
+import androidx.annotation.Nullable;
 import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 
+import android.app.Activity;
+import android.app.ProgressDialog;
+import android.content.Intent;
+import android.database.Cursor;
+import android.graphics.Bitmap;
+import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
+import android.provider.MediaStore;
+import android.util.Base64;
 import android.util.Log;
 import android.view.Gravity;
+import android.view.View;
+import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.android.volley.AuthFailureError;
 import com.android.volley.NetworkResponse;
@@ -26,6 +38,9 @@ import com.google.android.material.snackbar.Snackbar;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.util.HashMap;
 import java.util.Map;
@@ -39,11 +54,22 @@ public class Perfil extends AppCompatActivity {
 
     RequestQueue requestQueue;
     private Toolbar toolbar;
+    public static final int PICK_IMAGE = 1;
+
+    TextView tv;
+    ImageView iv;
+    ProgressDialog progressDialog;
+    Bitmap bitmap;
+
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_perfil);
+
+        tv=findViewById(R.id.ruta);
+        iv=findViewById(R.id.imageView4);
 
         tnombre=findViewById(R.id.perfilnombre);
         ttelefono=findViewById(R.id.perfiltelefono);
@@ -84,7 +110,7 @@ public class Perfil extends AppCompatActivity {
 
                 } catch (JSONException e) {
                     e.printStackTrace();
-                    Snackbar.make(findViewById(R.id.autenticacionlayout), response.toString(), Snackbar.LENGTH_LONG).show();
+                    System.out.println(e.toString());
 
                 }
 
@@ -119,7 +145,7 @@ public class Perfil extends AppCompatActivity {
                     }
                 }
 
-                Snackbar.make(findViewById(R.id.autenticacionlayout), error.toString(), Snackbar.LENGTH_LONG).show();
+                System.out.println(error.toString());
 
             }
         }) {
@@ -186,4 +212,101 @@ public class Perfil extends AppCompatActivity {
 
 
     }
+
+    public void subirimagenonclick(View view) {
+
+        progressDialog = new ProgressDialog(Perfil.this);
+        progressDialog.setMessage("Uploading, please wait...");
+        progressDialog.show();
+
+
+
+
+
+        //converting image to base64 string
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        bitmap.compress(Bitmap.CompressFormat.JPEG, 100, baos);
+        byte[] imageBytes = baos.toByteArray();
+        final String imageString = Base64.encodeToString(imageBytes, Base64.DEFAULT);
+
+
+
+
+    /*    StringRequest request = new StringRequest(Request.Method.POST, URL, new Response.Listener<String>(){
+            @Override
+            public void onResponse(String s) {
+                progressDialog.dismiss();
+                if(s.equals("true")){
+                    Toast.makeText(Perfil.this, "Uploaded Successful", Toast.LENGTH_LONG).show();
+                }
+                else{
+                    Toast.makeText(Perfil.this, "Some error occurred!", Toast.LENGTH_LONG).show();
+                }
+            }
+        },new Response.ErrorListener(){
+            @Override
+            public void onErrorResponse(VolleyError volleyError) {
+                Toast.makeText(Perfil.this, "Some error occurred -> "+volleyError, Toast.LENGTH_LONG).show();;
+            }
+        }) {
+            //adding parameters to send
+            @Override
+            protected Map<String, String> getParams() throws AuthFailureError {
+                Map<String, String> parameters = new HashMap<String, String>();
+                parameters.put("image", imageString);
+                return parameters;
+            }
+        };
+
+        RequestQueue rQueue = Volley.newRequestQueue(Perfil.this);
+        rQueue.add(request);*/
+
+
+
+        Intent intent = new Intent();
+        intent.setType("image/*");
+        intent.setAction(Intent.ACTION_GET_CONTENT);
+        startActivityForResult(Intent.createChooser(intent, "Select Picture"), PICK_IMAGE);
+
+
+
+
+
+    }
+
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+
+
+
+        if (requestCode == PICK_IMAGE && resultCode == Activity.RESULT_OK) {
+            if (data == null) {
+                //error
+                return;
+            }
+            Uri uri = data.getData();
+            String selectedImagePath = getPath(uri);
+            tv.setText(selectedImagePath);
+            iv.setImageURI(uri);
+        }
+    }
+
+
+
+
+
+    public String getPath(Uri uri)
+    {
+        String[] projection = { MediaStore.Images.Media.DATA };
+        Cursor cursor = getContentResolver().query(uri, projection, null, null, null);
+        if (cursor == null) return null;
+        int column_index =             cursor.getColumnIndexOrThrow(MediaStore.Images.Media.DATA);
+        cursor.moveToFirst();
+        String s=cursor.getString(column_index);
+        cursor.close();
+        return s;
+    }
+
 }
