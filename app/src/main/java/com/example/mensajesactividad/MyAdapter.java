@@ -40,6 +40,9 @@ public class MyAdapter extends RecyclerView.Adapter<MyAdapter.MyViewHolder> {
             fechayhora=v.findViewById(R.id.fechayhora);
             telefonodelmensaje=v.findViewById(R.id.telefonodelmensaje);
         }
+
+
+
     }
 
 
@@ -54,6 +57,8 @@ public class MyAdapter extends RecyclerView.Adapter<MyAdapter.MyViewHolder> {
 
        return new MyViewHolder(view);
     }
+
+
 
 
 

@@ -84,6 +84,8 @@ public class MainActivity extends AppCompatActivity  {
 
     String urlcargarmensajeschat="http://10.0.2.2:54119/api/smartchat/buscarmensajeschat";
 
+    String buscargrupo="http://10.0.2.2:54119/api/smartchat/buscarGrupoPorID";
+
     String url="https://fcm.googleapis.com/fcm/send";
 
     RequestQueue requestQueue;
@@ -132,7 +134,7 @@ public class MainActivity extends AppCompatActivity  {
         usuarioreceptor=(Usuario) llegada.getSerializableExtra("usuarioreceptor");
 
 
-        esgrupo=llegada.getExtras().getBoolean("grupo", false);
+        esgrupo=llegada.getExtras().getBoolean("grupo");
 
 
         requestQueue= Volley.newRequestQueue(getApplicationContext());
@@ -228,6 +230,11 @@ public class MainActivity extends AppCompatActivity  {
 
         IntentFilter intentFilter= new IntentFilter("com.myApp.CUSTOM_EVENT");
         LocalBroadcastManager.getInstance(this).registerReceiver(onMessage, intentFilter);
+
+
+            buscarSiEsGrupo(michatid);
+
+
     }
 
 
@@ -619,7 +626,6 @@ public class MainActivity extends AppCompatActivity  {
             jData.put("telefonoemisor", usuarioemisor.getTelefono().toString());
             jData.put("telefonoreceptor", usuarioreceptor.getTelefono().toString());
 
-
             mainObj.put("priority","high");
 
             mainObj.put("data", jData);
@@ -656,6 +662,145 @@ public class MainActivity extends AppCompatActivity  {
     }
 
 
+
+
+
+
+
+    private void buscarSiEsGrupo(String id) {
+
+        StringRequest request = new StringRequest(Request.Method.POST, buscargrupo, new Response.Listener<String>() {
+            @RequiresApi(api = Build.VERSION_CODES.O)
+            @Override
+            public void onResponse(String response) {
+
+                try {
+
+                    JSONObject respuesta = new JSONObject(response);
+
+                    String iddelgrupo = respuesta.getString("ID").toString();
+                    String nombregrupo = respuesta.getString("NOMBRE").toString();
+
+
+                    System.out.println("grupo encontrado");
+                    esgrupo=true;
+
+             //       grupo=(Grupo) llegada.getSerializableExtra("grupoinfo");
+                    toolbar.setTitle("Conversando con Grupo "+nombregrupo);
+
+
+                    JSONArray jsonArray=respuesta.getJSONArray("MIEMBROS");
+                    JSONObject e = null;
+                    ArrayList<Usuario> usuariogrupo=new ArrayList<>();
+                    for (int j=0; j < jsonArray.length(); j++) {
+                        e = jsonArray.getJSONObject(j);
+
+                        Usuario usuariomiembro=new Usuario(e.getString("TELEFONO").toString(), e.getString("NOMBRE").toString(), null, e.getString("TOKEN").toString());
+                        usuariogrupo.add(usuariomiembro);
+                    }
+
+                    grupo=new Grupo(nombregrupo, iddelgrupo, "", usuariogrupo);
+
+                }catch (JSONException e) {
+
+                   System.out.println("No es grupo");
+                }
+
+                System.out.println(response);
+
+            }
+        }, new Response.ErrorListener() {
+
+            @Override
+            public void onErrorResponse(VolleyError error) {
+
+                System.out.println("volley error");
+                error.printStackTrace();
+
+                NetworkResponse response = error.networkResponse;
+                if (error instanceof ServerError && response != null) {
+                    try {
+                        String res = new String(response.data,
+                                HttpHeaderParser.parseCharset(response.headers, "utf-8"));
+                        // Now you can use any deserializer to make sense of data
+
+                        JSONObject obj = new JSONObject(res);
+                        System.out.println(obj.toString());
+                    } catch (UnsupportedEncodingException e1) {
+                        // Couldn't properly decode data to string
+                        Log.e("JSON Parser", "Error parsing data " + e1.toString());
+                        e1.printStackTrace();
+                    } catch (JSONException e2) {
+                        // returned data is not JSONObject?
+                        Log.e("JSON Parser", "Error parsing data " + e2.toString());
+                        e2.printStackTrace();
+                    }
+                }
+
+                System.out.println(error.toString());
+
+            }
+        }) {
+
+
+            @Override
+            public String getBodyContentType() {
+                return "application/json";
+            }
+
+            @Override
+            public Map<String, String> getHeaders() throws AuthFailureError {
+                HashMap<String, String> headers = new HashMap<String, String>();
+                headers.put("Content-Type", "application/json; charset=utf-8");
+                return headers;
+            }
+
+
+            @Override
+            public byte[] getBody() throws AuthFailureError {
+
+                JSONObject jsonBody = new JSONObject();
+
+                try {
+                    jsonBody.put("ID", michatid);
+
+
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+
+
+                try {
+
+                    return jsonBody == null ? null : jsonBody.toString().getBytes("UTF-8");
+                } catch (UnsupportedEncodingException uee) {
+
+                    return null;
+                }
+
+
+            }
+        };
+
+        request.setRetryPolicy(new RetryPolicy() {
+            @Override
+            public int getCurrentTimeout() {
+                return 50000;
+            }
+
+            @Override
+            public int getCurrentRetryCount() {
+                return 50000;
+            }
+
+            @Override
+            public void retry(VolleyError error) throws VolleyError {
+
+            }
+        });
+        MySingleton.getInstance(getBaseContext()).addToRequest(request);
+
+    }
 
 }
 

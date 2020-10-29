@@ -18,6 +18,7 @@ import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 import com.example.mensajesactividad.MainActivity;
 import com.example.mensajesactividad.MyBroadcastReceiver;
 import com.example.mensajesactividad.R;
+import com.example.mensajesactividad.modelos.Grupo;
 import com.example.mensajesactividad.modelos.Usuario;
 import com.google.firebase.messaging.FirebaseMessagingService;
 import com.google.firebase.messaging.RemoteMessage;
@@ -39,6 +40,8 @@ public class MyFirebaseInstanceService extends FirebaseMessagingService {
     Usuario emisor;
     Usuario receptor;
 
+    Boolean esgrupo=false;
+
 
 
     @Override
@@ -59,7 +62,10 @@ public class MyFirebaseInstanceService extends FirebaseMessagingService {
     public void onMessageReceived(@NonNull RemoteMessage remoteMessage) {
        System.out.println( "From: " + remoteMessage.toString());
 
+
+
         Map<String, String> data = remoteMessage.getData();
+
         chat_id=(String) data.get("michatid");
         titulo=(String) data.get("titulo");
 
@@ -102,7 +108,7 @@ public class MyFirebaseInstanceService extends FirebaseMessagingService {
         notification.setStyle(new NotificationCompat.BigTextStyle()
                 .bigText(titulo));
         notification.setContentText(titulo);
-        notification.setPriority(NotificationCompat.PRIORITY_HIGH);
+        notification.setPriority(NotificationCompat.PRIORITY_DEFAULT);
         //notification.setStyle(new NotificationCompat.DecoratedCustomViewStyle());
         //notification.setCustomContentView(normal);
         //notification.setCustomBigContentView(expandida);
