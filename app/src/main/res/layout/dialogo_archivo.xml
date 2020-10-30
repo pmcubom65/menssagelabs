@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:orientation="vertical" android:layout_width="match_parent"
+    android:layout_height="match_parent"
+>
+
+    <ImageView
+        android:layout_width="wrap_content"
+        android:layout_height="94dp"
+        android:layout_marginTop="30dp"
+        android:padding="5dp"
+        android:src="@drawable/smart_prod"
+
+        />
+
+
+
+<LinearLayout
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:orientation="horizontal"
+    android:gravity="center_horizontal">
+
+    <Button
+        android:id="@+id/imageViewArchivo"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_margin="30dp"
+        android:layout_alignParentLeft="true"
+        android:text="Archivo"
+        android:textSize="18sp"
+        android:textColor="@color/colorPrimary"
+        android:textStyle="bold"
+        android:drawablePadding="0dp"
+        android:background="@drawable/buttonshape"
+        android:layout_alignParentBottom="true"
+        android:drawableTop="@drawable/clip" />
+
+
+
+    <Button
+        android:id="@+id/imageViewFoto"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_margin="30dp"
+        android:layout_alignParentLeft="true"
+        android:text="Imagen"
+        android:textSize="18sp"
+        android:textColor="@color/colorPrimary"
+        android:textStyle="bold"
+        android:drawablePadding="0dp"
+        android:background="@drawable/buttonshape"
+        android:layout_alignParentBottom="true"
+        android:drawableTop="@drawable/ic_foto" />
+
+
+</LinearLayout>
+
+
+    <ImageView
+        android:layout_width="wrap_content"
+        android:layout_height="120dp"
+
+        android:padding="5dp"
+
+        android:id="@+id/imagencargada"
+        />
+
+
+</LinearLayout>

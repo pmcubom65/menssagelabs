@@ -76,6 +76,8 @@ public class MainActivity extends AppCompatActivity  {
     private RecyclerView.LayoutManager layoutManager;
     private ArrayList<Mensaje> datosAmostrar;
     private FloatingActionButton botonenviar;
+    private FloatingActionButton botonadjuntar;
+
     private TextView textoenviar;
 
     private final String canal="5555";
@@ -184,6 +186,7 @@ public class MainActivity extends AppCompatActivity  {
         requestQueue= Volley.newRequestQueue(getApplicationContext());
 
         botonenviar=(FloatingActionButton) findViewById(R.id.botonmandarmensaje);
+        botonadjuntar=(FloatingActionButton) findViewById(R.id.botonadjunto);
         textoenviar=(TextView) findViewById(R.id.textoanadir);
 
 
@@ -244,11 +247,25 @@ public class MainActivity extends AppCompatActivity  {
         });
 
 
+        botonadjuntar.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                DialogoArchivo dialogoarchivo=new  DialogoArchivo();
+
+                dialogoarchivo.show(getSupportFragmentManager(), " dialogoArchivo");
+            }
+        });
+
+
+
+
+
+
         IntentFilter intentFilter= new IntentFilter("com.myApp.CUSTOM_EVENT");
         LocalBroadcastManager.getInstance(this).registerReceiver(onMessage, intentFilter);
 
 
-            buscarSiEsGrupo(michatid);
+       buscarSiEsGrupo(michatid);
 
 
     }
