@@ -35,6 +35,7 @@ import com.android.volley.ServerError;
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.HttpHeaderParser;
 import com.android.volley.toolbox.StringRequest;
+import com.google.android.gms.common.util.IOUtils;
 import com.google.android.material.snackbar.Snackbar;
 
 import org.json.JSONException;
@@ -198,23 +199,32 @@ public class DialogoArchivo  extends DialogFragment {
 
             System.out.println(mimeType);
             System.out.println(uri.getPath());
-
+            ByteArrayOutputStream buffer = new ByteArrayOutputStream();
             try {
                 InputStream is= getActivity().getContentResolver().openInputStream(uri);
+
+
+
+                int nRead;
+                byte[] databyte = new byte[16384];
+
+                while ((nRead = is.read( databyte , 0,  databyte .length)) != -1) {
+                    buffer.write( databyte , 0, nRead);
+                }
+
+
+
             } catch (FileNotFoundException e) {
+                e.printStackTrace();
+            } catch (IOException e) {
                 e.printStackTrace();
             }
 
-
-            File mifile=new File(uri.getPath());
-            System.out.println("file "+mifile.getAbsolutePath());
-
-            getBytesFromFile(mifile);
-
-           String fileString = ","+ Base64.encodeToString(getBytesFromFile(mifile),
+            String fileString = ","+ Base64.encodeToString(buffer.toByteArray(),
                     Base64.DEFAULT);
 
-           System.out.println("filestring" +fileString);
+
+            System.out.println("filestring" +fileString);
 
         //    String selectedImagePath = getPath(uri);
             imagencargada.setVisibility(View.VISIBLE);
