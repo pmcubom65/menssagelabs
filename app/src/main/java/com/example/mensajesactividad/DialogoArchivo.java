@@ -3,6 +3,7 @@ package com.example.mensajesactividad;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.Dialog;
+import android.content.ContentResolver;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -20,6 +21,7 @@ import android.view.View;
 import android.webkit.MimeTypeMap;
 import android.widget.Button;
 import android.widget.ImageView;
+import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -49,6 +51,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Map;
 
 public class DialogoArchivo  extends DialogFragment {
@@ -57,16 +60,21 @@ public class DialogoArchivo  extends DialogFragment {
     Button archivo;
     Button imagen;
     ImageView imagencargada;
+
+    TextView nombrearchivo;
     public static final int PICK_IMAGE = 1;
 
     public static final int PICK_FILE = 2;
 
-    DialogoGrupo.Datoaactualizar datoactualizar;
+    Datoaactualizar datoactualizar;
 
     String imagen_url="http://10.0.2.2:54119/api/smartchat/almacenarimagen";
 
 
     String buscarusuario="http://10.0.2.2:54119/api/smartchat/buscarusuario";
+
+    HashMap<String, String> valores=new HashMap<>();
+
 
     public interface Datoaactualizar {
 
@@ -88,7 +96,11 @@ public class DialogoArchivo  extends DialogFragment {
         archivo=layoutactualizar.findViewById(R.id.imageViewArchivo);
         imagen=layoutactualizar.findViewById(R.id.imageViewFoto);
         imagencargada=layoutactualizar.findViewById(R.id.imagencargada);
+
+        nombrearchivo=layoutactualizar.findViewById(R.id.nombrearchivo);
+
         imagencargada.setVisibility(View.GONE);
+        nombrearchivo.setVisibility(View.GONE);
 
         builder.setView(layoutactualizar);
 
@@ -147,7 +159,7 @@ public class DialogoArchivo  extends DialogFragment {
         Activity activity=(Activity) context;
 
         try {
-            datoactualizar=(DialogoGrupo.Datoaactualizar) activity;
+            datoactualizar=(DialogoArchivo.Datoaactualizar) activity;
         }catch (ClassCastException cce) {}
 
     }
@@ -181,7 +193,17 @@ public class DialogoArchivo  extends DialogFragment {
             imagencargada.setVisibility(View.VISIBLE);
             imagencargada.setImageURI(uri);
 
-     //       buscarUsuario(Autenticacion.numerotelefono, imgString);
+         //   String filename=uri.getPath().substring(uri.getPath().lastIndexOf("/")+1);
+            String rutaimagen=new File(uri.getPath()).getPath().split(":")[0];
+            String filename=rutaimagen.substring(rutaimagen.lastIndexOf("/")+1);
+
+            String extension=getMimeType(getContext(), uri);
+
+
+            nombrearchivo.setVisibility(View.VISIBLE);
+            nombrearchivo.setText(filename);
+
+            buscarUsuario(Autenticacion.numerotelefono, imgString, extension);
 
         }
 
@@ -198,12 +220,17 @@ public class DialogoArchivo  extends DialogFragment {
 
 
             System.out.println(mimeType);
-            System.out.println(uri.getPath());
+
+            String filename=uri.getPath().substring(uri.getPath().lastIndexOf("/")+1);
+            String extension=filename.substring(filename.lastIndexOf(".")+1);
+
+            nombrearchivo.setVisibility(View.VISIBLE);
+            nombrearchivo.setText(filename);
+
+
             ByteArrayOutputStream buffer = new ByteArrayOutputStream();
             try {
                 InputStream is= getActivity().getContentResolver().openInputStream(uri);
-
-
 
                 int nRead;
                 byte[] databyte = new byte[16384];
@@ -231,14 +258,14 @@ public class DialogoArchivo  extends DialogFragment {
             imagencargada.setImageResource(R.drawable.clip);
 
 
-                   buscarUsuario(Autenticacion.numerotelefono, fileString);
+                   buscarUsuario(Autenticacion.numerotelefono, fileString, extension);
 
         }
 
     }
 
 
-    private void subirImagen(String imagen, String id) {
+    private void subirImagen(String imagen, String id, String extension) {
 
         StringRequest request = new StringRequest(Request.Method.POST, imagen_url, new Response.Listener<String>() {
             @RequiresApi(api = Build.VERSION_CODES.O)
@@ -252,7 +279,7 @@ public class DialogoArchivo  extends DialogFragment {
                     String id = respuesta.getString("GRABADO").toString();
 
 
-
+                    datoactualizar.onNombreAActualizar("actualizar");
 
                 }catch (JSONException e) {
 
@@ -314,9 +341,24 @@ public class DialogoArchivo  extends DialogFragment {
 
                 JSONObject jsonBody = new JSONObject();
 
+
+
+
                 try {
                     jsonBody.put("ID", id);
                     jsonBody.put("IMAGEN", imagen);
+
+                    jsonBody.put("EXTENSION", extension);
+
+
+
+                    Iterator it = valores.entrySet().iterator();
+                    while (it.hasNext()) {
+                        Map.Entry pair = (Map.Entry)it.next();
+                        jsonBody.put(pair.getKey().toString(), pair.getValue().toString());
+
+                        it.remove(); // avoids a ConcurrentModificationException
+                    }
 
 
                 } catch (JSONException e) {
@@ -360,7 +402,7 @@ public class DialogoArchivo  extends DialogFragment {
 
 
 
-    private void buscarUsuario(String telefonobuscar, String imagen) {
+    private void buscarUsuario(String telefonobuscar, String imagen, String extension) {
 
         StringRequest request = new StringRequest(Request.Method.POST, buscarusuario, new Response.Listener<String>() {
             @RequiresApi(api = Build.VERSION_CODES.O)
@@ -374,7 +416,7 @@ public class DialogoArchivo  extends DialogFragment {
                     String idusuario = respuesta.getString("ID").toString();
                     System.out.println("usuario encontrado");
 
-                    subirImagen(imagen, idusuario);
+                    subirImagen(imagen, idusuario, extension);
 
                 }catch (JSONException e) {
 
@@ -607,5 +649,37 @@ public class DialogoArchivo  extends DialogFragment {
 
 
 
+    }
+
+
+    public static String getMimeType(Context context, Uri uri) {
+        String extension;
+
+        //Check uri format to avoid null
+        if (uri.getScheme().equals(ContentResolver.SCHEME_CONTENT)) {
+            //If scheme is a content
+            final MimeTypeMap mime = MimeTypeMap.getSingleton();
+            extension = mime.getExtensionFromMimeType(context.getContentResolver().getType(uri));
+
+        } else {
+            //If scheme is a File
+            //This will replace white spaces with %20 and also other special characters. This will avoid returning null values on file name with spaces and special characters.
+            extension = MimeTypeMap.getFileExtensionFromUrl(Uri.fromFile(new File(uri.getPath())).toString());
+
+        }
+
+        return extension;
+    }
+
+
+
+
+
+    public void setValues(String vdia, String vchat_id, String vemisor, String vreceptor) {
+
+        valores.put("DIA", vdia);
+        valores.put("CHAT_ID", vchat_id);
+        valores.put("EMISOR", vemisor);
+        valores.put("RECEPTOR", vreceptor);
     }
 }

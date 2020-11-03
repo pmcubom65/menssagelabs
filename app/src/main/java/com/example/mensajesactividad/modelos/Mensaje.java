@@ -13,6 +13,8 @@ public class Mensaje {
     private String telefono;
     private String nombre;
 
+    private String rutaarchivo;
+
 
     public Mensaje(String contenido, String fecha, String telefono) {
         this.contenido = contenido;
@@ -26,6 +28,23 @@ public class Mensaje {
         this.fecha = fecha;
         this.telefono=telefono;
         this.nombre=nombre;
+    }
+
+
+    public Mensaje(String contenido, String fecha, String telefono, String nombre, String ruta) {
+        this.contenido = contenido;
+        this.fecha = fecha;
+        this.telefono=telefono;
+        this.nombre=nombre;
+        this.rutaarchivo=ruta;
+    }
+
+    public String getRutaarchivo() {
+        return rutaarchivo;
+    }
+
+    public void setRutaarchivo(String rutaarchivo) {
+        this.rutaarchivo = rutaarchivo;
     }
 
     public String getNombre() {

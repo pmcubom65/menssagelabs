@@ -58,6 +58,13 @@
 </LinearLayout>
 
 
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center">
+
+
     <ImageView
         android:layout_width="wrap_content"
         android:layout_height="120dp"
@@ -67,5 +74,15 @@
         android:id="@+id/imagencargada"
         />
 
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/nombrearchivo"
+            android:textSize="18sp"
+            android:textColor="@color/colorPrimary"
+            />
+
+    </LinearLayout>
 
 </LinearLayout>

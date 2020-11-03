@@ -41,8 +41,6 @@ public class MyAdapter extends RecyclerView.Adapter<MyAdapter.MyViewHolder> {
             telefonodelmensaje=v.findViewById(R.id.telefonodelmensaje);
         }
 
-
-
     }
 
 
@@ -81,12 +79,23 @@ public class MyAdapter extends RecyclerView.Adapter<MyAdapter.MyViewHolder> {
             holder.mitextview.setBackgroundColor(R.color.minaranja);
         }
 
+
+
         holder.itemView.setTag(datos.get(position));
 
+        if (datos.get(position).getRutaarchivo() instanceof String) {
+            holder.mitextview.setText(datos.get(position).getRutaarchivo().substring(datos.get(position).getRutaarchivo().toString().lastIndexOf("\\")+1));
+            holder.mitextview.setCompoundDrawablesWithIntrinsicBounds(R.drawable.descargararchivo, 0, 0, 0);
+        }else {
+            holder.mitextview.setText(datos.get(position).getContenido().toString());
+        }
 
-        holder.mitextview.setText(datos.get(position).getContenido().toString());
+
         holder.fechayhora.setText(datos.get(position).getFecha().toString());
         holder.telefonodelmensaje.setText(datos.get(position).getNombre().toString());
+
+
+
 
     }
 

@@ -32,6 +32,7 @@ import android.view.ViewGroup;
 import android.view.WindowInsets;
 import android.view.WindowMetrics;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.android.volley.AuthFailureError;
 import com.android.volley.NetworkResponse;
@@ -42,12 +43,14 @@ import com.android.volley.RetryPolicy;
 import com.android.volley.ServerError;
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.HttpHeaderParser;
+import com.android.volley.toolbox.HurlStack;
 import com.android.volley.toolbox.JsonObjectRequest;
 import com.android.volley.toolbox.StringRequest;
 import com.android.volley.toolbox.Volley;
 import com.example.mensajesactividad.modelos.Grupo;
 import com.example.mensajesactividad.modelos.Mensaje;
 import com.example.mensajesactividad.modelos.Usuario;
+import com.example.mensajesactividad.services.InputStreamVolleyRequest;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.snackbar.Snackbar;
 import com.google.firebase.analytics.FirebaseAnalytics;
@@ -57,8 +60,13 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.io.Serializable;
 import java.io.UnsupportedEncodingException;
+import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
@@ -69,7 +77,7 @@ import java.util.Map;
 
 
 
-public class MainActivity extends AppCompatActivity  {
+public class MainActivity extends AppCompatActivity implements DialogoArchivo.Datoaactualizar  {
 
     private RecyclerView recyclerView;
     private RecyclerView.Adapter mAdapter;
@@ -248,10 +256,22 @@ public class MainActivity extends AppCompatActivity  {
 
 
         botonadjuntar.setOnClickListener(new View.OnClickListener() {
+            @RequiresApi(api = Build.VERSION_CODES.O)
             @Override
             public void onClick(View v) {
                 DialogoArchivo dialogoarchivo=new  DialogoArchivo();
 
+                LocalDateTime ahora= LocalDateTime.now();
+                ZonedDateTime zdt = ahora.atZone(ZoneId.of("Europe/Madrid"));
+
+                DateTimeFormatter dtf=DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+                String dia=ahora.format(dtf);
+
+
+
+                //String vdia, String vchat_id, String vemisor, String vreceptor
+
+                dialogoarchivo.setValues(dia, michatid, usuarioemisor.getTelefono().toString(), usuarioreceptor.getTelefono().toString());
                 dialogoarchivo.show(getSupportFragmentManager(), " dialogoArchivo");
             }
         });
@@ -267,8 +287,80 @@ public class MainActivity extends AppCompatActivity  {
 
        buscarSiEsGrupo(michatid);
 
+        recyclerView.addOnItemTouchListener(
+                new RecyclerItemClickListener(this, recyclerView ,new RecyclerItemClickListener.OnItemClickListener() {
+
+                    @RequiresApi(api = Build.VERSION_CODES.O)
+                    @Override
+                    public void onItemClick(View view, int position) {
+                        System.out.println("click item");
+
+                        if (datosAmostrar.get(position).getRutaarchivo() instanceof  String) {
+
+                            descargarArchivo(datosAmostrar.get(position).getRutaarchivo().toString());
+                        }
+
+
+                    }
+
+                    @Override
+                    public void onLongItemClick(View view, int position) {
+
+                    }
+                })
+
+        );
+    }
+
+
+    public void descargarArchivo(String ruta) {
+        String name=ruta.substring(ruta.lastIndexOf("\\")+1);
+
+        String nuevaruta=ruta.substring(2).replace('\\', '/');
+
+        String rutamodificada="https://"+nuevaruta.replace("SRVWEB-01/inetpub/wwwroot/SmartChat", "smartchat.smartlabs.es");
+
+
+
+        System.out.println(rutamodificada);
+        //https://stackoverflow.com/questions/30498523/how-to-download-files-pdf-doc-etc-into-sdcard-and-open-the-file-using-voll
+        InputStreamVolleyRequest request = new InputStreamVolleyRequest(Request.Method.GET, rutamodificada,
+                new Response.Listener<byte[]>() {
+                    @Override
+                    public void onResponse(byte[] response) {
+                        // TODO handle the response
+                        try {
+                            if (response!=null) {
+
+                                FileOutputStream outputStream;
+
+                                outputStream = openFileOutput(name, Context.MODE_PRIVATE);
+                                outputStream.write(response);
+                                outputStream.close();
+                                Toast.makeText(MainActivity.this, "Download complete.", Toast.LENGTH_LONG).show();
+                            }
+                        } catch (Exception e) {
+                            // TODO Auto-generated catch block
+                            Log.d("KEY_ERROR", "UNABLE TO DOWNLOAD FILE");
+                            e.printStackTrace();
+                        }
+                    }
+                } ,new Response.ErrorListener() {
+
+            @Override
+            public void onErrorResponse(VolleyError error) {
+// TODO handle the error
+                error.printStackTrace();
+            }
+        }, null);
+        RequestQueue mRequestQueue = Volley.newRequestQueue(getApplicationContext(), new HurlStack());
+        mRequestQueue.add(request);
+
 
     }
+
+
+
 
 
 
@@ -492,6 +584,16 @@ public class MainActivity extends AppCompatActivity  {
                     for (int i = 0; i < jsonArray.length(); i++) {
                         JSONObject explrObject = jsonArray.getJSONObject(i);
                         Mensaje m=new Mensaje(explrObject.getString("CONTENIDO"), explrObject.getString("DIA").replace('T', ' '), explrObject.getString("TELEFONO"), explrObject.getString("NOMBRE"));
+                        JSONArray archivos=explrObject.getJSONArray("ARCHIVOS");
+
+                        for (int arc=0; arc< archivos.length(); arc++) {
+
+                            JSONObject archivodelmensaje=archivos.getJSONObject(arc);
+                            m.setRutaarchivo(archivodelmensaje.getString("RUTA").toString());
+                        }
+
+
+
 
 
                         if (!datosAmostrar.contains(m)) {
@@ -846,6 +948,13 @@ public class MainActivity extends AppCompatActivity  {
             DisplayMetrics displayMetrics = new DisplayMetrics();
             activity.getWindowManager().getDefaultDisplay().getMetrics(displayMetrics);
             return displayMetrics.heightPixels;
+        }
+    }
+
+    @Override
+    public void onNombreAActualizar(String s) {
+        if (s.equals("actualizar")){
+            cargarMensajesChat();
         }
     }
 }
