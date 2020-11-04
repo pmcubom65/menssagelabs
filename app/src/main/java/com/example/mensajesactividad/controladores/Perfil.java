@@ -1,4 +1,4 @@
-package com.example.mensajesactividad;
+package com.example.mensajesactividad.controladores;
 
 import androidx.annotation.Nullable;
 import androidx.annotation.RequiresApi;
@@ -22,9 +22,9 @@ import android.util.Log;
 import android.view.Gravity;
 import android.view.View;
 import android.webkit.MimeTypeMap;
+import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.android.volley.AuthFailureError;
 import com.android.volley.NetworkResponse;
@@ -38,7 +38,11 @@ import com.android.volley.toolbox.HttpHeaderParser;
 import com.android.volley.toolbox.StringRequest;
 import com.android.volley.toolbox.Volley;
 import com.bumptech.glide.Glide;
-import com.example.mensajesactividad.modelos.Usuario;
+import com.example.mensajesactividad.MySingleton;
+import com.example.mensajesactividad.R;
+import com.example.mensajesactividad.services.CrearRequests;
+import com.example.mensajesactividad.services.RequestHandlerInterface;
+import com.example.mensajesactividad.services.Rutas;
 import com.google.android.material.snackbar.Snackbar;
 
 import org.json.JSONException;
@@ -51,19 +55,19 @@ import java.io.UnsupportedEncodingException;
 import java.util.HashMap;
 import java.util.Map;
 
-public class Perfil extends AppCompatActivity {
+public class Perfil extends AppCompatActivity implements RequestHandlerInterface {
 
     TextView tnombre;
     TextView ttelefono;
 
-    String url = "http://10.0.2.2:54119/api/smartchat/listadochats";
 
-    String imagen_url="http://10.0.2.2:54119/api/smartchat/almacenarimagen";
+    String imagen_url = Rutas.subir_imagen_url;
 
 
-    String buscarusuario="http://10.0.2.2:54119/api/smartchat/buscarusuario";
+    String buscarusuario = "http://10.0.2.2:54119/api/smartchat/buscarusuario";
 
     RequestQueue requestQueue;
+    RequestHandlerInterface rh = this;
     private Toolbar toolbar;
     public static final int PICK_IMAGE = 1;
 
@@ -73,6 +77,8 @@ public class Perfil extends AppCompatActivity {
     Bitmap bitmap;
 
     String idusuario;
+
+    Button subirimagenbutton;
 
 
     @Override
@@ -97,19 +103,20 @@ public class Perfil extends AppCompatActivity {
         ttelefono.setText("TELEFONO " + Autenticacion.numerotelefono);
         requestQueue = Volley.newRequestQueue(getApplicationContext());
 
+        subirimagenbutton=findViewById(R.id.subirimagen);
+
         toolbar = findViewById(R.id.mitoolbarperfil);
         toolbar.setLogo(R.drawable.smart_prod);
         setSupportActionBar(toolbar);
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
-
+        buscarFotoUsuario(Autenticacion.idpropietario);
 
   /*      Glide.with(getApplicationContext()).load(Uri.parse(null))
                 .placeholder(R.drawable.account_circle)
                 .into(iv);*/
 
-   }
-
+    }
 
 
     public void subirimagenonclick(View view) {
@@ -180,7 +187,6 @@ public class Perfil extends AppCompatActivity {
             Uri uri = data.getData();
 
 
-
             Bitmap bitmap = null;
             try {
                 bitmap = MediaStore.Images.Media.getBitmap(this.getContentResolver(), uri);
@@ -192,24 +198,42 @@ public class Perfil extends AppCompatActivity {
                 e.printStackTrace();
             }
 
-            String imgString = ","+Base64.encodeToString(getBytesFromBitmap(bitmap),
+            String imgString = "," + Base64.encodeToString(getBytesFromBitmap(bitmap),
                     Base64.DEFAULT);
-
 
 
             String selectedImagePath = getPath(uri);
             iv.setImageURI(uri);
 
 
-            String filename=uri.getPath().substring(uri.getPath().lastIndexOf("/")+1);
+            String filename = uri.getPath().substring(uri.getPath().lastIndexOf("/") + 1);
 
-            String extension=getMimeType(getApplicationContext(), uri);
+            String extension = getMimeType(getApplicationContext(), uri);
 
-            buscarUsuario(Autenticacion.numerotelefono, imgString, extension);
+            //     buscarUsuario(Autenticacion.numerotelefono, imgString, extension);
 
+        //    buscarFotoUsuario(Autenticacion.idpropietario);
 
+            subirImagen(imgString, Autenticacion.idpropietario, extension);
 
         }
+    }
+
+
+    public void buscarFotoUsuario(String id) {
+        System.out.println("buscando la foto");
+        JSONObject jsonBody = new JSONObject();
+
+        try {
+            jsonBody.put("ID", id);
+
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+
+        CrearRequests cr = new CrearRequests(Rutas.urlbuscarfoto, jsonBody, rh);
+
+        MySingleton.getInstance(getBaseContext()).addToRequest(cr.crearRequest());
     }
 
 
@@ -244,7 +268,6 @@ public class Perfil extends AppCompatActivity {
     }
 
 
-
     // convert from bitmap to byte array
     public byte[] getBytesFromBitmap(Bitmap bitmap) {
         ByteArrayOutputStream stream = new ByteArrayOutputStream();
@@ -253,11 +276,31 @@ public class Perfil extends AppCompatActivity {
     }
 
 
-
-
     private void subirImagen(String imagen, String id, String extension) {
 
-        StringRequest request = new StringRequest(Request.Method.POST, imagen_url, new Response.Listener<String>() {
+
+        JSONObject jsonBody=new JSONObject();
+
+        try {
+            jsonBody.put("ID", id);
+            jsonBody.put("IMAGEN", imagen);
+            jsonBody.put("EXTENSION", extension);
+            jsonBody.put("DIA", "");
+            jsonBody.put("CHAT_ID", "");
+            jsonBody.put("EMISOR", Autenticacion.numerotelefono);
+            jsonBody.put("RECEPTOR", "");
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+
+        CrearRequests cr = new CrearRequests(imagen_url, jsonBody, rh);
+
+        MySingleton.getInstance(getBaseContext()).addToRequest(cr.crearRequest());
+
+
+
+
+    /*    StringRequest request = new StringRequest(Request.Method.POST, imagen_url, new Response.Listener<String>() {
             @RequiresApi(api = Build.VERSION_CODES.O)
             @Override
             public void onResponse(String response) {
@@ -274,7 +317,7 @@ public class Perfil extends AppCompatActivity {
                     progressDialog.dismiss();
 
 
-                }catch (JSONException e) {
+                } catch (JSONException e) {
 
                     System.out.println(e.toString());
                 }
@@ -351,7 +394,7 @@ public class Perfil extends AppCompatActivity {
                     valores.put("RECEPTOR", vreceptor);*/
 
 
-                } catch (JSONException e) {
+            /*    } catch (JSONException e) {
                     e.printStackTrace();
                 }
 
@@ -384,12 +427,9 @@ public class Perfil extends AppCompatActivity {
 
             }
         });
-        MySingleton.getInstance(getBaseContext()).addToRequest(request);
+        MySingleton.getInstance(getBaseContext()).addToRequest(request);*/
 
     }
-
-
-
 
 
     private void buscarUsuario(String telefonobuscar, String imagen, String extension) {
@@ -408,7 +448,7 @@ public class Perfil extends AppCompatActivity {
 
                     subirImagen(imagen, idusuario, extension);
 
-                }catch (JSONException e) {
+                } catch (JSONException e) {
 
                     Snackbar.make((View) findViewById(R.id.linearcontactos), "El usuario no está registrado", Snackbar.LENGTH_LONG).show();
                 }
@@ -470,7 +510,7 @@ public class Perfil extends AppCompatActivity {
 
                 try {
                     jsonBody.put("telefono", telefonobuscar);
-                    System.out.println("Busco este telefono "+jsonBody.toString());
+                    System.out.println("Busco este telefono " + jsonBody.toString());
 
                 } catch (JSONException e) {
                     e.printStackTrace();
@@ -531,4 +571,59 @@ public class Perfil extends AppCompatActivity {
         return extension;
     }
 
+    @Override
+    public void onResponse(String response, String url) {
+
+        if (url.equals(Rutas.urlbuscarfoto)) {
+            try {
+                JSONObject respuesta = new JSONObject(response);
+
+                String nuevaruta = respuesta.getString("RUTA").toString();
+
+                if (nuevaruta.length()>0) {
+                    nuevaruta=nuevaruta.replace('\\', '/');
+                    String ruta="https://smartchat.smartlabs.es/"+nuevaruta.substring(nuevaruta.lastIndexOf("img"));
+
+                    System.out.println(ruta);
+
+
+
+                    Glide.with(getApplicationContext()).load(ruta)
+                            .placeholder(R.drawable.account_circle)
+                            .into(iv);
+                }
+
+
+            } catch (JSONException   e) {
+                e.printStackTrace();
+
+            }
+
+
+        }else if (url.equals(Rutas.subir_imagen_url)) {
+
+
+            try {
+
+                JSONObject respuesta = new JSONObject(response);
+
+                String id = respuesta.getString("GRABADO").toString();
+
+                tv.setVisibility(View.VISIBLE);
+                tv.setText("FOTO SUBIDA CON ÉXITO");
+                subirimagenbutton.setVisibility(View.GONE);
+
+
+                progressDialog.dismiss();
+
+
+            } catch (JSONException e) {
+
+                System.out.println(e.toString());
+            }
+
+            System.out.println(response);
+
+        }
+    }
 }

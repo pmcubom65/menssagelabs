@@ -13,6 +13,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.RequiresApi;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.example.mensajesactividad.controladores.Autenticacion;
 import com.example.mensajesactividad.modelos.Mensaje;
 
 import java.util.ArrayList;
@@ -70,7 +71,7 @@ public class MyAdapter extends RecyclerView.Adapter<MyAdapter.MyViewHolder> {
 
         LinearLayout.LayoutParams misparametros=new LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT);
         misparametros.setMarginStart(440);
-        String telefono=Autenticacion.numerotelefono;
+        String telefono= Autenticacion.numerotelefono;
 
         if (!datos.get(position).getTelefono().toString().equals(telefono)) {
             holder.mitextview.setLayoutParams(misparametros);

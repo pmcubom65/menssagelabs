@@ -1,4 +1,4 @@
-package com.example.mensajesactividad;
+package com.example.mensajesactividad.controladores;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.RequiresApi;
@@ -19,10 +19,11 @@ import android.database.Cursor;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
 import android.provider.ContactsContract;
 import android.telephony.SmsManager;
 
-import android.text.Layout;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
@@ -31,18 +32,11 @@ import android.widget.EditText;
 import android.widget.Toast;
 
 
-import com.android.volley.AuthFailureError;
-import com.android.volley.NetworkResponse;
-import com.android.volley.Request;
 import com.android.volley.RequestQueue;
-import com.android.volley.Response;
-import com.android.volley.RetryPolicy;
-import com.android.volley.ServerError;
-import com.android.volley.VolleyError;
-import com.android.volley.toolbox.HttpHeaderParser;
-import com.android.volley.toolbox.JsonObjectRequest;
-import com.android.volley.toolbox.StringRequest;
 import com.android.volley.toolbox.Volley;
+import com.example.mensajesactividad.MostrarContactos;
+import com.example.mensajesactividad.MySingleton;
+import com.example.mensajesactividad.R;
 import com.example.mensajesactividad.modelos.Usuario;
 import com.example.mensajesactividad.services.CrearRequests;
 import com.example.mensajesactividad.services.RequestHandlerInterface;
@@ -52,19 +46,14 @@ import com.google.android.gms.tasks.Task;
 import com.google.android.material.snackbar.Snackbar;
 import com.google.firebase.iid.FirebaseInstanceId;
 import com.google.firebase.iid.InstanceIdResult;
-import com.google.gson.JsonObject;
 
 import org.json.JSONException;
 import org.json.JSONObject;
 
 
-import java.io.IOException;
 import java.io.Serializable;
-import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Map;
 import java.util.Set;
 
 
@@ -89,17 +78,19 @@ public class Autenticacion extends AppCompatActivity  implements RequestHandlerI
     private static final int BIND_ACCESSIBILITY_SERVICE=1;
     private static final int READ_SMS_PERMISSIONS_REQUEST = 1;
     private static final int SEND_SMS_PERMISSIONS_REQUEST=1;
-    static String numerotelefono;
-
+    public static String numerotelefono;
     String urlcrearusuario= Rutas.urlcrearusuario;
     String urlmandarsms=Rutas.urlmandarsms;
+    public static String nombredelemisor;
+    public static String tokenorigen;
 
-
-    static String nombredelemisor;
-    static String tokenorigen;
+    public static String idpropietario;
     String appSmsToken;
-
     ArrayList<Usuario> listacontactos;
+
+
+
+
 
     @RequiresApi(api = Build.VERSION_CODES.O)
     @Override
@@ -327,7 +318,7 @@ public class Autenticacion extends AppCompatActivity  implements RequestHandlerI
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.SEND_SMS)
                 != PackageManager.PERMISSION_GRANTED) {
 
-            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.SEND_SMS}, SEND_SMS_PERMISSIONS_REQUEST);
+            ActivityCompat.requestPermissions(Autenticacion.this, new String[]{Manifest.permission.SEND_SMS}, SEND_SMS_PERMISSIONS_REQUEST);
 
         }else {
             smsToken();
@@ -381,6 +372,8 @@ public class Autenticacion extends AppCompatActivity  implements RequestHandlerI
         listacontactos.addAll(set);
 
 
+    //    getFotoUsuario();
+
         getPermissionToSendSMS();
 
 
@@ -398,13 +391,13 @@ public class Autenticacion extends AppCompatActivity  implements RequestHandlerI
             intent.putExtra("BUNDLE2",args);
             startActivity(intent);
 
-        }else {
+        }else  {
             SmsManager smsManager = SmsManager.getDefault();
 
 
 
-            smsManager.sendTextMessage(numerotelefono, null, "Hola!, autenticación correcta", null, null);
-            smsManager.sendTextMessage(numerotelefono, null, appSmsToken, null, null);
+         //   smsManager.sendTextMessage(numerotelefono, null, "Hola!, autenticación correcta", null, null);
+      //      smsManager.sendTextMessage(numerotelefono, null, appSmsToken, null, null);
             appSmsToken= smsManager.createAppSpecificSmsToken(createSmsTokenPendingIntent());
             mandarSmsEnlaApi(numerotelefono);
         }
@@ -422,7 +415,7 @@ public class Autenticacion extends AppCompatActivity  implements RequestHandlerI
         Bundle args = new Bundle();
         args.putSerializable("ARRAYLIST",(Serializable) listacontactos);
         intent.putExtra("BUNDLE",args);
-  //      startActivity(intent);
+       startActivity(intent);
         return PendingIntent.getActivity(this, 1234, new Intent(this, MostrarContactos.class),0);
     }
 
@@ -445,7 +438,13 @@ public class Autenticacion extends AppCompatActivity  implements RequestHandlerI
                 Manifest.permission.SEND_SMS)
                 == PackageManager.PERMISSION_GRANTED){
 
-            smsToken();
+            new Handler(Looper.getMainLooper()).postDelayed(new Runnable() {
+                @Override
+                public void run() {
+                    smsToken();
+                }
+            }, 3000);
+
 
         }else {
             String salida="Permisos Rechazados";
@@ -608,13 +607,15 @@ public class Autenticacion extends AppCompatActivity  implements RequestHandlerI
 
 
 
-    private void guardarPreferencias(String telefono, String nombre, String token){
+    private void guardarPreferencias(String telefono, String nombre, String token, String id){
         SharedPreferences preferences=getSharedPreferences("com.example.mensajes.credenciales", Context.MODE_PRIVATE);
         SharedPreferences.Editor editor=preferences.edit();
         editor.putString("telefono", telefono);
         editor.putString("token", token);
         editor.putString("nombre", nombre);
+        editor.putString("id", id);
         System.out.println("guardando preferencias");
+
         editor.commit();
 
     }
@@ -627,11 +628,14 @@ public class Autenticacion extends AppCompatActivity  implements RequestHandlerI
         String token=preferences.getString("token", "");
         String nombre=preferences.getString("nombre", "");
 
+        String id=preferences.getString("id", "");
+
         if (telefono.length()>0 && token.length()>0 && nombre.length()>0){
             System.out.println("preferencias funcionan");
             numerotelefono=telefono;
             nombredelemisor=nombre;
             tokenorigen=token;
+            idpropietario=id;
             haypreferencias=true;
             getContactList();
         }
@@ -646,19 +650,21 @@ public class Autenticacion extends AppCompatActivity  implements RequestHandlerI
             try {
                 JSONObject respuesta = new JSONObject(response);
 
-                String codigo = respuesta.getString("codigo");
-                String mensaje = respuesta.getString("mensaje");
+                String idusuario=respuesta.getString("id").toString();
 
-                Snackbar.make(findViewById(R.id.autenticacionlayout), response.toString(), Snackbar.LENGTH_LONG).show();
+                guardarPreferencias(Autenticacion.numerotelefono, Autenticacion.nombredelemisor, Autenticacion.tokenorigen, idusuario);
+
+                System.out.println("grabado");
+                getContactPermission();
+
+
 
 
 
             } catch (JSONException e) {
                 e.printStackTrace();
-                guardarPreferencias(Autenticacion.numerotelefono, Autenticacion.nombredelemisor, Autenticacion.tokenorigen);
 
-                System.out.println("grabado");
-                getContactPermission();
+                Snackbar.make(findViewById(R.id.autenticacionlayout), response.toString(), Snackbar.LENGTH_LONG).show();
 
             }
 
@@ -681,4 +687,9 @@ public class Autenticacion extends AppCompatActivity  implements RequestHandlerI
 
         System.out.println(response);
     }
+
+
+
+
+
 }

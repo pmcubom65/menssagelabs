@@ -7,7 +7,6 @@ import android.content.Intent;
 import android.os.Build;
 import android.os.Bundle;
 import android.util.Log;
-import android.view.View;
 
 import androidx.annotation.RequiresApi;
 import androidx.core.app.RemoteInput;
@@ -25,10 +24,13 @@ import com.android.volley.toolbox.HttpHeaderParser;
 import com.android.volley.toolbox.JsonObjectRequest;
 import com.android.volley.toolbox.StringRequest;
 import com.android.volley.toolbox.Volley;
+import com.example.mensajesactividad.controladores.Autenticacion;
 import com.example.mensajesactividad.modelos.Grupo;
 import com.example.mensajesactividad.modelos.Mensaje;
 import com.example.mensajesactividad.modelos.Usuario;
-import com.google.android.material.snackbar.Snackbar;
+import com.example.mensajesactividad.services.CrearRequests;
+import com.example.mensajesactividad.services.RequestHandlerInterface;
+import com.example.mensajesactividad.services.Rutas;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -45,14 +47,15 @@ import java.util.Map;
 
 
 
-public class MyBroadcastReceiver extends BroadcastReceiver {
+public class MyBroadcastReceiver extends BroadcastReceiver implements RequestHandlerInterface {
 
     String KEY_REPLY = "key_reply";
-  //  String urlcrearmensaje="http://10.0.2.2/api/crearmensaje.php";
 
-    String urlcrearmensaje="http://10.0.2.2:54119/api/smartchat/crearmensaje";
+
+    String urlcrearmensaje= Rutas.rutacrearmensaje;
     String id_mensaje;
     RequestQueue requestQueue;
+    RequestHandlerInterface rh = this;
     String chat_id;
     Usuario usuarioemisor;
     Usuario usuarioreceptor;
@@ -60,10 +63,13 @@ public class MyBroadcastReceiver extends BroadcastReceiver {
     String url="https://fcm.googleapis.com/fcm/send";
 
 
-    String buscargrupo="http://10.0.2.2:54119/api/smartchat/buscarGrupoPorID";
+    String buscargrupo=Rutas.rutabuscargrupo;
 
     boolean esgrupo=false;
     Grupo grupo;
+    Context context;
+
+
 
     private static final int notificationid=001;
 
@@ -77,6 +83,7 @@ public class MyBroadcastReceiver extends BroadcastReceiver {
         contenido = getMessageText(intent);
         chat_id=intent.getStringExtra("chat_id");
 
+        context=context.getApplicationContext();
 
         buscarSiEsGrupo(chat_id, context);
         LocalDateTime ahora= LocalDateTime.now();
@@ -128,8 +135,27 @@ public class MyBroadcastReceiver extends BroadcastReceiver {
 
     public void grabarMensaje(Mensaje m, String id, Context context){
 
+        JSONObject jsonBody=new JSONObject();
 
-        StringRequest request = new StringRequest(Request.Method.POST, urlcrearmensaje, new Response.Listener<String>() {
+        try {
+            jsonBody.put("contenido", m.getContenido().toString());
+            jsonBody.put("dia", m.getFecha().toString());
+            jsonBody.put("usuarioid", m.getTelefono().toString());
+            jsonBody.put("chatid", chat_id);
+            jsonBody.put("idusuariorecepcion", usuarioreceptor.getTelefono().toString());
+
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+
+        CrearRequests cr = new CrearRequests(Rutas.rutacrearmensaje, jsonBody, rh);
+
+        MySingleton.getInstance(context).addToRequest(cr.crearRequest());
+
+
+
+
+      /*  StringRequest request = new StringRequest(Request.Method.POST, urlcrearmensaje, new Response.Listener<String>() {
             @RequiresApi(api = Build.VERSION_CODES.O)
             @Override
             public void onResponse(String response) {
@@ -250,7 +276,7 @@ public class MyBroadcastReceiver extends BroadcastReceiver {
 
             }
         });
-        MySingleton.getInstance(context).addToRequest(request);
+        MySingleton.getInstance(context).addToRequest(request);*/
     //    requestQueue.add(request);
 
 
@@ -299,25 +325,9 @@ public class MyBroadcastReceiver extends BroadcastReceiver {
 
     public void notificationFirebase(Context context)   {
 
-        //https://stackoverflow.com/questions/37731275/display-specific-activity-when-firebase-notification-is-tapped/38195369
-
-
- /*       Bundle bundle = new Bundle();
-        bundle.putString(FirebaseAnalytics.Param.ITEM_ID, michatid);
-        //     bundle.putString(FirebaseAnalytics.Param.ITEM_NAME, name);
-        bundle.putString(FirebaseAnalytics.Param.CONTENT_TYPE, "String");
-        mFirebaseAnalytics.logEvent(FirebaseAnalytics.Event.SELECT_CONTENT, bundle);*/
-
-
-
-        //our json object
         JSONObject mainObj=new JSONObject();
         String token="";
         try {
-
-
-            //      String tokensegundo="dbMjzbyeRvK7H7X0JPFRml:APA91bGnxgY1r1waKY2Knmbc5kiSjtK12Z_IJkDmjKsJ7YuDvSN5w6phiWoIhGbTeEMOx89_78FUbluUr9CxMdb-vhnpp61IYwaJipBh4m0O66n0SSDlKl4hQT57uhdllhmL6rJacmFB";
-            //       mainObj.put("to", tokenaenviarlosmensajes);
 
             mainObj.put("to", usuarioreceptor.getToken().toString());
             JSONObject notificationObj=new JSONObject();
@@ -336,14 +346,7 @@ public class MyBroadcastReceiver extends BroadcastReceiver {
             jData.put("telefonoemisor", usuarioemisor.getTelefono().toString());
             jData.put("telefonoreceptor", usuarioreceptor.getTelefono().toString());
 
-     /*       notificationObj.put("title", mensaje.getContenido());
 
-            notificationObj.put("body", mensaje.getContenido());
-            notificationObj.put("sound", "default");
-            notificationObj.put("click_action", "CLICK_ACTION");*/
-
-
-            //       mainObj.put("notification", notificationObj);
             mainObj.put("priority","high");
 
             mainObj.put("data", jData);
@@ -393,7 +396,24 @@ public class MyBroadcastReceiver extends BroadcastReceiver {
 
     private void buscarSiEsGrupo(String idc, Context context) {
 
-        StringRequest request = new StringRequest(Request.Method.POST, buscargrupo, new Response.Listener<String>() {
+        JSONObject jsonBody=new JSONObject();
+
+        try {
+            jsonBody.put("ID", idc);
+
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+
+        CrearRequests cr = new CrearRequests(Rutas.rutabuscargrupo, jsonBody, rh);
+
+        MySingleton.getInstance(context).addToRequest(cr.crearRequest());
+
+
+
+
+
+     /*   StringRequest request = new StringRequest(Request.Method.POST, buscargrupo, new Response.Listener<String>() {
             @RequiresApi(api = Build.VERSION_CODES.O)
             @Override
             public void onResponse(String response) {
@@ -522,8 +542,79 @@ public class MyBroadcastReceiver extends BroadcastReceiver {
 
             }
         });
-        MySingleton.getInstance(context).addToRequest(request);
+        MySingleton.getInstance(context).addToRequest(request);*/
 
     }
 
+    @Override
+    public void onResponse(String response, String url) {
+
+        if (url.equals(Rutas.rutacrearmensaje)){
+
+
+            try {
+                JSONObject jsnobject = new JSONObject(response.toString());
+
+                String contenido = jsnobject.getString("contenido");
+
+                System.out.println("respuesta");
+                System.out.println(response);
+                NotificationManager notificationManager = (NotificationManager)context.getSystemService(Context.NOTIFICATION_SERVICE);
+                notificationManager.cancel(MyBroadcastReceiver.notificationid);
+
+
+
+                notificationFirebase(context);
+
+
+
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+
+            System.out.println("mensaje grabado "+ response.toString());
+        } else if (url.equals(Rutas.rutabuscargrupo)){
+
+
+            try {
+
+                JSONObject respuesta = new JSONObject(response);
+
+                String iddelgrupo = respuesta.getString("ID").toString();
+                String nombregrupo = respuesta.getString("NOMBRE").toString();
+
+
+                System.out.println("grupo encontrado");
+                esgrupo=true;
+
+                //       grupo=(Grupo) llegada.getSerializableExtra("grupoinfo");
+
+
+
+                JSONArray jsonArray=respuesta.getJSONArray("MIEMBROS");
+                JSONObject e = null;
+                ArrayList<Usuario> usuariogrupo=new ArrayList<>();
+                for (int j=0; j < jsonArray.length(); j++) {
+                    e = jsonArray.getJSONObject(j);
+
+                    Usuario usuariomiembro=new Usuario(e.getString("TELEFONO").toString(), e.getString("NOMBRE").toString(), null, e.getString("TOKEN").toString());
+                    usuariogrupo.add(usuariomiembro);
+                }
+
+                grupo=new Grupo(nombregrupo, iddelgrupo, "", usuariogrupo);
+
+            }catch (JSONException e) {
+
+                System.out.println("No es grupo");
+            }
+
+            System.out.println(response);
+
+
+
+
+
+        }
+
+    }
 }

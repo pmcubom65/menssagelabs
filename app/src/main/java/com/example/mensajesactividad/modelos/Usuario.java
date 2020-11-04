@@ -17,6 +17,7 @@ public class Usuario implements Serializable {
     private String nombre;
     private String uri;
     private String token;
+    private String id;
 
 
     public Usuario(String telefono, String nombre, String uri) {
@@ -30,6 +31,25 @@ public class Usuario implements Serializable {
         this.nombre = nombre;
         this.uri=uri;
         this.token=token;
+    }
+
+
+
+    public Usuario(String telefono, String nombre, String uri, String token, String id) {
+        this.telefono = telefono;
+        this.nombre = nombre;
+        this.uri=uri;
+        this.token=token;
+        this.id=id;
+    }
+
+
+    public String getId() {
+        return id;
+    }
+
+    public void setId(String id) {
+        this.id = id;
     }
 
     public String getToken() {

@@ -5,7 +5,6 @@ import androidx.appcompat.app.AppCompatActivity;
 import android.content.Intent;
 import android.os.Bundle;
 
-import com.example.mensajesactividad.Autenticacion;
 import com.example.mensajesactividad.R;
 
 public class Presentacion extends AppCompatActivity {

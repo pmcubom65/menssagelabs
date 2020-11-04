@@ -4,7 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".Perfil"
+    tools:context=".controladores.Perfil"
     android:orientation="vertical"
 
     android:background="#ffffff"
@@ -62,22 +62,23 @@
         android:layout_height="wrap_content"
         android:background="@color/colorPrimary"
         android:onClick="subirimagenonclick"
+        android:padding="10dp"
         android:text="Subir Imagen Perfil"
-        android:textSize="18sp"
         android:textColor="#ffffff"
+        android:textSize="18sp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.498"
+        app:layout_constraintHorizontal_bias="0.524"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="@+id/mitoolbarperfil"
-        app:layout_constraintVertical_bias="0.329"
-        android:padding="10dp"/>
+        app:layout_constraintVertical_bias="0.822" />
 
     <TextView
         android:id="@+id/ruta"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:textSize="18sp"
+        android:textColor="#000000"
         android:textStyle="bold"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
@@ -96,9 +97,10 @@
         app:civ_border_width="2dp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.498"
+        app:layout_constraintHorizontal_bias="0.497"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/ruta"
+        app:layout_constraintVertical_bias="0.0"
         tools:srcCompat="@tools:sample/avatars" />
 
 

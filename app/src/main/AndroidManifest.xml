@@ -27,11 +27,11 @@
         <activity android:name=".MostrarGrupos"
             android:parentActivityName=".MostrarContactos"></activity>
         <activity
-            android:name=".Perfil"
+            android:name=".controladores.Perfil"
             android:parentActivityName=".MostrarContactos" />
         <activity android:name=".MostrarListaChats"
             android:parentActivityName=".MostrarContactos"/>
-        <activity android:name=".Autenticacion" />
+        <activity android:name=".controladores.Autenticacion" />
 
         <meta-data
             android:name="com.google.firebase.messaging.default_notification_channel_id"
