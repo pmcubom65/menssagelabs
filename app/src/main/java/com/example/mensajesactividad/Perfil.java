@@ -8,6 +8,7 @@ import androidx.appcompat.widget.Toolbar;
 import android.app.Activity;
 import android.app.ProgressDialog;
 import android.content.ContentResolver;
+import android.content.Context;
 import android.content.Intent;
 import android.database.Cursor;
 import android.graphics.Bitmap;
@@ -20,6 +21,7 @@ import android.util.Base64;
 import android.util.Log;
 import android.view.Gravity;
 import android.view.View;
+import android.webkit.MimeTypeMap;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -35,6 +37,7 @@ import com.android.volley.VolleyError;
 import com.android.volley.toolbox.HttpHeaderParser;
 import com.android.volley.toolbox.StringRequest;
 import com.android.volley.toolbox.Volley;
+import com.bumptech.glide.Glide;
 import com.example.mensajesactividad.modelos.Usuario;
 import com.google.android.material.snackbar.Snackbar;
 
@@ -52,7 +55,7 @@ public class Perfil extends AppCompatActivity {
 
     TextView tnombre;
     TextView ttelefono;
-    TextView tchats;
+
     String url = "http://10.0.2.2:54119/api/smartchat/listadochats";
 
     String imagen_url="http://10.0.2.2:54119/api/smartchat/almacenarimagen";
@@ -80,13 +83,15 @@ public class Perfil extends AppCompatActivity {
         tv = findViewById(R.id.ruta);
         iv = findViewById(R.id.imageView4);
 
+        tv.setVisibility(View.GONE);
+
         tnombre = findViewById(R.id.perfilnombre);
         ttelefono = findViewById(R.id.perfiltelefono);
-        tchats = findViewById(R.id.perfilchats);
+
 
         tnombre.setGravity(Gravity.CENTER_VERTICAL | Gravity.CENTER_HORIZONTAL);
         ttelefono.setGravity(Gravity.CENTER_VERTICAL | Gravity.CENTER_HORIZONTAL);
-        tchats.setGravity(Gravity.CENTER_VERTICAL | Gravity.CENTER_HORIZONTAL);
+
 
         tnombre.setText("NOMBRE " + Autenticacion.nombredelemisor);
         ttelefono.setText("TELEFONO " + Autenticacion.numerotelefono);
@@ -96,6 +101,12 @@ public class Perfil extends AppCompatActivity {
         toolbar.setLogo(R.drawable.smart_prod);
         setSupportActionBar(toolbar);
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+
+
+
+  /*      Glide.with(getApplicationContext()).load(Uri.parse(null))
+                .placeholder(R.drawable.account_circle)
+                .into(iv);*/
 
    }
 
@@ -168,9 +179,15 @@ public class Perfil extends AppCompatActivity {
             }
             Uri uri = data.getData();
 
+
+
             Bitmap bitmap = null;
             try {
                 bitmap = MediaStore.Images.Media.getBitmap(this.getContentResolver(), uri);
+
+                Glide.with(getApplicationContext()).load(bitmap)
+                        .placeholder(R.drawable.account_circle)
+                        .into(iv);
             } catch (IOException e) {
                 e.printStackTrace();
             }
@@ -183,7 +200,12 @@ public class Perfil extends AppCompatActivity {
             String selectedImagePath = getPath(uri);
             iv.setImageURI(uri);
 
-            buscarUsuario(Autenticacion.numerotelefono, imgString);
+
+            String filename=uri.getPath().substring(uri.getPath().lastIndexOf("/")+1);
+
+            String extension=getMimeType(getApplicationContext(), uri);
+
+            buscarUsuario(Autenticacion.numerotelefono, imgString, extension);
 
 
 
@@ -233,7 +255,7 @@ public class Perfil extends AppCompatActivity {
 
 
 
-    private void subirImagen(String imagen, String id) {
+    private void subirImagen(String imagen, String id, String extension) {
 
         StringRequest request = new StringRequest(Request.Method.POST, imagen_url, new Response.Listener<String>() {
             @RequiresApi(api = Build.VERSION_CODES.O)
@@ -245,6 +267,9 @@ public class Perfil extends AppCompatActivity {
                     JSONObject respuesta = new JSONObject(response);
 
                     String id = respuesta.getString("GRABADO").toString();
+
+                    tv.setVisibility(View.VISIBLE);
+                    tv.setText("FOTO SUBIDA CON ÉXITO");
 
                     progressDialog.dismiss();
 
@@ -312,6 +337,18 @@ public class Perfil extends AppCompatActivity {
                 try {
                     jsonBody.put("ID", id);
                     jsonBody.put("IMAGEN", imagen);
+                    jsonBody.put("EXTENSION", extension);
+                    jsonBody.put("DIA", "");
+                    jsonBody.put("CHAT_ID", "");
+                    jsonBody.put("EMISOR", Autenticacion.numerotelefono);
+                    jsonBody.put("RECEPTOR", "");
+
+
+
+            /*        valores.put("DIA", vdia);
+                    valores.put("CHAT_ID", vchat_id);
+                    valores.put("EMISOR", vemisor);
+                    valores.put("RECEPTOR", vreceptor);*/
 
 
                 } catch (JSONException e) {
@@ -355,7 +392,7 @@ public class Perfil extends AppCompatActivity {
 
 
 
-    private void buscarUsuario(String telefonobuscar, String imagen) {
+    private void buscarUsuario(String telefonobuscar, String imagen, String extension) {
 
         StringRequest request = new StringRequest(Request.Method.POST, buscarusuario, new Response.Listener<String>() {
             @RequiresApi(api = Build.VERSION_CODES.O)
@@ -369,7 +406,7 @@ public class Perfil extends AppCompatActivity {
                     idusuario = respuesta.getString("ID").toString();
                     System.out.println("usuario encontrado");
 
-                    subirImagen(imagen, idusuario);
+                    subirImagen(imagen, idusuario, extension);
 
                 }catch (JSONException e) {
 
@@ -472,6 +509,26 @@ public class Perfil extends AppCompatActivity {
         //    requestQueue.add(request);
 
 
+    }
+
+
+    public static String getMimeType(Context context, Uri uri) {
+        String extension;
+
+        //Check uri format to avoid null
+        if (uri.getScheme().equals(ContentResolver.SCHEME_CONTENT)) {
+            //If scheme is a content
+            final MimeTypeMap mime = MimeTypeMap.getSingleton();
+            extension = mime.getExtensionFromMimeType(context.getContentResolver().getType(uri));
+
+        } else {
+            //If scheme is a File
+            //This will replace white spaces with %20 and also other special characters. This will avoid returning null values on file name with spaces and special characters.
+            extension = MimeTypeMap.getFileExtensionFromUrl(Uri.fromFile(new File(uri.getPath())).toString());
+
+        }
+
+        return extension;
     }
 
 }

@@ -34,6 +34,8 @@ public class CrearRequests {
     String value;
     RequestHandlerInterface rh;
 
+
+
     public CrearRequests(String url, JSONObject body, RequestHandlerInterface rh){
         this.url = url;
         this.body = body;
@@ -48,7 +50,8 @@ public class CrearRequests {
             public void onResponse(String response) {
 
                 if (rh!=null) {
-                    rh.onResponse(response);
+
+                    rh.onResponse(response, getUrl());
                 }
 
 
@@ -82,7 +85,7 @@ public class CrearRequests {
                 }
 
                 if (rh!=null) {
-                    rh.onResponse(error.toString());
+                    rh.onResponse(error.toString(), getUrl());
                 }
             }
         }) {
@@ -155,5 +158,14 @@ public class CrearRequests {
        return request;
 
 
+    }
+
+
+    public String getUrl() {
+        return url;
+    }
+
+    public void setUrl(String url) {
+        this.url = url;
     }
 }

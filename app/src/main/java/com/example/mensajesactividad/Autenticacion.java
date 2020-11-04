@@ -44,6 +44,9 @@ import com.android.volley.toolbox.JsonObjectRequest;
 import com.android.volley.toolbox.StringRequest;
 import com.android.volley.toolbox.Volley;
 import com.example.mensajesactividad.modelos.Usuario;
+import com.example.mensajesactividad.services.CrearRequests;
+import com.example.mensajesactividad.services.RequestHandlerInterface;
+import com.example.mensajesactividad.services.Rutas;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.android.material.snackbar.Snackbar;
@@ -66,7 +69,7 @@ import java.util.Set;
 
 
 
-public class Autenticacion extends AppCompatActivity  {
+public class Autenticacion extends AppCompatActivity  implements RequestHandlerInterface {
 
     Button botonempezar;
 
@@ -76,6 +79,7 @@ public class Autenticacion extends AppCompatActivity  {
 
     EditText ponernombre;
     RequestQueue requestQueue;
+    RequestHandlerInterface rh = this;
 
     Boolean haypreferencias=false;
 
@@ -87,8 +91,8 @@ public class Autenticacion extends AppCompatActivity  {
     private static final int SEND_SMS_PERMISSIONS_REQUEST=1;
     static String numerotelefono;
 
-    String urlcrearusuario="http://10.0.2.2:54119/api/smartchat/crearusuario/";
-    String urlmandarsms="http://10.0.2.2:54119/api/smartchat/crearSMS";
+    String urlcrearusuario= Rutas.urlcrearusuario;
+    String urlmandarsms=Rutas.urlmandarsms;
 
 
     static String nombredelemisor;
@@ -165,8 +169,23 @@ public class Autenticacion extends AppCompatActivity  {
 
     private void guardarUsuario(String telefono, String nombre, String token) {
 
+        JSONObject jsonBody=new JSONObject();
 
-        StringRequest request = new StringRequest(Request.Method.POST, urlcrearusuario, new Response.Listener<String>() {
+        try {
+            jsonBody.put("telefono", telefono);
+            jsonBody.put("nombre", nombre);
+            jsonBody.put("token", token);
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+
+        CrearRequests cr = new CrearRequests(urlcrearusuario, jsonBody, rh);
+
+        MySingleton.getInstance(getBaseContext()).addToRequest(cr.crearRequest());
+
+
+
+   /*     StringRequest request = new StringRequest(Request.Method.POST, urlcrearusuario, new Response.Listener<String>() {
             @RequiresApi(api = Build.VERSION_CODES.O)
             @Override
             public void onResponse(String response) {
@@ -280,10 +299,10 @@ public class Autenticacion extends AppCompatActivity  {
             public void retry(VolleyError error) throws VolleyError {
 
             }
-        });
+        });*/
 
-        MySingleton.getInstance(getBaseContext()).addToRequest(request);
-    //    requestQueue.add(request);
+    //    MySingleton.getInstance(getBaseContext()).addToRequest(request);
+   //   requestQueue.add(request);
 
 
     }
@@ -380,12 +399,12 @@ public class Autenticacion extends AppCompatActivity  {
             startActivity(intent);
 
         }else {
-            SmsManager smsManager = SmsManager.getDefault();
+       /*     SmsManager smsManager = SmsManager.getDefault();
 
             appSmsToken= smsManager.createAppSpecificSmsToken(createSmsTokenPendingIntent());
 
             smsManager.sendTextMessage(numerotelefono, null, "Hola!, autenticación correcta", null, null);
-            smsManager.sendTextMessage(numerotelefono, null, appSmsToken, null, null);
+            smsManager.sendTextMessage(numerotelefono, null, appSmsToken, null, null);*/
 
             mandarSmsEnlaApi(numerotelefono);
         }
@@ -439,7 +458,24 @@ public class Autenticacion extends AppCompatActivity  {
     private void mandarSmsEnlaApi(String telefono) {
 
 
-        StringRequest request = new StringRequest(Request.Method.POST, urlmandarsms, new Response.Listener<String>() {
+       JSONObject jsonBody=new JSONObject();
+
+        try {
+            jsonBody.put("destinatario", telefono);
+            jsonBody.put("texto", appSmsToken);
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+
+        CrearRequests cr = new CrearRequests(urlmandarsms, jsonBody, rh);
+
+        MySingleton.getInstance(getBaseContext()).addToRequest(cr.crearRequest());
+
+
+
+
+
+    /*    StringRequest request = new StringRequest(Request.Method.POST, urlmandarsms, new Response.Listener<String>() {
             @RequiresApi(api = Build.VERSION_CODES.O)
             @Override
             public void onResponse(String response) {
@@ -548,7 +584,7 @@ public class Autenticacion extends AppCompatActivity  {
 
             }
         });
-        requestQueue.add(request);
+        requestQueue.add(request);*/
 
 
     }
@@ -600,5 +636,49 @@ public class Autenticacion extends AppCompatActivity  {
             getContactList();
         }
 
+    }
+
+    @RequiresApi(api = Build.VERSION_CODES.O)
+    @Override
+    public void onResponse(String response, String urla) {
+
+        if (urla.equals(Rutas.urlcrearusuario)) {
+            try {
+                JSONObject respuesta = new JSONObject(response);
+
+                String codigo = respuesta.getString("codigo");
+                String mensaje = respuesta.getString("mensaje");
+
+                Snackbar.make(findViewById(R.id.autenticacionlayout), response.toString(), Snackbar.LENGTH_LONG).show();
+
+
+
+            } catch (JSONException e) {
+                e.printStackTrace();
+                guardarPreferencias(Autenticacion.numerotelefono, Autenticacion.nombredelemisor, Autenticacion.tokenorigen);
+
+                System.out.println("grabado");
+                getContactPermission();
+
+            }
+
+
+        }else {
+            try {
+                JSONObject respuesta = new JSONObject(response);
+
+                String sms = respuesta.getString("sms");
+
+
+
+            } catch (JSONException e) {
+                e.printStackTrace();
+                Snackbar.make(findViewById(R.id.autenticacionlayout), response.toString(), Snackbar.LENGTH_LONG).show();
+
+            }
+        }
+
+
+        System.out.println(response);
     }
 }
