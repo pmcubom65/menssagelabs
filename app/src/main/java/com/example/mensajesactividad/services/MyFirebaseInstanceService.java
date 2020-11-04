@@ -4,6 +4,9 @@ import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.content.Intent;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.net.Uri;
 import android.os.Build;
 import android.util.Log;
 import android.widget.RemoteViews;
@@ -13,8 +16,10 @@ import androidx.annotation.RequiresApi;
 import androidx.core.app.NotificationCompat;
 import androidx.core.app.NotificationManagerCompat;
 import androidx.core.app.RemoteInput;
+import androidx.core.content.ContextCompat;
 import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 
+import com.bumptech.glide.Glide;
 import com.example.mensajesactividad.MainActivity;
 import com.example.mensajesactividad.MyBroadcastReceiver;
 import com.example.mensajesactividad.R;
@@ -97,21 +102,20 @@ public class MyFirebaseInstanceService extends FirebaseMessagingService {
     @RequiresApi(api = Build.VERSION_CODES.KITKAT_WATCH)
     public void crearNotificacion() {
 
-        //https://stackoverflow.com/questions/41888161/how-to-create-a-custom-notification-layout-in-android
-
-  //      RemoteViews normal=new RemoteViews(getPackageName(), R.layout.cerrada);
+        RemoteViews normal=new RemoteViews(getPackageName(), R.layout.cerrada);
         RemoteViews expandida=new RemoteViews(getPackageName(), R.layout.expandida);
-
-    //    expandida.setImageViewResource(R.id.imagennotificacion, R.drawable.account_circle);
 
 
 // https://itnext.io/android-custom-notification-in-6-mins-c2e7e2ddadab
+
+        normal.setImageViewResource(R.id.imagennotificacion, R.drawable.account_circle);
+        expandida.setImageViewResource(R.id.imagennotificacion, R.drawable.account_circle);
 
 
         NotificationCompat.Builder notification=new NotificationCompat.Builder(getApplicationContext(), canal);
         notification.setSmallIcon(R.drawable.smartlabs);
         notification.setContentTitle(receptor.getNombre().toString());
-      notification.setStyle(new NotificationCompat.BigTextStyle()
+        notification.setStyle(new NotificationCompat.BigTextStyle()
                 .bigText(titulo));
         notification.setContentText(titulo);
         notification.setPriority(NotificationCompat.PRIORITY_DEFAULT);
@@ -120,9 +124,9 @@ public class MyFirebaseInstanceService extends FirebaseMessagingService {
 
 
 
-    //    notification.setStyle(new NotificationCompat.DecoratedCustomViewStyle());
-     //   notification.setCustomContentView(normal);
-     //   notification.setCustomBigContentView(expandida);
+        notification.setStyle(new NotificationCompat.DecoratedCustomViewStyle());
+        notification.setCustomContentView(normal);
+        notification.setCustomBigContentView(expandida);
 
 
         notification.setAutoCancel(true);

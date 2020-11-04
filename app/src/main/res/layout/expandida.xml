@@ -9,8 +9,8 @@
 
     <de.hdodenhof.circleimageview.CircleImageView
         android:id="@+id/imagennotificacion"
-        android:layout_width="48dp"
-        android:layout_height="48dp"
+        android:layout_width="96dp"
+        android:layout_height="96dp"
         app:civ_border_width="2dp"
         app:civ_border_color="@color/red"
         android:layout_marginLeft="20dp"
@@ -31,11 +31,6 @@
         android:textStyle="bold|italic" />
 
 
-    <TextView
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="Hello"
-        style="@style/TextAppearance.Compat.Notification.Line2"/>
 
     <TextView
         android:layout_width="match_parent"
