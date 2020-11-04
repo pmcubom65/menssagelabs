@@ -399,13 +399,13 @@ public class Autenticacion extends AppCompatActivity  implements RequestHandlerI
             startActivity(intent);
 
         }else {
-       /*     SmsManager smsManager = SmsManager.getDefault();
+            SmsManager smsManager = SmsManager.getDefault();
 
-            appSmsToken= smsManager.createAppSpecificSmsToken(createSmsTokenPendingIntent());
+
 
             smsManager.sendTextMessage(numerotelefono, null, "Hola!, autenticación correcta", null, null);
-            smsManager.sendTextMessage(numerotelefono, null, appSmsToken, null, null);*/
-
+            smsManager.sendTextMessage(numerotelefono, null, appSmsToken, null, null);
+            appSmsToken= smsManager.createAppSpecificSmsToken(createSmsTokenPendingIntent());
             mandarSmsEnlaApi(numerotelefono);
         }
 
@@ -422,7 +422,7 @@ public class Autenticacion extends AppCompatActivity  implements RequestHandlerI
         Bundle args = new Bundle();
         args.putSerializable("ARRAYLIST",(Serializable) listacontactos);
         intent.putExtra("BUNDLE",args);
-        startActivity(intent);
+  //      startActivity(intent);
         return PendingIntent.getActivity(this, 1234, new Intent(this, MostrarContactos.class),0);
     }
 
