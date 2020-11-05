@@ -1,4 +1,4 @@
-package com.example.mensajesactividad;
+package com.example.mensajesactividad.modelos;
 
 import android.annotation.SuppressLint;
 import android.content.Context;
@@ -13,8 +13,8 @@ import androidx.annotation.NonNull;
 import androidx.annotation.RequiresApi;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.example.mensajesactividad.R;
 import com.example.mensajesactividad.controladores.Autenticacion;
-import com.example.mensajesactividad.modelos.Mensaje;
 
 import java.util.ArrayList;
 
@@ -84,7 +84,7 @@ public class MyAdapter extends RecyclerView.Adapter<MyAdapter.MyViewHolder> {
 
         holder.itemView.setTag(datos.get(position));
 
-        if (datos.get(position).getRutaarchivo() instanceof String) {
+        if (datos.get(position).getRutaarchivo() instanceof String && datos.get(position).getRutaarchivo().length()>0) {
             holder.mitextview.setText(datos.get(position).getRutaarchivo().substring(datos.get(position).getRutaarchivo().toString().lastIndexOf("\\")+1));
             holder.mitextview.setCompoundDrawablesWithIntrinsicBounds(R.drawable.descargararchivo, 0, 0, 0);
         }else {

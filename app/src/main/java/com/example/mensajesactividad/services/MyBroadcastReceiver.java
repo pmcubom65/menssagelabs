@@ -1,4 +1,4 @@
-package com.example.mensajesactividad;
+package com.example.mensajesactividad.services;
 
 import android.app.NotificationManager;
 import android.content.BroadcastReceiver;
@@ -6,37 +6,27 @@ import android.content.Context;
 import android.content.Intent;
 import android.os.Build;
 import android.os.Bundle;
-import android.util.Log;
 
 import androidx.annotation.RequiresApi;
 import androidx.core.app.RemoteInput;
 import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 
 import com.android.volley.AuthFailureError;
-import com.android.volley.NetworkResponse;
 import com.android.volley.Request;
 import com.android.volley.RequestQueue;
 import com.android.volley.Response;
-import com.android.volley.RetryPolicy;
-import com.android.volley.ServerError;
 import com.android.volley.VolleyError;
-import com.android.volley.toolbox.HttpHeaderParser;
 import com.android.volley.toolbox.JsonObjectRequest;
-import com.android.volley.toolbox.StringRequest;
 import com.android.volley.toolbox.Volley;
 import com.example.mensajesactividad.controladores.Autenticacion;
 import com.example.mensajesactividad.modelos.Grupo;
 import com.example.mensajesactividad.modelos.Mensaje;
 import com.example.mensajesactividad.modelos.Usuario;
-import com.example.mensajesactividad.services.CrearRequests;
-import com.example.mensajesactividad.services.RequestHandlerInterface;
-import com.example.mensajesactividad.services.Rutas;
 
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.io.UnsupportedEncodingException;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
@@ -67,7 +57,7 @@ public class MyBroadcastReceiver extends BroadcastReceiver implements RequestHan
 
     boolean esgrupo=false;
     Grupo grupo;
-    Context context;
+    Context micontext;
 
 
 
@@ -83,7 +73,8 @@ public class MyBroadcastReceiver extends BroadcastReceiver implements RequestHan
         contenido = getMessageText(intent);
         chat_id=intent.getStringExtra("chat_id");
 
-        context=context.getApplicationContext();
+        micontext=context.getApplicationContext();
+        micontext=context;
 
         buscarSiEsGrupo(chat_id, context);
         LocalDateTime ahora= LocalDateTime.now();
@@ -559,12 +550,12 @@ public class MyBroadcastReceiver extends BroadcastReceiver implements RequestHan
 
                 System.out.println("respuesta");
                 System.out.println(response);
-                NotificationManager notificationManager = (NotificationManager)context.getSystemService(Context.NOTIFICATION_SERVICE);
+                NotificationManager notificationManager = (NotificationManager)micontext.getSystemService(Context.NOTIFICATION_SERVICE);
                 notificationManager.cancel(MyBroadcastReceiver.notificationid);
 
 
 
-                notificationFirebase(context);
+                notificationFirebase(micontext);
 
 
 

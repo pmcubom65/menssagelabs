@@ -1,4 +1,4 @@
-package com.example.mensajesactividad;
+package com.example.mensajesactividad.modelos;
 
 import android.content.Context;
 import android.view.LayoutInflater;
@@ -9,8 +9,7 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.example.mensajesactividad.modelos.Chat;
-import com.example.mensajesactividad.modelos.Grupo;
+import com.example.mensajesactividad.R;
 
 import java.util.ArrayList;
 

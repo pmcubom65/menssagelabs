@@ -35,7 +35,7 @@ import android.widget.Toast;
 import com.android.volley.RequestQueue;
 import com.android.volley.toolbox.Volley;
 import com.example.mensajesactividad.MostrarContactos;
-import com.example.mensajesactividad.MySingleton;
+import com.example.mensajesactividad.services.MySingleton;
 import com.example.mensajesactividad.R;
 import com.example.mensajesactividad.modelos.Usuario;
 import com.example.mensajesactividad.services.CrearRequests;
@@ -88,7 +88,9 @@ public class Autenticacion extends AppCompatActivity  implements RequestHandlerI
     String appSmsToken;
     ArrayList<Usuario> listacontactos;
 
+    String imagen_url = Rutas.subir_imagen_url;
 
+    String rutafotoimportante;
 
 
 
@@ -592,7 +594,21 @@ public class Autenticacion extends AppCompatActivity  implements RequestHandlerI
 
 
 
+    public void buscarFotoUsuario(String id) {
+        System.out.println("buscando la foto");
+        JSONObject jsonBody = new JSONObject();
 
+        try {
+            jsonBody.put("ID", id);
+
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+
+        CrearRequests cr = new CrearRequests(Rutas.urlbuscarfoto, jsonBody, rh);
+
+        MySingleton.getInstance(getBaseContext()).addToRequest(cr.crearRequest());
+    }
 
 
 
@@ -637,6 +653,8 @@ public class Autenticacion extends AppCompatActivity  implements RequestHandlerI
             tokenorigen=token;
             idpropietario=id;
             haypreferencias=true;
+            buscarFotoUsuario(idpropietario);
+
             getContactList();
         }
 
@@ -650,9 +668,9 @@ public class Autenticacion extends AppCompatActivity  implements RequestHandlerI
             try {
                 JSONObject respuesta = new JSONObject(response);
 
-                String idusuario=respuesta.getString("id").toString();
+                idpropietario=respuesta.getString("id").toString();
 
-                guardarPreferencias(Autenticacion.numerotelefono, Autenticacion.nombredelemisor, Autenticacion.tokenorigen, idusuario);
+                guardarPreferencias(Autenticacion.numerotelefono, Autenticacion.nombredelemisor, Autenticacion.tokenorigen, idpropietario);
 
                 System.out.println("grabado");
                 getContactPermission();
@@ -669,7 +687,36 @@ public class Autenticacion extends AppCompatActivity  implements RequestHandlerI
             }
 
 
-        }else {
+        }else  if (urla.equals(Rutas.urlbuscarfoto)) {
+            try {
+                JSONObject respuesta = new JSONObject(response);
+
+                String nuevaruta = respuesta.getString("RUTA").toString();
+
+                if (nuevaruta.length()>0) {
+                    nuevaruta=nuevaruta.replace('\\', '/');
+                    rutafotoimportante="https://smartchat.smartlabs.es/"+nuevaruta.substring(nuevaruta.lastIndexOf("img"));
+
+
+
+
+
+                }
+
+
+            } catch (JSONException   e) {
+                e.printStackTrace();
+
+            }
+
+
+        }
+
+
+
+
+
+        else {
             try {
                 JSONObject respuesta = new JSONObject(response);
 

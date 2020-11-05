@@ -20,8 +20,8 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.content.res.Resources;
 import android.graphics.Insets;
+import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.util.DisplayMetrics;
@@ -51,8 +51,11 @@ import com.example.mensajesactividad.modelos.Grupo;
 import com.example.mensajesactividad.modelos.Mensaje;
 import com.example.mensajesactividad.modelos.Usuario;
 import com.example.mensajesactividad.services.InputStreamVolleyRequest;
+import com.example.mensajesactividad.modelos.MyAdapter;
+import com.example.mensajesactividad.services.MyBroadcastReceiver;
+import com.example.mensajesactividad.services.MySingleton;
+import com.example.mensajesactividad.services.RecyclerItemClickListener;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
-import com.google.android.material.snackbar.Snackbar;
 import com.google.firebase.analytics.FirebaseAnalytics;
 
 
@@ -61,12 +64,8 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.FileOutputStream;
-import java.io.IOException;
 import java.io.Serializable;
 import java.io.UnsupportedEncodingException;
-import java.net.HttpURLConnection;
-import java.net.MalformedURLException;
-import java.net.URL;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
@@ -323,38 +322,11 @@ public class MainActivity extends AppCompatActivity implements DialogoArchivo.Da
 
 
         System.out.println(rutamodificada);
-        //https://stackoverflow.com/questions/30498523/how-to-download-files-pdf-doc-etc-into-sdcard-and-open-the-file-using-voll
-        InputStreamVolleyRequest request = new InputStreamVolleyRequest(Request.Method.GET, rutamodificada,
-                new Response.Listener<byte[]>() {
-                    @Override
-                    public void onResponse(byte[] response) {
-                        // TODO handle the response
-                        try {
-                            if (response!=null) {
 
-                                FileOutputStream outputStream;
 
-                                outputStream = openFileOutput(name, Context.MODE_PRIVATE);
-                                outputStream.write(response);
-                                outputStream.close();
-                                Toast.makeText(MainActivity.this, "Download complete.", Toast.LENGTH_LONG).show();
-                            }
-                        } catch (Exception e) {
-                            // TODO Auto-generated catch block
-                            Log.d("KEY_ERROR", "UNABLE TO DOWNLOAD FILE");
-                            e.printStackTrace();
-                        }
-                    }
-                } ,new Response.ErrorListener() {
-
-            @Override
-            public void onErrorResponse(VolleyError error) {
-// TODO handle the error
-                error.printStackTrace();
-            }
-        }, null);
-        RequestQueue mRequestQueue = Volley.newRequestQueue(getApplicationContext(), new HurlStack());
-        mRequestQueue.add(request);
+        Intent i = new Intent(Intent.ACTION_VIEW);
+        i.setData(Uri.parse(rutamodificada));
+        startActivity(i);
 
 
     }
@@ -748,7 +720,14 @@ public class MainActivity extends AppCompatActivity implements DialogoArchivo.Da
             JSONObject notificationObj=new JSONObject();
             JSONObject jData = new JSONObject();
             jData.put("michatid", michatid);
-            jData.put("titulo", mensaje.getContenido());
+
+            if (mensaje!=null) {
+                jData.put("titulo", mensaje.getContenido());
+            }else {
+                jData.put("titulo", "Archivo enviado");
+            }
+
+
 
             jData.put("tokenaenviar", usuarioreceptor.getToken().toString());
             jData.put("tokenemisor", usuarioemisor.getToken().toString());
@@ -954,6 +933,7 @@ public class MainActivity extends AppCompatActivity implements DialogoArchivo.Da
     @Override
     public void onNombreAActualizar(String s) {
         if (s.equals("actualizar")){
+            notificationFirebase();
             cargarMensajesChat();
         }
     }

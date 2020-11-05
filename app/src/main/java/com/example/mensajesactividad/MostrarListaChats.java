@@ -24,8 +24,11 @@ import com.android.volley.toolbox.HttpHeaderParser;
 import com.android.volley.toolbox.StringRequest;
 import com.android.volley.toolbox.Volley;
 import com.example.mensajesactividad.controladores.Autenticacion;
+import com.example.mensajesactividad.modelos.AdaptadorListadoChats;
 import com.example.mensajesactividad.modelos.Chat;
 import com.example.mensajesactividad.modelos.Usuario;
+import com.example.mensajesactividad.services.MySingleton;
+import com.example.mensajesactividad.services.RecyclerItemClickListener;
 
 import org.json.JSONException;
 import org.json.JSONObject;

@@ -38,6 +38,12 @@ import com.android.volley.VolleyError;
 import com.android.volley.toolbox.HttpHeaderParser;
 import com.android.volley.toolbox.StringRequest;
 import com.example.mensajesactividad.controladores.Autenticacion;
+import com.example.mensajesactividad.modelos.Usuario;
+import com.example.mensajesactividad.services.CrearRequests;
+import com.example.mensajesactividad.services.MySingleton;
+import com.example.mensajesactividad.services.RequestHandlerInterface;
+import com.example.mensajesactividad.services.Rutas;
+import com.google.android.material.snackbar.Snackbar;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -53,7 +59,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 
-public class DialogoArchivo  extends DialogFragment {
+public class DialogoArchivo  extends DialogFragment  implements RequestHandlerInterface  {
 
     View layoutactualizar;
     Button archivo;
@@ -65,14 +71,79 @@ public class DialogoArchivo  extends DialogFragment {
 
     public static final int PICK_FILE = 2;
 
+
+    RequestHandlerInterface rh = this;
+
     Datoaactualizar datoactualizar;
 
-    String imagen_url="http://10.0.2.2:54119/api/smartchat/almacenarimagen";
-
-
-    String buscarusuario="http://10.0.2.2:54119/api/smartchat/buscarusuario";
+    String imagen_url= Rutas.subir_imagen_url;
 
     HashMap<String, String> valores=new HashMap<>();
+
+
+    String imagenenstring="";
+    String extensionstring="";
+    Boolean wantToCloseDialog = false;
+
+    @Override
+    public void onStart() {
+        super.onStart();
+
+        AlertDialog d = (AlertDialog) getDialog();
+        if (d != null) {
+            Button positiveButton = (Button) d.getButton(Dialog.BUTTON_POSITIVE);
+
+
+
+            positiveButton.setOnClickListener(new View.OnClickListener() {
+                @RequiresApi(api = Build.VERSION_CODES.O)
+                @Override
+                public void onClick(View v) {
+
+                    //Do stuff, possibly set wantToCloseDialog to true then...
+                    if (imagenenstring.length()>0 && extensionstring.length()>0) {
+                        subirImagen(imagenenstring, Autenticacion.idpropietario, extensionstring);
+                    }
+
+
+                    if (wantToCloseDialog)
+                        dismiss();
+                    //else dialog stays open. Make sure you have an obvious way to close the dialog especially if you set cancellable to false.
+                }
+            });
+        }
+    }
+
+    @Override
+    public void onResponse(String response, String url) {
+
+        if (url.equals(Rutas.subir_imagen_url)) {
+
+            final View viewPos = layoutactualizar.findViewById(R.id.dialogoarchivoslayout);
+            try {
+
+                JSONObject respuesta = new JSONObject(response);
+
+                String id = respuesta.getString("GRABADO").toString();
+
+                datoactualizar.onNombreAActualizar("actualizar");
+
+               dismiss();
+
+            }catch (JSONException e) {
+
+                System.out.println(e.toString());
+
+                Snackbar snackbar = Snackbar.make(viewPos, "Error en la grabación", Snackbar.LENGTH_INDEFINITE);
+
+                snackbar.show();
+            }
+
+            System.out.println(response);
+
+        }
+
+    }
 
 
     public interface Datoaactualizar {
@@ -132,6 +203,11 @@ public class DialogoArchivo  extends DialogFragment {
             public void onClick(DialogInterface dialog, int which) {
 
 
+                if (imagenenstring.length()>0 && extensionstring.length()>0) {
+                    subirImagen(imagenenstring, Autenticacion.idpropietario, extensionstring);
+                }
+
+
             }
         });
         builder.setNegativeButton(Html.fromHtml("<font color='#000000'>Cancelar</font>"), new DialogInterface.OnClickListener() {
@@ -183,7 +259,7 @@ public class DialogoArchivo  extends DialogFragment {
                 e.printStackTrace();
             }
 
-            String imgString = ","+ Base64.encodeToString(getBytesFromBitmap(bitmap),
+            imagenenstring = ","+ Base64.encodeToString(getBytesFromBitmap(bitmap),
                     Base64.DEFAULT);
 
 
@@ -196,13 +272,13 @@ public class DialogoArchivo  extends DialogFragment {
             String rutaimagen=new File(uri.getPath()).getPath().split(":")[0];
             String filename=rutaimagen.substring(rutaimagen.lastIndexOf("/")+1);
 
-            String extension=getMimeType(getContext(), uri);
+            extensionstring=getMimeType(getContext(), uri);
 
 
             nombrearchivo.setVisibility(View.VISIBLE);
             nombrearchivo.setText(filename);
 
-            buscarUsuario(Autenticacion.numerotelefono, imgString, extension);
+         //   buscarUsuario(Autenticacion.numerotelefono, imgString, extension);
 
         }
 
@@ -221,7 +297,7 @@ public class DialogoArchivo  extends DialogFragment {
             System.out.println(mimeType);
 
             String filename=uri.getPath().substring(uri.getPath().lastIndexOf("/")+1);
-            String extension=filename.substring(filename.lastIndexOf(".")+1);
+            extensionstring=filename.substring(filename.lastIndexOf(".")+1);
 
             nombrearchivo.setVisibility(View.VISIBLE);
             nombrearchivo.setText(filename);
@@ -246,18 +322,18 @@ public class DialogoArchivo  extends DialogFragment {
                 e.printStackTrace();
             }
 
-            String fileString = ","+ Base64.encodeToString(buffer.toByteArray(),
+            imagenenstring = ","+ Base64.encodeToString(buffer.toByteArray(),
                     Base64.DEFAULT);
 
 
-            System.out.println("filestring" +fileString);
+          //  System.out.println("filestring" +fileString);
 
         //    String selectedImagePath = getPath(uri);
             imagencargada.setVisibility(View.VISIBLE);
             imagencargada.setImageResource(R.drawable.clip);
 
 
-                   buscarUsuario(Autenticacion.numerotelefono, fileString, extension);
+        //   buscarUsuario(Autenticacion.numerotelefono, fileString, extension);
 
         }
 
@@ -266,7 +342,36 @@ public class DialogoArchivo  extends DialogFragment {
 
     private void subirImagen(String imagen, String id, String extension) {
 
-        StringRequest request = new StringRequest(Request.Method.POST, imagen_url, new Response.Listener<String>() {
+
+        JSONObject jsonBody=new JSONObject();
+
+        try {
+            jsonBody.put("ID", id);
+            jsonBody.put("IMAGEN", imagen);
+
+            jsonBody.put("EXTENSION", extension);
+
+
+
+            Iterator it = valores.entrySet().iterator();
+            while (it.hasNext()) {
+                Map.Entry pair = (Map.Entry)it.next();
+                jsonBody.put(pair.getKey().toString(), pair.getValue().toString());
+
+                it.remove(); // avoids a ConcurrentModificationException
+            }
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+
+        CrearRequests cr = new CrearRequests(imagen_url, jsonBody, rh);
+
+        MySingleton.getInstance(getActivity().getApplicationContext()).addToRequest(cr.crearRequest());
+
+
+
+
+      /*  StringRequest request = new StringRequest(Request.Method.POST, imagen_url, new Response.Listener<String>() {
             @RequiresApi(api = Build.VERSION_CODES.O)
             @Override
             public void onResponse(String response) {
@@ -393,136 +498,9 @@ public class DialogoArchivo  extends DialogFragment {
 
             }
         });
-        MySingleton.getInstance(getActivity().getApplicationContext()).addToRequest(request);
+        MySingleton.getInstance(getActivity().getApplicationContext()).addToRequest(request);*/
 
     }
-
-
-
-
-
-    private void buscarUsuario(String telefonobuscar, String imagen, String extension) {
-
-        StringRequest request = new StringRequest(Request.Method.POST, buscarusuario, new Response.Listener<String>() {
-            @RequiresApi(api = Build.VERSION_CODES.O)
-            @Override
-            public void onResponse(String response) {
-
-                try {
-
-                    JSONObject respuesta = new JSONObject(response);
-
-                    String idusuario = respuesta.getString("ID").toString();
-                    System.out.println("usuario encontrado");
-
-                    subirImagen(imagen, idusuario, extension);
-
-                }catch (JSONException e) {
-
-              //      Snackbar.make((View) findViewById(R.id.linearcontactos), "El usuario no está registrado", Snackbar.LENGTH_LONG).show();
-
-                    System.out.println(e.toString());
-                }
-
-                System.out.println(response);
-
-            }
-        }, new Response.ErrorListener() {
-
-            @Override
-            public void onErrorResponse(VolleyError error) {
-
-                System.out.println("volley error");
-                error.printStackTrace();
-
-                NetworkResponse response = error.networkResponse;
-                if (error instanceof ServerError && response != null) {
-                    try {
-                        String res = new String(response.data,
-                                HttpHeaderParser.parseCharset(response.headers, "utf-8"));
-                        // Now you can use any deserializer to make sense of data
-
-                        JSONObject obj = new JSONObject(res);
-                        System.out.println(obj.toString());
-                    } catch (UnsupportedEncodingException e1) {
-                        // Couldn't properly decode data to string
-                        Log.e("JSON Parser", "Error parsing data " + e1.toString());
-                        e1.printStackTrace();
-                    } catch (JSONException e2) {
-                        // returned data is not JSONObject?
-                        Log.e("JSON Parser", "Error parsing data " + e2.toString());
-                        e2.printStackTrace();
-                    }
-                }
-
-
-                System.out.println(error.toString());
-
-            }
-        }) {
-
-
-            @Override
-            public String getBodyContentType() {
-                return "application/json";
-            }
-
-            @Override
-            public Map<String, String> getHeaders() throws AuthFailureError {
-                HashMap<String, String> headers = new HashMap<String, String>();
-                headers.put("Content-Type", "application/json; charset=utf-8");
-                return headers;
-            }
-
-
-            @Override
-            public byte[] getBody() throws AuthFailureError {
-
-                JSONObject jsonBody = new JSONObject();
-
-                try {
-                    jsonBody.put("telefono", telefonobuscar);
-                    System.out.println("Busco este telefono "+jsonBody.toString());
-
-                } catch (JSONException e) {
-                    e.printStackTrace();
-                }
-
-
-                try {
-
-                    return jsonBody == null ? null : jsonBody.toString().getBytes("UTF-8");
-                } catch (UnsupportedEncodingException uee) {
-
-                    return null;
-                }
-
-
-            }
-        };
-
-        request.setRetryPolicy(new RetryPolicy() {
-            @Override
-            public int getCurrentTimeout() {
-                return 50000;
-            }
-
-            @Override
-            public int getCurrentRetryCount() {
-                return 50000;
-            }
-
-            @Override
-            public void retry(VolleyError error) throws VolleyError {
-
-            }
-        });
-        MySingleton.getInstance(getActivity().getApplicationContext()).addToRequest(request);
-        //    requestQueue.add(request);
-
-
-    }
-
 
 
 

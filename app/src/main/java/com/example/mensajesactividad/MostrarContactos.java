@@ -14,30 +14,23 @@ import android.content.Intent;
 
 import android.os.Build;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 
 
-import com.android.volley.AuthFailureError;
-import com.android.volley.NetworkResponse;
-import com.android.volley.Request;
 import com.android.volley.RequestQueue;
-import com.android.volley.Response;
-import com.android.volley.RetryPolicy;
-import com.android.volley.ServerError;
-import com.android.volley.VolleyError;
-import com.android.volley.toolbox.HttpHeaderParser;
-import com.android.volley.toolbox.StringRequest;
 import com.android.volley.toolbox.Volley;
 import com.example.mensajesactividad.controladores.Autenticacion;
 import com.example.mensajesactividad.controladores.Perfil;
 import com.example.mensajesactividad.controladores.Presentacion;
+import com.example.mensajesactividad.modelos.AdaptadorContactos;
 import com.example.mensajesactividad.modelos.Chat;
 import com.example.mensajesactividad.modelos.Grupo;
 import com.example.mensajesactividad.modelos.Usuario;
 import com.example.mensajesactividad.services.CrearRequests;
+import com.example.mensajesactividad.services.MySingleton;
+import com.example.mensajesactividad.services.RecyclerItemClickListener;
 import com.example.mensajesactividad.services.RequestHandlerInterface;
 import com.example.mensajesactividad.services.Rutas;
 import com.google.android.material.navigation.NavigationView;
@@ -48,14 +41,11 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.Serializable;
-import java.io.UnsupportedEncodingException;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Map;
 
 
 public class MostrarContactos extends AppCompatActivity  implements RequestHandlerInterface {

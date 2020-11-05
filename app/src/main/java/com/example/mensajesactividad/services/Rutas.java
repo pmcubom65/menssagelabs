@@ -18,6 +18,8 @@ public class Rutas {
     public static String urlbuscarfoto="http://10.0.2.2:54119/api/smartchat/buscarfoto";
     public static String subir_imagen_url = "http://10.0.2.2:54119/api/smartchat/almacenarimagen";
 
+
+
     public static String buscarusuario="http://10.0.2.2:54119/api/smartchat/buscarusuario";
 
 

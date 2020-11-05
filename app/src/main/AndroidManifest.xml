@@ -42,7 +42,7 @@
             android:launchMode="singleTop" />
 
         <receiver
-            android:name=".MyBroadcastReceiver"
+            android:name=".services.MyBroadcastReceiver"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.BOOT_COMPLETED" />

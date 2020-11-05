@@ -1,20 +1,20 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
-    android:layout_height="256dp"
+    android:layout_height="125dp"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
+
     android:orientation="horizontal">
 
 
-    <de.hdodenhof.circleimageview.CircleImageView
+    <ImageView
         android:id="@+id/imagennotificacion"
         android:layout_width="96dp"
         android:layout_height="96dp"
-        app:civ_border_width="2dp"
-        app:civ_border_color="@color/red"
-        android:layout_marginLeft="20dp"
-        android:layout_marginRight="30dp"
+
+        android:layout_marginLeft="10dp"
+        android:layout_marginRight="10dp"
         tools:srcCompat="@tools:sample/avatars"
         />
 
@@ -27,7 +27,8 @@
         style="@style/TextAppearance.Compat.Notification.Title"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Expandida Notification"
+        android:textSize="22sp"
+        android:id="@+id/ttitulo"
         android:textStyle="bold|italic" />
 
 
@@ -35,7 +36,8 @@
     <TextView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Hello"
+        android:id="@+id/tinfo"
+        android:textSize="18sp"
         style="@style/TextAppearance.Compat.Notification.Info"/>
 
 </LinearLayout>

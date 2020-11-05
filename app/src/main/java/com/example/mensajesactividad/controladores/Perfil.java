@@ -10,6 +10,7 @@ import android.app.ProgressDialog;
 import android.content.ContentResolver;
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.net.Uri;
@@ -38,7 +39,7 @@ import com.android.volley.toolbox.HttpHeaderParser;
 import com.android.volley.toolbox.StringRequest;
 import com.android.volley.toolbox.Volley;
 import com.bumptech.glide.Glide;
-import com.example.mensajesactividad.MySingleton;
+import com.example.mensajesactividad.services.MySingleton;
 import com.example.mensajesactividad.R;
 import com.example.mensajesactividad.services.CrearRequests;
 import com.example.mensajesactividad.services.RequestHandlerInterface;
@@ -609,10 +610,13 @@ public class Perfil extends AppCompatActivity implements RequestHandlerInterface
 
                 String id = respuesta.getString("GRABADO").toString();
 
+                String miruta = respuesta.getString("RUTA").toString();
+
                 tv.setVisibility(View.VISIBLE);
                 tv.setText("FOTO SUBIDA CON ÉXITO");
                 subirimagenbutton.setVisibility(View.GONE);
 
+                guardarimagenpreferencias(miruta);
 
                 progressDialog.dismiss();
 
@@ -625,5 +629,33 @@ public class Perfil extends AppCompatActivity implements RequestHandlerInterface
             System.out.println(response);
 
         }
+    }
+
+    public void guardarimagenpreferencias(String mr){
+
+            SharedPreferences preferences=getSharedPreferences("com.example.mensajes.credenciales", Context.MODE_PRIVATE);
+            SharedPreferences.Editor editor=preferences.edit();
+            editor.putString("foto", mr);
+            System.out.println("guardando preferencias");
+
+            editor.commit();
+
+
+        Thread mithread=new Thread(){
+            @Override
+            public void run() {
+                try {
+                    sleep(1500);
+                }catch (Exception e) {
+
+                }finally {
+
+                    Intent intent=new Intent(Perfil.this, Autenticacion.class);
+                    startActivity(intent);
+                }
+            }
+        };
+        mithread.start();
+
     }
 }
