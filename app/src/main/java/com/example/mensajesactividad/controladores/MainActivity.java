@@ -271,7 +271,16 @@ public class MainActivity extends AppCompatActivity implements DialogoArchivo.Da
 
                 //String vdia, String vchat_id, String vemisor, String vreceptor
 
-                dialogoarchivo.setValues(dia, michatid, usuarioemisor.getTelefono().toString(), usuarioreceptor.getTelefono().toString());
+                System.out.println("usuarios emisor"+ usuarioemisor);
+                System.out.println("usuarios receptor"+ usuarioreceptor);
+
+                if (esgrupo){
+                    dialogoarchivo.setValues(dia, michatid, usuarioemisor.getTelefono().toString(), "");
+                }else {
+                    dialogoarchivo.setValues(dia, michatid, usuarioemisor.getTelefono().toString(), usuarioreceptor.getTelefono().toString());
+                }
+
+
                 dialogoarchivo.show(getSupportFragmentManager(), " dialogoArchivo");
             }
         });
