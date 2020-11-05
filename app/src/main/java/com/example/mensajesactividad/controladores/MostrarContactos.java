@@ -1,4 +1,4 @@
-package com.example.mensajesactividad;
+package com.example.mensajesactividad.controladores;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.RequiresApi;
@@ -21,11 +21,8 @@ import android.view.View;
 
 import com.android.volley.RequestQueue;
 import com.android.volley.toolbox.Volley;
-import com.example.mensajesactividad.controladores.Autenticacion;
-import com.example.mensajesactividad.controladores.MainActivity;
-import com.example.mensajesactividad.controladores.MostrarListaChats;
-import com.example.mensajesactividad.controladores.Perfil;
-import com.example.mensajesactividad.controladores.Presentacion;
+import com.example.mensajesactividad.DialogoGrupo;
+import com.example.mensajesactividad.R;
 import com.example.mensajesactividad.modelos.AdaptadorContactos;
 import com.example.mensajesactividad.modelos.Chat;
 import com.example.mensajesactividad.modelos.Grupo;
@@ -85,11 +82,11 @@ public class MostrarContactos extends AppCompatActivity  implements RequestHandl
 
     String miembros="";
 
-    ArrayList<Chat> listadodechats;
+    public ArrayList<Chat> listadodechats;
 
-    ArrayList<Grupo> listadogrupos;
+    public ArrayList<Grupo> listadogrupos;
 
-    static ArrayList<Usuario> alGrupo;
+    public static ArrayList<Usuario> alGrupo;
 
     Bundle args;
 

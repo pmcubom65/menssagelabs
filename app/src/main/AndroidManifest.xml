@@ -24,13 +24,13 @@
         android:supportsRtl="true"
         android:theme="@style/AppTheme"
         android:usesCleartextTraffic="true">
-        <activity android:name=".MostrarGrupos"
-            android:parentActivityName=".MostrarContactos"></activity>
+        <activity android:name=".controladores.MostrarGrupos"
+            android:parentActivityName=".controladores.MostrarContactos"></activity>
         <activity
             android:name=".controladores.Perfil"
-            android:parentActivityName=".MostrarContactos" />
+            android:parentActivityName=".controladores.MostrarContactos" />
         <activity android:name=".controladores.MostrarListaChats"
-            android:parentActivityName=".MostrarContactos"/>
+            android:parentActivityName=".controladores.MostrarContactos"/>
         <activity android:name=".controladores.Autenticacion" />
 
         <meta-data
@@ -38,7 +38,7 @@
             android:value="@string/default_notification_channel_id" />
 
         <activity
-            android:name=".MostrarContactos"
+            android:name=".controladores.MostrarContactos"
             android:launchMode="singleTop" />
 
         <receiver
@@ -63,7 +63,7 @@
         <activity
             android:name=".controladores.MainActivity"
             android:launchMode="singleTask"
-            android:parentActivityName=".MostrarContactos"
+            android:parentActivityName=".controladores.MostrarContactos"
             android:windowSoftInputMode="adjustPan">
             <intent-filter>
                 <action android:name="CLICK_ACTION" />

@@ -23,17 +23,12 @@ import com.android.volley.VolleyError;
 import com.android.volley.toolbox.HttpHeaderParser;
 import com.android.volley.toolbox.StringRequest;
 import com.android.volley.toolbox.Volley;
-import com.example.mensajesactividad.MostrarContactos;
 import com.example.mensajesactividad.R;
-import com.example.mensajesactividad.controladores.Autenticacion;
-import com.example.mensajesactividad.controladores.MainActivity;
 import com.example.mensajesactividad.modelos.AdaptadorListadoChats;
 import com.example.mensajesactividad.modelos.Chat;
 import com.example.mensajesactividad.modelos.Usuario;
-import com.example.mensajesactividad.services.CrearRequests;
 import com.example.mensajesactividad.services.MySingleton;
 import com.example.mensajesactividad.services.RecyclerItemClickListener;
-import com.example.mensajesactividad.services.RequestHandlerInterface;
 import com.example.mensajesactividad.services.Rutas;
 
 import org.json.JSONException;

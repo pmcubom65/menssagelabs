@@ -45,7 +45,6 @@ import com.android.volley.toolbox.HttpHeaderParser;
 import com.android.volley.toolbox.JsonObjectRequest;
 import com.android.volley.toolbox.StringRequest;
 import com.android.volley.toolbox.Volley;
-import com.example.mensajesactividad.MostrarContactos;
 import com.example.mensajesactividad.R;
 import com.example.mensajesactividad.modelos.Grupo;
 import com.example.mensajesactividad.modelos.Mensaje;
@@ -969,11 +968,44 @@ public class MainActivity extends AppCompatActivity implements DialogoArchivo.Da
         }
     }
 
+    @RequiresApi(api = Build.VERSION_CODES.O)
     @Override
     public void onNombreAActualizar(String s) {
         if (s.equals("actualizar")){
-            notificationFirebase();
-            cargarMensajesChat();
+
+            LocalDateTime ahora= LocalDateTime.now();
+            ZonedDateTime zdt = ahora.atZone(ZoneId.of("Europe/Madrid"));
+
+            DateTimeFormatter dtf=DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+            String dia=ahora.format(dtf);
+
+
+            if (esgrupo) {
+
+           //     mensaje=new Mensaje("Archivo Enviado", dia, usuarioemisor.getTelefono().toString(), usuarioemisor.getNombre().toString());
+        /*        datosAmostrar.add(datosAmostrar.size(), mensaje);
+                mAdapter.notifyItemChanged(datosAmostrar.size());
+                String id_mensaje=String.valueOf(zdt.toInstant().toEpochMilli());*/
+
+                cargarMensajesChat();
+
+
+                for (int g=0; g<grupo.getDetallesmiembros().size(); g++) {
+             //       usuarioreceptor=(Usuario) grupo.getDetallesmiembros().get(g);
+              //      grabarMensaje(mensaje, id_mensaje);
+                    notificationFirebase();
+                }
+
+
+
+
+
+            }else {
+                cargarMensajesChat();
+                notificationFirebase();
+            }
+
+
         }
     }
 

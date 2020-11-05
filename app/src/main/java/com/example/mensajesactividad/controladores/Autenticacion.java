@@ -34,7 +34,6 @@ import android.widget.Toast;
 
 import com.android.volley.RequestQueue;
 import com.android.volley.toolbox.Volley;
-import com.example.mensajesactividad.MostrarContactos;
 import com.example.mensajesactividad.services.MySingleton;
 import com.example.mensajesactividad.R;
 import com.example.mensajesactividad.modelos.Usuario;

@@ -1,4 +1,4 @@
-package com.example.mensajesactividad;
+package com.example.mensajesactividad.controladores;
 
 import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AppCompatActivity;
@@ -13,8 +13,10 @@ import android.view.View;
 
 import com.android.volley.RequestQueue;
 import com.android.volley.toolbox.Volley;
+import com.example.mensajesactividad.R;
 import com.example.mensajesactividad.controladores.Autenticacion;
 import com.example.mensajesactividad.controladores.MainActivity;
+import com.example.mensajesactividad.controladores.MostrarContactos;
 import com.example.mensajesactividad.modelos.AdaptadorGrupos;
 import com.example.mensajesactividad.modelos.Grupo;
 import com.example.mensajesactividad.modelos.Usuario;
@@ -96,7 +98,7 @@ public class MostrarGrupos extends AppCompatActivity {
 
 
     public void crearIntent(int posicion) {
-        Intent intent=new Intent(getApplicationContext(), MainActivity.class);
+        Intent intent=new Intent(MostrarGrupos.this, MainActivity.class);
         intent.putExtra("chat_id", listadogrupos.get(posicion).getId().toString());
 
         intent.putExtra("grupo", true);
