@@ -30,7 +30,10 @@ import com.android.volley.toolbox.HttpHeaderParser;
 import com.android.volley.toolbox.StringRequest;
 import com.example.mensajesactividad.controladores.Autenticacion;
 import com.example.mensajesactividad.modelos.Usuario;
+import com.example.mensajesactividad.services.CrearRequests;
 import com.example.mensajesactividad.services.MySingleton;
+import com.example.mensajesactividad.services.RequestHandlerInterface;
+import com.example.mensajesactividad.services.Rutas;
 import com.google.android.material.snackbar.Snackbar;
 
 import org.json.JSONException;
@@ -45,7 +48,9 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
-public class DialogoGrupo extends DialogFragment {
+public class DialogoGrupo extends DialogFragment  implements RequestHandlerInterface {
+
+
 
     public interface Datoaactualizar {
 
@@ -66,14 +71,15 @@ public class DialogoGrupo extends DialogFragment {
     String idgrupo;
 
 
-    String urlcreargrupo="http://10.0.2.2:54119/api/smartchat/creargrupo";
+    String urlcreargrupo=Rutas.rutacreargrupo;
 
-    String urlañadiraungrupo="http://10.0.2.2:54119/api/smartchat/anadirusuarioagrupo";
+    String urlañadiraungrupo=Rutas.rutaanadirusuarioagrupo;
 
-    String insertchat="http://10.0.2.2:54119/api/smartchat/crearchat";
+    String insertchat= Rutas.insertchat;
 
     TextView tv;
     View layoutactualizar;
+    RequestHandlerInterface rh = this;
 
 
     @NonNull
@@ -196,8 +202,23 @@ public class DialogoGrupo extends DialogFragment {
     @RequiresApi(api = Build.VERSION_CODES.N)
     public void crearGrupo(String nombre) {
 
+        JSONObject jsonBody=new JSONObject();
 
-            StringRequest request = new StringRequest(Request.Method.POST, urlcreargrupo, new Response.Listener<String>() {
+        try {
+            jsonBody.put("nombre", nombre);
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+
+        CrearRequests cr = new CrearRequests(urlcreargrupo, jsonBody, rh);
+
+        MySingleton.getInstance(getActivity().getApplicationContext()).addToRequest(cr.crearRequest());
+
+
+
+
+
+        /*    StringRequest request = new StringRequest(Request.Method.POST, urlcreargrupo, new Response.Listener<String>() {
                 @RequiresApi(api = Build.VERSION_CODES.O)
                 @Override
                 public void onResponse(String response) {
@@ -321,7 +342,7 @@ public class DialogoGrupo extends DialogFragment {
                 }
             });
 
-            MySingleton.getInstance(getContext()).addToRequest(request);
+            MySingleton.getInstance(getContext()).addToRequest(request);*/
 
 
 
@@ -598,4 +619,39 @@ public class DialogoGrupo extends DialogFragment {
 
     }
 
+
+
+    @RequiresApi(api = Build.VERSION_CODES.O)
+    @Override
+    public void onResponse(String response, String url) {
+        final View viewPos = layoutactualizar.findViewById(R.id.dialogogruposlayout);
+        try {
+
+            JSONObject respuesta = new JSONObject(response);
+
+            String  nombre = respuesta.getString("NOMBRE");
+
+
+            idgrupo=respuesta.getString("ID").toString();
+
+            System.out.println("grupo creado como "+idgrupo);
+
+            LocalDateTime fechaactual= LocalDateTime.now();
+            ZonedDateTime zdt = fechaactual.atZone(ZoneId.of("Europe/Madrid"));
+
+
+            DateTimeFormatter dtf=DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+            String inicio=fechaactual.format(dtf).toString();
+
+            crearChat(idgrupo,inicio);
+
+
+
+        }catch (JSONException e) {
+
+            System.out.println(e.toString());
+        }
+
+        System.out.println(response);
+    }
 }

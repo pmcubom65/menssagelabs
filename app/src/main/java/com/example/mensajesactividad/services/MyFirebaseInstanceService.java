@@ -15,7 +15,7 @@ import androidx.core.app.NotificationManagerCompat;
 import androidx.core.app.RemoteInput;
 import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 
-import com.example.mensajesactividad.MainActivity;
+import com.example.mensajesactividad.controladores.MainActivity;
 import com.example.mensajesactividad.R;
 import com.example.mensajesactividad.modelos.Usuario;
 import com.google.firebase.messaging.FirebaseMessagingService;

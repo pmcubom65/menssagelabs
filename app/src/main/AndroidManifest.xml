@@ -29,7 +29,7 @@
         <activity
             android:name=".controladores.Perfil"
             android:parentActivityName=".MostrarContactos" />
-        <activity android:name=".MostrarListaChats"
+        <activity android:name=".controladores.MostrarListaChats"
             android:parentActivityName=".MostrarContactos"/>
         <activity android:name=".controladores.Autenticacion" />
 
@@ -61,7 +61,7 @@
         </service>
 
         <activity
-            android:name=".MainActivity"
+            android:name=".controladores.MainActivity"
             android:launchMode="singleTask"
             android:parentActivityName=".MostrarContactos"
             android:windowSoftInputMode="adjustPan">

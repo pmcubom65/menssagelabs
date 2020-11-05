@@ -26,6 +26,8 @@ public class Rutas {
     public static String insertchat="http://10.0.2.2:54119/api/smartchat/crearchat";
 
 
+
+
     public static String rutamostrarlistadochats="http://10.0.2.2:54119/api/smartchat/detallesmischats";
 
 
@@ -33,8 +35,15 @@ public class Rutas {
 
     public static  String rutacrearmensaje="http://10.0.2.2:54119/api/smartchat/crearmensaje";
 
+    public static String rutaurlcargarmensajeschat="http://10.0.2.2:54119/api/smartchat/buscarmensajeschat";
+
 
     public static String rutabuscargrupo="http://10.0.2.2:54119/api/smartchat/buscarGrupoPorID";
+
+
+    public static String rutaanadirusuarioagrupo="http://10.0.2.2:54119/api/smartchat/anadirusuarioagrupo";
+
+    public static String rutacreargrupo="http://10.0.2.2:54119/api/smartchat/creargrupo";
 
 
 

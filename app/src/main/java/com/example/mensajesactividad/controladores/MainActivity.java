@@ -1,4 +1,4 @@
-package com.example.mensajesactividad;
+package com.example.mensajesactividad.controladores;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.RequiresApi;
@@ -32,7 +32,6 @@ import android.view.ViewGroup;
 import android.view.WindowInsets;
 import android.view.WindowMetrics;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.android.volley.AuthFailureError;
 import com.android.volley.NetworkResponse;
@@ -43,18 +42,21 @@ import com.android.volley.RetryPolicy;
 import com.android.volley.ServerError;
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.HttpHeaderParser;
-import com.android.volley.toolbox.HurlStack;
 import com.android.volley.toolbox.JsonObjectRequest;
 import com.android.volley.toolbox.StringRequest;
 import com.android.volley.toolbox.Volley;
+import com.example.mensajesactividad.MostrarContactos;
+import com.example.mensajesactividad.R;
 import com.example.mensajesactividad.modelos.Grupo;
 import com.example.mensajesactividad.modelos.Mensaje;
 import com.example.mensajesactividad.modelos.Usuario;
-import com.example.mensajesactividad.services.InputStreamVolleyRequest;
+import com.example.mensajesactividad.services.CrearRequests;
 import com.example.mensajesactividad.modelos.MyAdapter;
 import com.example.mensajesactividad.services.MyBroadcastReceiver;
 import com.example.mensajesactividad.services.MySingleton;
 import com.example.mensajesactividad.services.RecyclerItemClickListener;
+import com.example.mensajesactividad.services.RequestHandlerInterface;
+import com.example.mensajesactividad.services.Rutas;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.firebase.analytics.FirebaseAnalytics;
 
@@ -63,7 +65,6 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.io.FileOutputStream;
 import java.io.Serializable;
 import java.io.UnsupportedEncodingException;
 import java.time.LocalDateTime;
@@ -76,7 +77,7 @@ import java.util.Map;
 
 
 
-public class MainActivity extends AppCompatActivity implements DialogoArchivo.Datoaactualizar  {
+public class MainActivity extends AppCompatActivity implements DialogoArchivo.Datoaactualizar, RequestHandlerInterface   {
 
     private RecyclerView recyclerView;
     private RecyclerView.Adapter mAdapter;
@@ -92,19 +93,20 @@ public class MainActivity extends AppCompatActivity implements DialogoArchivo.Da
     String KEY_REPLY = "key_reply";
     public static int datos;
 
-    String insertchat="http://10.0.2.2:54119/api/smartchat/crearchat";
+    String insertchat= Rutas.insertchat;
 
-    String urlcrearmensaje="http://10.0.2.2:54119/api/smartchat/crearmensaje";
+    String urlcrearmensaje=Rutas.rutacrearmensaje;
 
- //   String urlcargarmensajeschat="http://10.0.2.2:54119/api/smartchat/mostrarmensajeschat";
+    String urlcargarmensajeschat=Rutas.rutaurlcargarmensajeschat;
 
-    String urlcargarmensajeschat="http://10.0.2.2:54119/api/smartchat/buscarmensajeschat";
-
-    String buscargrupo="http://10.0.2.2:54119/api/smartchat/buscarGrupoPorID";
+    String buscargrupo=Rutas.rutabuscargrupo;
 
     String url="https://fcm.googleapis.com/fcm/send";
 
     RequestQueue requestQueue;
+
+    RequestHandlerInterface rh = this;
+
     String michatid;
     // [START declare_analytics]
     private FirebaseAnalytics mFirebaseAnalytics;
@@ -417,7 +419,27 @@ public class MainActivity extends AppCompatActivity implements DialogoArchivo.Da
     public void grabarMensaje(Mensaje m, String id){
 
 
-        StringRequest request = new StringRequest(Request.Method.POST, urlcrearmensaje, new Response.Listener<String>() {
+        JSONObject jsonBody=new JSONObject();
+
+        try {
+            jsonBody.put("contenido", m.getContenido().toString());
+            jsonBody.put("dia", m.getFecha().toString());
+            jsonBody.put("usuarioid", m.getTelefono().toString());
+            jsonBody.put("chatid", michatid);
+            jsonBody.put("idusuariorecepcion", usuarioreceptor.getTelefono().toString());
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+
+        CrearRequests cr = new CrearRequests(urlcrearmensaje, jsonBody, rh);
+
+        MySingleton.getInstance(getBaseContext()).addToRequest(cr.crearRequest());
+
+
+
+
+
+   /*     StringRequest request = new StringRequest(Request.Method.POST, urlcrearmensaje, new Response.Listener<String>() {
             @RequiresApi(api = Build.VERSION_CODES.O)
             @Override
             public void onResponse(String response) {
@@ -530,7 +552,7 @@ public class MainActivity extends AppCompatActivity implements DialogoArchivo.Da
             }
         });
 
-        MySingleton.getInstance(getBaseContext()).addToRequest(request);
+        MySingleton.getInstance(getBaseContext()).addToRequest(request);*/
      //   requestQueue.add(request);
 
 
@@ -544,7 +566,24 @@ public class MainActivity extends AppCompatActivity implements DialogoArchivo.Da
 
     public void  cargarMensajesChat() {
 
-        StringRequest request = new StringRequest(Request.Method.POST, urlcargarmensajeschat, new Response.Listener<String>() {
+
+
+        JSONObject jsonBody=new JSONObject();
+
+        try {
+            jsonBody.put("codigo", michatid);
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+
+        CrearRequests cr = new CrearRequests(urlcargarmensajeschat, jsonBody, rh);
+
+        MySingleton.getInstance(getBaseContext()).addToRequest(cr.crearRequest());
+
+
+
+
+     /*   StringRequest request = new StringRequest(Request.Method.POST, urlcargarmensajeschat, new Response.Listener<String>() {
             @RequiresApi(api = Build.VERSION_CODES.O)
             @Override
             public void onResponse(String response) {
@@ -671,7 +710,7 @@ public class MainActivity extends AppCompatActivity implements DialogoArchivo.Da
             }
         });
 
-        MySingleton.getInstance(getBaseContext()).addToRequest(request);
+        MySingleton.getInstance(getBaseContext()).addToRequest(request);*/
 
 
 
@@ -936,6 +975,60 @@ public class MainActivity extends AppCompatActivity implements DialogoArchivo.Da
             notificationFirebase();
             cargarMensajesChat();
         }
+    }
+
+    @Override
+    public void onResponse(String response, String url) {
+
+        if (url.equals(urlcrearmensaje)){
+            try {
+                JSONObject jsnobject = new JSONObject(response.toString());
+
+                String contenido = jsnobject.getString("contenido");
+                textoenviar.setText("");
+
+                mAdapter.notifyDataSetChanged();
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+
+            System.out.println("mensaje grabado "+ response.toString());
+        }else if (url.equals(urlcargarmensajeschat)) {
+
+            try {
+                JSONObject jsnobject = new JSONObject(response.toString());
+                JSONArray jsonArray = jsnobject.getJSONArray("mensajes");
+                for (int i = 0; i < jsonArray.length(); i++) {
+                    JSONObject explrObject = jsonArray.getJSONObject(i);
+                    Mensaje m=new Mensaje(explrObject.getString("CONTENIDO"), explrObject.getString("DIA").replace('T', ' '), explrObject.getString("TELEFONO"), explrObject.getString("NOMBRE"));
+                    JSONArray archivos=explrObject.getJSONArray("ARCHIVOS");
+
+                    for (int arc=0; arc< archivos.length(); arc++) {
+
+                        JSONObject archivodelmensaje=archivos.getJSONObject(arc);
+                        m.setRutaarchivo(archivodelmensaje.getString("RUTA").toString());
+                    }
+
+
+
+
+
+                    if (!datosAmostrar.contains(m)) {
+                        datosAmostrar.add(m);
+                    }
+
+
+                }
+                mAdapter.notifyDataSetChanged();
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+
+
+
+
+        }
+
     }
 }
 

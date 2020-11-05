@@ -1,4 +1,4 @@
-package com.example.mensajesactividad;
+package com.example.mensajesactividad.controladores;
 
 import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AppCompatActivity;
@@ -23,12 +23,18 @@ import com.android.volley.VolleyError;
 import com.android.volley.toolbox.HttpHeaderParser;
 import com.android.volley.toolbox.StringRequest;
 import com.android.volley.toolbox.Volley;
+import com.example.mensajesactividad.MostrarContactos;
+import com.example.mensajesactividad.R;
 import com.example.mensajesactividad.controladores.Autenticacion;
+import com.example.mensajesactividad.controladores.MainActivity;
 import com.example.mensajesactividad.modelos.AdaptadorListadoChats;
 import com.example.mensajesactividad.modelos.Chat;
 import com.example.mensajesactividad.modelos.Usuario;
+import com.example.mensajesactividad.services.CrearRequests;
 import com.example.mensajesactividad.services.MySingleton;
 import com.example.mensajesactividad.services.RecyclerItemClickListener;
+import com.example.mensajesactividad.services.RequestHandlerInterface;
+import com.example.mensajesactividad.services.Rutas;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -38,11 +44,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
-public class MostrarListaChats extends AppCompatActivity{
-//
-//public class MostrarListaChats extends MostrarContactos {
-
-
+public class MostrarListaChats extends AppCompatActivity  {
 
     RecyclerView recyclerView;
     RecyclerView.Adapter myAdapter;
@@ -53,7 +55,7 @@ public class MostrarListaChats extends AppCompatActivity{
 
     public ArrayList<Chat> listadodechats;
 
-    String buscargrupo="http://10.0.2.2:54119/api/smartchat/buscarGrupoPorID";
+    String buscargrupo= Rutas.rutabuscargrupo;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -153,7 +155,7 @@ public class MostrarListaChats extends AppCompatActivity{
 
     private void buscarSiEsGrupo(String idc, int posicion) {
 
-        StringRequest request = new StringRequest(Request.Method.POST, buscargrupo, new Response.Listener<String>() {
+  StringRequest request = new StringRequest(Request.Method.POST, buscargrupo, new Response.Listener<String>() {
             @RequiresApi(api = Build.VERSION_CODES.O)
             @Override
             public void onResponse(String response) {
@@ -272,4 +274,6 @@ public class MostrarListaChats extends AppCompatActivity{
         MySingleton.getInstance(getBaseContext()).addToRequest(request);
 
     }
+
+
 }
