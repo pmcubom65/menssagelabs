@@ -89,7 +89,7 @@ public class Autenticacion extends AppCompatActivity  implements RequestHandlerI
 
     String imagen_url = Rutas.subir_imagen_url;
 
-    String rutafotoimportante;
+    public static String rutafotoimportante;
 
 
 
@@ -165,7 +165,7 @@ public class Autenticacion extends AppCompatActivity  implements RequestHandlerI
 
         try {
             jsonBody.put("telefono", telefono);
-            jsonBody.put("nombre", nombre);
+            jsonBody.put("nombre", nombre.toUpperCase());
             jsonBody.put("token", token);
         } catch (JSONException e) {
             e.printStackTrace();
@@ -693,8 +693,8 @@ public class Autenticacion extends AppCompatActivity  implements RequestHandlerI
                 String nuevaruta = respuesta.getString("RUTA").toString();
 
                 if (nuevaruta.length()>0) {
-                    nuevaruta=nuevaruta.replace('\\', '/');
-                    rutafotoimportante="https://smartchat.smartlabs.es/"+nuevaruta.substring(nuevaruta.lastIndexOf("img"));
+
+                    rutafotoimportante=Rutas.construirRuta(nuevaruta);
 
 
 

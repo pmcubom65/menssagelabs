@@ -4,6 +4,7 @@ import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.content.Intent;
+import android.graphics.Bitmap;
 import android.os.Build;
 import android.util.Log;
 import android.widget.RemoteViews;
@@ -15,6 +16,7 @@ import androidx.core.app.NotificationManagerCompat;
 import androidx.core.app.RemoteInput;
 import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 
+import com.bumptech.glide.Glide;
 import com.example.mensajesactividad.controladores.MainActivity;
 import com.example.mensajesactividad.R;
 import com.example.mensajesactividad.modelos.Usuario;
@@ -23,6 +25,7 @@ import com.google.firebase.messaging.RemoteMessage;
 
 
 import java.util.Map;
+import java.util.concurrent.ExecutionException;
 
 public class MyFirebaseInstanceService extends FirebaseMessagingService {
 
@@ -72,14 +75,19 @@ public class MyFirebaseInstanceService extends FirebaseMessagingService {
         String nombreemisor=(String) data.get("nombrereceptor");
         String telefonoemisor=(String) data.get("telefonoreceptor");
 
-        emisor=new Usuario(telefonoemisor, nombreemisor, null, tokenemisor);
+        String fotoemisor=(String) data.get("fotoemisor");
+        String fotoreceptor=(String) data.get("fotoreceptor");
+
+        emisor=new Usuario(telefonoemisor, nombreemisor, fotoreceptor, tokenemisor);
 
         String tokenreceptor=(String) data.get("tokenemisor");
         String nombrereceptor=(String) data.get("nombreemisor");
         String telefonoreceptor=(String) data.get("telefonoemisor");
 
-        receptor=new Usuario(telefonoreceptor, nombrereceptor, null, tokenreceptor);
+        receptor=new Usuario(telefonoreceptor, nombrereceptor, fotoemisor, tokenreceptor);
 
+        System.out.println("emisor "+emisor);
+        System.out.println("receptor "+receptor);
 
         notificationChannel();
         crearNotificacion();
@@ -99,8 +107,54 @@ public class MyFirebaseInstanceService extends FirebaseMessagingService {
         RemoteViews expandida=new RemoteViews(getPackageName(), R.layout.expandida);
 
 
-        normal.setImageViewResource(R.id.imagennotificacion, R.drawable.account_circle);
-        expandida.setImageViewResource(R.id.imagennotificacion, R.drawable.account_circle);
+        if (receptor.getUri()!=null && receptor.getUri().toString().length()>0){
+
+            System.out.println("notificacion creada foto "+receptor.getUri().toString());
+
+            try {
+
+                if (!(receptor.getUri() instanceof String)){
+                    Bitmap bitmap = Glide.with(getApplicationContext())
+                            .asBitmap()
+                            .load(R.drawable.account_circle)
+                            .submit(48, 48)
+                            .get();
+                }else {
+                    String rutamal=receptor.getUri().toString();
+                    String fotohacia = rutamal.replaceAll("(?<!(http:|https:))/+", "/");
+
+                    if (fotohacia.lastIndexOf('.')+5!=-1){
+                        fotohacia=fotohacia.substring(0, fotohacia.lastIndexOf('.')+4);
+                    }
+
+                    Bitmap bitmap = Glide.with(getApplicationContext())
+                            .asBitmap()
+                            .load(fotohacia)
+                            .submit(48, 48)
+                            .get();
+
+                    normal.setImageViewBitmap(R.id.imagennotificacion, bitmap);
+                    expandida.setImageViewBitmap(R.id.imagennotificacion, bitmap);
+                }
+
+
+
+
+
+            } catch (ExecutionException e) {
+                e.printStackTrace();
+
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+
+
+
+        }else {
+            normal.setImageViewResource(R.id.imagennotificacion, R.drawable.account_circle);
+            expandida.setImageViewResource(R.id.imagennotificacion, R.drawable.account_circle);
+        }
+
 
         normal.setTextViewText(R.id.ttitulo, receptor.getNombre().toString());
         expandida.setTextViewText(R.id.ttitulo, receptor.getNombre().toString());

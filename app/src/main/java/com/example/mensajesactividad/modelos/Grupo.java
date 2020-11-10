@@ -73,6 +73,7 @@ public class Grupo implements Serializable {
                 "nombre='" + nombre + '\'' +
                 ", id='" + id + '\'' +
                 ", miembros='" + miembros + '\'' +
+                ", detallesmiembros=" + detallesmiembros +
                 '}';
     }
 

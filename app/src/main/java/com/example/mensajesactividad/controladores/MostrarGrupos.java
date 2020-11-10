@@ -45,7 +45,6 @@ public class MostrarGrupos extends AppCompatActivity {
         listadogrupos = (ArrayList<Grupo>) args.getSerializable("ARRAYLISTGRUPO");
 
 
-
         setContentView(R.layout.activity_mostrar_grupos);
 
         requestQueue= Volley.newRequestQueue(getApplicationContext());
@@ -105,6 +104,7 @@ public class MostrarGrupos extends AppCompatActivity {
 
         intent.putExtra("grupoinfo", listadogrupos.get(posicion));
 
+
    //     intent.putExtra("tokenaenviar", usuario.getToken().toString());
         intent.putExtra("tokenorigen", Autenticacion.tokenorigen);
         intent.putExtra("nombreemisor", Autenticacion.nombredelemisor);
@@ -114,7 +114,7 @@ public class MostrarGrupos extends AppCompatActivity {
         intent.putExtra("numerodetelefono", Autenticacion.numerotelefono);
       //  intent.putExtra("numerodetelefonoreceptor", usuario.getTelefono().toString());
 
-        intent.putExtra("usuarioemisor", new Usuario(Autenticacion.numerotelefono, Autenticacion.nombredelemisor, null, Autenticacion.tokenorigen));
+        intent.putExtra("usuarioemisor", new Usuario(Autenticacion.numerotelefono, Autenticacion.nombredelemisor, Autenticacion.rutafotoimportante, Autenticacion.tokenorigen));
       //  intent.putExtra("usuarioreceptor", usuario);
 
 

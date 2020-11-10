@@ -13,6 +13,9 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.graphics.Bitmap;
+import android.graphics.Color;
+import android.graphics.PorterDuff;
+import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
@@ -82,6 +85,7 @@ public class Perfil extends AppCompatActivity implements RequestHandlerInterface
     Button subirimagenbutton;
 
 
+    @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -109,13 +113,16 @@ public class Perfil extends AppCompatActivity implements RequestHandlerInterface
         toolbar = findViewById(R.id.mitoolbarperfil);
         toolbar.setLogo(R.drawable.smart_prod);
         setSupportActionBar(toolbar);
+  //      getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+
+        final Drawable upArrow = getApplicationContext().getDrawable(R.drawable.abc_ic_ab_back_material);
+        upArrow.setColorFilter(Color.parseColor("#000000"), PorterDuff.Mode.SRC_ATOP);
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+        getSupportActionBar().setHomeAsUpIndicator(upArrow);
 
         buscarFotoUsuario(Autenticacion.idpropietario);
 
-  /*      Glide.with(getApplicationContext()).load(Uri.parse(null))
-                .placeholder(R.drawable.account_circle)
-                .into(iv);*/
+
 
     }
 

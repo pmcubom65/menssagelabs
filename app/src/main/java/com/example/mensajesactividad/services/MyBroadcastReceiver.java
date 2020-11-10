@@ -145,170 +145,6 @@ public class MyBroadcastReceiver extends BroadcastReceiver implements RequestHan
 
 
 
-
-      /*  StringRequest request = new StringRequest(Request.Method.POST, urlcrearmensaje, new Response.Listener<String>() {
-            @RequiresApi(api = Build.VERSION_CODES.O)
-            @Override
-            public void onResponse(String response) {
-
-
-                try {
-                    JSONObject jsnobject = new JSONObject(response.toString());
-
-                    String contenido = jsnobject.getString("contenido");
-
-                    System.out.println("respuesta");
-                    System.out.println(response);
-                    NotificationManager notificationManager = (NotificationManager)context.getSystemService(Context.NOTIFICATION_SERVICE);
-                    notificationManager.cancel(MyBroadcastReceiver.notificationid);
-
-
-
-                notificationFirebase(context);
-
-
-
-                } catch (JSONException e) {
-                    e.printStackTrace();
-                }
-
-                System.out.println("mensaje grabado "+ response.toString());
-
-            }
-        }, new Response.ErrorListener() {
-
-            @Override
-            public void onErrorResponse(VolleyError error) {
-
-                System.out.println("volley error");
-                error.printStackTrace();
-
-                NetworkResponse response = error.networkResponse;
-                if (error instanceof ServerError && response != null) {
-                    try {
-                        String res = new String(response.data,
-                                HttpHeaderParser.parseCharset(response.headers, "utf-8"));
-                        // Now you can use any deserializer to make sense of data
-
-                        JSONObject obj = new JSONObject(res);
-                        System.out.println(obj.toString());
-                    } catch (UnsupportedEncodingException e1) {
-                        // Couldn't properly decode data to string
-                        Log.e("JSON Parser", "Error parsing data " + e1.toString());
-                        e1.printStackTrace();
-                    } catch (JSONException e2) {
-                        // returned data is not JSONObject?
-                        Log.e("JSON Parser", "Error parsing data " + e2.toString());
-                        e2.printStackTrace();
-                    }
-                }
-
-
-
-            }
-        }) {
-
-
-            @Override
-            public String getBodyContentType() {
-                return "application/json";
-            }
-
-            @Override
-            public Map<String, String> getHeaders() throws AuthFailureError {
-                HashMap<String, String> headers = new HashMap<String, String>();
-                headers.put("Content-Type", "application/json; charset=utf-8");
-                return headers;
-            }
-
-
-            @Override
-            public byte[] getBody() throws AuthFailureError {
-
-                JSONObject jsonBody = new JSONObject();
-                try {
-                    jsonBody.put("contenido", m.getContenido().toString());
-                    jsonBody.put("dia", m.getFecha().toString());
-                    jsonBody.put("usuarioid", m.getTelefono().toString());
-                    jsonBody.put("chatid", chat_id);
-                    jsonBody.put("idusuariorecepcion", usuarioreceptor.getTelefono().toString());
-
-
-                } catch (JSONException e) {
-                    e.printStackTrace();
-                }
-
-
-                try {
-
-                    return jsonBody == null ? null : jsonBody.toString().getBytes("UTF-8");
-                } catch (UnsupportedEncodingException uee) {
-
-                    return null;
-                }
-
-
-            }
-        };
-
-        request.setRetryPolicy(new RetryPolicy() {
-            @Override
-            public int getCurrentTimeout() {
-                return 50000;
-            }
-
-            @Override
-            public int getCurrentRetryCount() {
-                return 50000;
-            }
-
-            @Override
-            public void retry(VolleyError error) throws VolleyError {
-
-            }
-        });
-        MySingleton.getInstance(context).addToRequest(request);*/
-    //    requestQueue.add(request);
-
-
-
-
-
-
-
-
-
-   /*     StringRequest request=new StringRequest(Request.Method.POST, urlcrearmensaje, new Response.Listener<String>() {
-            @RequiresApi(api = Build.VERSION_CODES.M)
-            @Override
-            public void onResponse(String response) {
-                System.out.println("respuesta");
-                System.out.println(response);
-                NotificationManager notificationManager = (NotificationManager)context.getSystemService(Context.NOTIFICATION_SERVICE);
-                notificationManager.cancel(MyBroadcastReceiver.notificationid);
-                notificationFirebase();
-
-            }
-        }, new Response.ErrorListener(){
-
-            @Override
-            public void onErrorResponse(VolleyError error) {
-                System.out.println(error);
-            }
-        }) {
-            @Override
-            protected Map<String, String> getParams() throws AuthFailureError {
-                Map<String, String> parameters=new HashMap<>();
-                parameters.put("mensaje_id",id);
-                parameters.put("contenido", m.getContenido());
-                parameters.put("dia", m.getFecha());
-                parameters.put("chat_id", chat_id);
-                parameters.put("telefono", m.getTelefono());
-                return parameters;
-            }
-        };
-
-        requestQueue.add(request);*/
     }
 
 
@@ -328,6 +164,10 @@ public class MyBroadcastReceiver extends BroadcastReceiver implements RequestHan
 
             jData.put("tokenaenviar", usuarioreceptor.getToken().toString());
             jData.put("tokenemisor", usuarioemisor.getToken().toString());
+
+
+            jData.put("fotoemisor", usuarioemisor.getUri().toString());
+            jData.put("fotoreceptor", usuarioreceptor.getUri().toString());
 
 
             jData.put("nombreemisor", usuarioemisor.getNombre().toString());
@@ -537,6 +377,12 @@ public class MyBroadcastReceiver extends BroadcastReceiver implements RequestHan
 
     }
 
+
+
+
+
+
+
     @Override
     public void onResponse(String response, String url) {
 
@@ -578,7 +424,7 @@ public class MyBroadcastReceiver extends BroadcastReceiver implements RequestHan
                 System.out.println("grupo encontrado");
                 esgrupo=true;
 
-                //       grupo=(Grupo) llegada.getSerializableExtra("grupoinfo");
+                //    grupo=(Grupo) llegada.getSerializableExtra("grupoinfo");
 
 
 
@@ -588,11 +434,21 @@ public class MyBroadcastReceiver extends BroadcastReceiver implements RequestHan
                 for (int j=0; j < jsonArray.length(); j++) {
                     e = jsonArray.getJSONObject(j);
 
-                    Usuario usuariomiembro=new Usuario(e.getString("TELEFONO").toString(), e.getString("NOMBRE").toString(), null, e.getString("TOKEN").toString());
+                    //Usuario(String telefono, String nombre, String uri, String token, String id)
+
+                    Usuario usuariomiembro=new Usuario(e.getString("TELEFONO").toString(), e.getString("NOMBRE").toString(), e.getString("RUTA").toString(), e.getString("TOKEN").toString(), e.getString("ID").toString());
+
+                    System.out.println("usuariomiembro broadcast "+usuariomiembro);
+
+                    usuariomiembro.setUri(Rutas.construirRuta(usuariomiembro.getUri().toString()));
+
                     usuariogrupo.add(usuariomiembro);
                 }
 
                 grupo=new Grupo(nombregrupo, iddelgrupo, "", usuariogrupo);
+
+
+                System.out.println("este es mi grupo "+grupo);
 
             }catch (JSONException e) {
 
@@ -608,4 +464,7 @@ public class MyBroadcastReceiver extends BroadcastReceiver implements RequestHan
         }
 
     }
+
+
+
 }

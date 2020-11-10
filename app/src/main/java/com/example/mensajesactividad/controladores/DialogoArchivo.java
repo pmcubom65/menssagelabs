@@ -193,7 +193,15 @@ public class DialogoArchivo  extends DialogFragment  implements RequestHandlerIn
 
                 if (imagenenstring.length()>0 && extensionstring.length()>0) {
                     subirImagen(imagenenstring, Autenticacion.idpropietario, extensionstring);
-                }
+                }/*else {
+
+                    final View viewPos = layoutactualizar.findViewById(R.id.dialogoarchivoslayout);
+
+
+                    Snackbar snackbar = Snackbar.make(viewPos, "Error en el archivo", Snackbar.LENGTH_INDEFINITE);
+
+                    snackbar.show();
+                }*/
 
 
             }
@@ -256,7 +264,7 @@ public class DialogoArchivo  extends DialogFragment  implements RequestHandlerIn
             imagencargada.setVisibility(View.VISIBLE);
             imagencargada.setImageURI(uri);
 
-         //   String filename=uri.getPath().substring(uri.getPath().lastIndexOf("/")+1);
+
             String rutaimagen=new File(uri.getPath()).getPath().split(":")[0];
             String filename=rutaimagen.substring(rutaimagen.lastIndexOf("/")+1);
 
@@ -266,7 +274,7 @@ public class DialogoArchivo  extends DialogFragment  implements RequestHandlerIn
             nombrearchivo.setVisibility(View.VISIBLE);
             nombrearchivo.setText(filename);
 
-         //   buscarUsuario(Autenticacion.numerotelefono, imgString, extension);
+
 
         }
 
@@ -356,138 +364,6 @@ public class DialogoArchivo  extends DialogFragment  implements RequestHandlerIn
 
         MySingleton.getInstance(getActivity().getApplicationContext()).addToRequest(cr.crearRequest());
 
-
-
-
-      /*  StringRequest request = new StringRequest(Request.Method.POST, imagen_url, new Response.Listener<String>() {
-            @RequiresApi(api = Build.VERSION_CODES.O)
-            @Override
-            public void onResponse(String response) {
-
-                try {
-
-                    JSONObject respuesta = new JSONObject(response);
-
-                    String id = respuesta.getString("GRABADO").toString();
-
-
-                    datoactualizar.onNombreAActualizar("actualizar");
-
-                }catch (JSONException e) {
-
-                    System.out.println(e.toString());
-                }
-
-                System.out.println(response);
-
-            }
-        }, new Response.ErrorListener() {
-
-            @Override
-            public void onErrorResponse(VolleyError error) {
-
-                System.out.println("volley error");
-                error.printStackTrace();
-
-                NetworkResponse response = error.networkResponse;
-                if (error instanceof ServerError && response != null) {
-                    try {
-                        String res = new String(response.data,
-                                HttpHeaderParser.parseCharset(response.headers, "utf-8"));
-                        // Now you can use any deserializer to make sense of data
-
-                        JSONObject obj = new JSONObject(res);
-                        System.out.println(obj.toString());
-                    } catch (UnsupportedEncodingException e1) {
-                        // Couldn't properly decode data to string
-                        Log.e("JSON Parser", "Error parsing data " + e1.toString());
-                        e1.printStackTrace();
-                    } catch (JSONException e2) {
-                        // returned data is not JSONObject?
-                        Log.e("JSON Parser", "Error parsing data " + e2.toString());
-                        e2.printStackTrace();
-                    }
-                }
-
-                System.out.println(error.toString());
-
-            }
-        }) {
-
-
-            @Override
-            public String getBodyContentType() {
-                return "application/json";
-            }
-
-            @Override
-            public Map<String, String> getHeaders() throws AuthFailureError {
-                HashMap<String, String> headers = new HashMap<String, String>();
-                headers.put("Content-Type", "application/json; charset=utf-8");
-                return headers;
-            }
-
-
-            @Override
-            public byte[] getBody() throws AuthFailureError {
-
-                JSONObject jsonBody = new JSONObject();
-
-
-
-
-                try {
-                    jsonBody.put("ID", id);
-                    jsonBody.put("IMAGEN", imagen);
-
-                    jsonBody.put("EXTENSION", extension);
-
-
-
-                    Iterator it = valores.entrySet().iterator();
-                    while (it.hasNext()) {
-                        Map.Entry pair = (Map.Entry)it.next();
-                        jsonBody.put(pair.getKey().toString(), pair.getValue().toString());
-
-                        it.remove(); // avoids a ConcurrentModificationException
-                    }
-
-
-                } catch (JSONException e) {
-                    e.printStackTrace();
-                }
-
-
-                try {
-
-                    return jsonBody == null ? null : jsonBody.toString().getBytes("UTF-8");
-                } catch (UnsupportedEncodingException uee) {
-
-                    return null;
-                }
-
-
-            }
-        };
-
-        request.setRetryPolicy(new RetryPolicy() {
-            @Override
-            public int getCurrentTimeout() {
-                return 50000;
-            }
-
-            @Override
-            public int getCurrentRetryCount() {
-                return 50000;
-            }
-
-            @Override
-            public void retry(VolleyError error) throws VolleyError {
-
-            }
-        });
-        MySingleton.getInstance(getActivity().getApplicationContext()).addToRequest(request);*/
-
     }
 
 
@@ -552,7 +428,6 @@ public class DialogoArchivo  extends DialogFragment  implements RequestHandlerIn
         String s = cursor.getString(column_index);
 
         cursor.close();
-
 
         return s;
     }

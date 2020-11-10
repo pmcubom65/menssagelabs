@@ -108,6 +108,7 @@ public class Usuario implements Serializable {
                 ", nombre='" + nombre + '\'' +
                 ", uri='" + uri + '\'' +
                 ", token='" + token + '\'' +
+                ", id='" + id + '\'' +
                 '}';
     }
 }

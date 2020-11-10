@@ -72,6 +72,8 @@ public class AdaptadorContactos extends RecyclerView.Adapter<AdaptadorContactos.
 
 
 
+
+
     }
 
     @Override

@@ -154,6 +154,8 @@ public class MainActivity extends AppCompatActivity implements DialogoArchivo.Da
         esgrupo=llegada.getExtras().getBoolean("grupo");
 
 
+
+
         requestQueue= Volley.newRequestQueue(getApplicationContext());
         recyclerView = (RecyclerView) findViewById(R.id.my_recycler_view);
         mFirebaseAnalytics = FirebaseAnalytics.getInstance(this);
@@ -171,10 +173,6 @@ public class MainActivity extends AppCompatActivity implements DialogoArchivo.Da
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
         recyclerView.setHasFixedSize(false);
-
-
-
-
 
         ViewGroup.LayoutParams params=recyclerView.getLayoutParams();
 
@@ -206,51 +204,49 @@ public class MainActivity extends AppCompatActivity implements DialogoArchivo.Da
             @RequiresApi(api = Build.VERSION_CODES.O)
             @Override
             public void onClick(View v) {
-                LocalDateTime ahora= LocalDateTime.now();
-                ZonedDateTime zdt = ahora.atZone(ZoneId.of("Europe/Madrid"));
 
-                DateTimeFormatter dtf=DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
-                String dia=ahora.format(dtf);
-
-                if (esgrupo){
-
-                    mensaje=new Mensaje(textoenviar.getText().toString(), dia, usuarioemisor.getTelefono().toString(), usuarioemisor.getNombre().toString());
-                    datosAmostrar.add(datosAmostrar.size(), mensaje);
-                    mAdapter.notifyItemChanged(datosAmostrar.size());
-                    String id_mensaje=String.valueOf(zdt.toInstant().toEpochMilli());
-
-                    cargarMensajesChat();
+                if (textoenviar.getText().toString().length() > 0) {
 
 
-                    for (int g=0; g<grupo.getDetallesmiembros().size(); g++) {
-                        usuarioreceptor=(Usuario) grupo.getDetallesmiembros().get(g);
+                    LocalDateTime ahora = LocalDateTime.now();
+                    ZonedDateTime zdt = ahora.atZone(ZoneId.of("Europe/Madrid"));
+
+                    DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+                    String dia = ahora.format(dtf);
+
+                    if (esgrupo) {
+
+                        mensaje = new Mensaje(textoenviar.getText().toString(), dia, usuarioemisor.getTelefono().toString(), usuarioemisor.getNombre().toString());
+                        datosAmostrar.add(datosAmostrar.size(), mensaje);
+                        mAdapter.notifyItemChanged(datosAmostrar.size());
+                        String id_mensaje = String.valueOf(zdt.toInstant().toEpochMilli());
+
+                        cargarMensajesChat();
+
+
+                        for (int g = 0; g < grupo.getDetallesmiembros().size(); g++) {
+                            usuarioreceptor = (Usuario) grupo.getDetallesmiembros().get(g);
+                            grabarMensaje(mensaje, id_mensaje);
+                            notificationFirebase();
+                        }
+
+
+                    } else {
+
+                        mensaje = new Mensaje(textoenviar.getText().toString(), dia, usuarioemisor.getTelefono().toString(), usuarioemisor.getNombre().toString());
+                        datosAmostrar.add(datosAmostrar.size(), mensaje);
+                        mAdapter.notifyItemChanged(datosAmostrar.size());
+                        String id_mensaje = String.valueOf(zdt.toInstant().toEpochMilli());
                         grabarMensaje(mensaje, id_mensaje);
+                        cargarMensajesChat();
+
                         notificationFirebase();
+
+
                     }
 
 
-
-
-
-
-
-                }else {
-
-                    mensaje=new Mensaje(textoenviar.getText().toString(), dia, usuarioemisor.getTelefono().toString(), usuarioemisor.getNombre().toString());
-                    datosAmostrar.add(datosAmostrar.size(), mensaje);
-                    mAdapter.notifyItemChanged(datosAmostrar.size());
-                    String id_mensaje=String.valueOf(zdt.toInstant().toEpochMilli());
-                    grabarMensaje(mensaje, id_mensaje);
-                    cargarMensajesChat();
-
-                    notificationFirebase();
-
-
-
                 }
-
-
-
             }
         });
 
@@ -275,7 +271,27 @@ public class MainActivity extends AppCompatActivity implements DialogoArchivo.Da
                 System.out.println("usuarios receptor"+ usuarioreceptor);
 
                 if (esgrupo){
-                    dialogoarchivo.setValues(dia, michatid, usuarioemisor.getTelefono().toString(), "");
+                    usuarioemisor=new Usuario(Autenticacion.numerotelefono, Autenticacion.nombredelemisor, null, Autenticacion.tokenorigen);
+
+                    System.out.println("en grupo "+usuarioemisor.toString());
+
+                    mensaje=new Mensaje("Mensaje Enviado", dia, usuarioemisor.getTelefono().toString(), usuarioemisor.getNombre().toString());
+
+                    String id_mensaje=String.valueOf(zdt.toInstant().toEpochMilli());
+
+
+
+                    for (int g=0; g<grupo.getDetallesmiembros().size(); g++) {
+                        usuarioreceptor=(Usuario) grupo.getDetallesmiembros().get(g);
+                        grabarMensaje(mensaje, id_mensaje);
+
+                        dialogoarchivo.setValues(dia, michatid, usuarioemisor.getTelefono().toString(), usuarioreceptor.getTelefono().toString());
+                    //    notificationFirebase();
+                    }
+
+
+
+
                 }else {
                     dialogoarchivo.setValues(dia, michatid, usuarioemisor.getTelefono().toString(), usuarioreceptor.getTelefono().toString());
                 }
@@ -294,7 +310,7 @@ public class MainActivity extends AppCompatActivity implements DialogoArchivo.Da
         LocalBroadcastManager.getInstance(this).registerReceiver(onMessage, intentFilter);
 
 
-       buscarSiEsGrupo(michatid);
+
 
         recyclerView.addOnItemTouchListener(
                 new RecyclerItemClickListener(this, recyclerView ,new RecyclerItemClickListener.OnItemClickListener() {
@@ -443,130 +459,6 @@ public class MainActivity extends AppCompatActivity implements DialogoArchivo.Da
 
         MySingleton.getInstance(getBaseContext()).addToRequest(cr.crearRequest());
 
-
-
-
-
-   /*     StringRequest request = new StringRequest(Request.Method.POST, urlcrearmensaje, new Response.Listener<String>() {
-            @RequiresApi(api = Build.VERSION_CODES.O)
-            @Override
-            public void onResponse(String response) {
-
-
-                try {
-                    JSONObject jsnobject = new JSONObject(response.toString());
-
-                    String contenido = jsnobject.getString("contenido");
-                    textoenviar.setText("");
-
-                    mAdapter.notifyDataSetChanged();
-                } catch (JSONException e) {
-                    e.printStackTrace();
-                }
-
-                System.out.println("mensaje grabado "+ response.toString());
-
-            }
-        }, new Response.ErrorListener() {
-
-            @Override
-            public void onErrorResponse(VolleyError error) {
-
-                System.out.println("volley error");
-                error.printStackTrace();
-
-                NetworkResponse response = error.networkResponse;
-                if (error instanceof ServerError && response != null) {
-                    try {
-                        String res = new String(response.data,
-                                HttpHeaderParser.parseCharset(response.headers, "utf-8"));
-                        // Now you can use any deserializer to make sense of data
-
-                        JSONObject obj = new JSONObject(res);
-                        System.out.println(obj.toString());
-                    } catch (UnsupportedEncodingException e1) {
-                        // Couldn't properly decode data to string
-                        Log.e("JSON Parser", "Error parsing data " + e1.toString());
-                        e1.printStackTrace();
-                    } catch (JSONException e2) {
-                        // returned data is not JSONObject?
-                        Log.e("JSON Parser", "Error parsing data " + e2.toString());
-                        e2.printStackTrace();
-                    }
-                }
-
-
-
-            }
-        }) {
-
-
-            @Override
-            public String getBodyContentType() {
-                return "application/json";
-            }
-
-            @Override
-            public Map<String, String> getHeaders() throws AuthFailureError {
-                HashMap<String, String> headers = new HashMap<String, String>();
-                headers.put("Content-Type", "application/json; charset=utf-8");
-                return headers;
-            }
-
-
-            @Override
-            public byte[] getBody() throws AuthFailureError {
-
-                JSONObject jsonBody = new JSONObject();
-                try {
-                    jsonBody.put("contenido", m.getContenido().toString());
-                    jsonBody.put("dia", m.getFecha().toString());
-                    jsonBody.put("usuarioid", m.getTelefono().toString());
-                    jsonBody.put("chatid", michatid);
-                    jsonBody.put("idusuariorecepcion", usuarioreceptor.getTelefono().toString());
-
-
-                } catch (JSONException e) {
-                    e.printStackTrace();
-                }
-
-
-                try {
-
-                    return jsonBody == null ? null : jsonBody.toString().getBytes("UTF-8");
-                } catch (UnsupportedEncodingException uee) {
-
-                    return null;
-                }
-
-
-            }
-        };
-
-        request.setRetryPolicy(new RetryPolicy() {
-            @Override
-            public int getCurrentTimeout() {
-                return 50000;
-            }
-
-            @Override
-            public int getCurrentRetryCount() {
-                return 50000;
-            }
-
-            @Override
-            public void retry(VolleyError error) throws VolleyError {
-
-            }
-        });
-
-        MySingleton.getInstance(getBaseContext()).addToRequest(request);*/
-     //   requestQueue.add(request);
-
-
-
-
-
     }
 
 
@@ -587,140 +479,6 @@ public class MainActivity extends AppCompatActivity implements DialogoArchivo.Da
         CrearRequests cr = new CrearRequests(urlcargarmensajeschat, jsonBody, rh);
 
         MySingleton.getInstance(getBaseContext()).addToRequest(cr.crearRequest());
-
-
-
-
-     /*   StringRequest request = new StringRequest(Request.Method.POST, urlcargarmensajeschat, new Response.Listener<String>() {
-            @RequiresApi(api = Build.VERSION_CODES.O)
-            @Override
-            public void onResponse(String response) {
-
-
-                try {
-                    JSONObject jsnobject = new JSONObject(response.toString());
-                    JSONArray jsonArray = jsnobject.getJSONArray("mensajes");
-                    for (int i = 0; i < jsonArray.length(); i++) {
-                        JSONObject explrObject = jsonArray.getJSONObject(i);
-                        Mensaje m=new Mensaje(explrObject.getString("CONTENIDO"), explrObject.getString("DIA").replace('T', ' '), explrObject.getString("TELEFONO"), explrObject.getString("NOMBRE"));
-                        JSONArray archivos=explrObject.getJSONArray("ARCHIVOS");
-
-                        for (int arc=0; arc< archivos.length(); arc++) {
-
-                            JSONObject archivodelmensaje=archivos.getJSONObject(arc);
-                            m.setRutaarchivo(archivodelmensaje.getString("RUTA").toString());
-                        }
-
-
-
-
-
-                        if (!datosAmostrar.contains(m)) {
-                            datosAmostrar.add(m);
-                        }
-
-
-                    }
-                    mAdapter.notifyDataSetChanged();
-                } catch (JSONException e) {
-                    e.printStackTrace();
-                }
-
-
-
-            }
-        }, new Response.ErrorListener() {
-
-            @Override
-            public void onErrorResponse(VolleyError error) {
-
-                System.out.println("volley error");
-                error.printStackTrace();
-
-                NetworkResponse response = error.networkResponse;
-                if (error instanceof ServerError && response != null) {
-                    try {
-                        String res = new String(response.data,
-                                HttpHeaderParser.parseCharset(response.headers, "utf-8"));
-                        // Now you can use any deserializer to make sense of data
-
-                        JSONObject obj = new JSONObject(res);
-                        System.out.println(obj.toString());
-                    } catch (UnsupportedEncodingException e1) {
-                        // Couldn't properly decode data to string
-                        Log.e("JSON Parser", "Error parsing data " + e1.toString());
-                        e1.printStackTrace();
-                    } catch (JSONException e2) {
-                        // returned data is not JSONObject?
-                        Log.e("JSON Parser", "Error parsing data " + e2.toString());
-                        e2.printStackTrace();
-                    }
-                }
-
-           //     Snackbar.make((View) findViewById(R.id.linearcontactos), response.toString(), Snackbar.LENGTH_LONG).show();
-
-            }
-        }) {
-
-
-            @Override
-            public String getBodyContentType() {
-                return "application/json";
-            }
-
-            @Override
-            public Map<String, String> getHeaders() throws AuthFailureError {
-                HashMap<String, String> headers = new HashMap<String, String>();
-                headers.put("Content-Type", "application/json; charset=utf-8");
-                return headers;
-            }
-
-
-            @Override
-            public byte[] getBody() throws AuthFailureError {
-
-                JSONObject jsonBody = new JSONObject();
-                try {
-                    jsonBody.put("codigo", michatid);
-
-
-                } catch (JSONException e) {
-                    e.printStackTrace();
-                }
-
-
-                try {
-
-                    return jsonBody == null ? null : jsonBody.toString().getBytes("UTF-8");
-                } catch (UnsupportedEncodingException uee) {
-
-                    return null;
-                }
-
-
-            }
-        };
-
-        request.setRetryPolicy(new RetryPolicy() {
-            @Override
-            public int getCurrentTimeout() {
-                return 50000;
-            }
-
-            @Override
-            public int getCurrentRetryCount() {
-                return 50000;
-            }
-
-            @Override
-            public void retry(VolleyError error) throws VolleyError {
-
-            }
-        });
-
-        MySingleton.getInstance(getBaseContext()).addToRequest(request);*/
-
-
 
     }
 
@@ -773,8 +531,8 @@ public class MainActivity extends AppCompatActivity implements DialogoArchivo.Da
             }else {
                 jData.put("titulo", "Archivo enviado");
             }
-
-
+            jData.put("fotoemisor", usuarioemisor.getUri().toString());
+            jData.put("fotoreceptor", usuarioreceptor.getUri().toString());
 
             jData.put("tokenaenviar", usuarioreceptor.getToken().toString());
             jData.put("tokenemisor", usuarioemisor.getToken().toString());
@@ -856,7 +614,13 @@ public class MainActivity extends AppCompatActivity implements DialogoArchivo.Da
                     for (int j=0; j < jsonArray.length(); j++) {
                         e = jsonArray.getJSONObject(j);
 
-                        Usuario usuariomiembro=new Usuario(e.getString("TELEFONO").toString(), e.getString("NOMBRE").toString(), null, e.getString("TOKEN").toString());
+                        //Usuario(String telefono, String nombre, String uri, String token, String id)
+
+
+                        Usuario usuariomiembro=new Usuario(e.getString("TELEFONO").toString(), e.getString("NOMBRE").toString(), e.getString("RUTA").toString(), e.getString("TOKEN").toString(), e.getString("ID").toString());
+
+                        usuariomiembro.setUri(Rutas.construirRuta(usuariomiembro.getUri()));
+
                         usuariogrupo.add(usuariomiembro);
                     }
 
@@ -982,11 +746,8 @@ public class MainActivity extends AppCompatActivity implements DialogoArchivo.Da
     public void onNombreAActualizar(String s) {
         if (s.equals("actualizar")){
 
-            LocalDateTime ahora= LocalDateTime.now();
-            ZonedDateTime zdt = ahora.atZone(ZoneId.of("Europe/Madrid"));
 
-            DateTimeFormatter dtf=DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
-            String dia=ahora.format(dtf);
+            String dia=Rutas.crearfechaHora();
 
 
             if (esgrupo) {
@@ -1071,6 +832,8 @@ public class MainActivity extends AppCompatActivity implements DialogoArchivo.Da
         }
 
     }
+
+
 }
 
 

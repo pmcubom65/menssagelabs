@@ -132,10 +132,10 @@ public class MostrarListaChats extends AppCompatActivity  {
         intent.putExtra("numerodetelefono", Autenticacion.numerotelefono);
         intent.putExtra("numerodetelefonoreceptor", listadodechats.get(position).getTelefono().toString());
 
-        intent.putExtra("usuarioemisor", new Usuario(Autenticacion.numerotelefono, Autenticacion.nombredelemisor, null, Autenticacion.tokenorigen));
-        intent.putExtra("usuarioreceptor",  new Usuario(listadodechats.get(position).getTelefono().toString(), listadodechats.get(position).getNombre().toString(), null, listadodechats.get(position).getToken().toString()));
+        intent.putExtra("usuarioemisor", new Usuario(Autenticacion.numerotelefono, Autenticacion.nombredelemisor, Autenticacion.rutafotoimportante, Autenticacion.tokenorigen));
+        intent.putExtra("usuarioreceptor",  new Usuario(listadodechats.get(position).getTelefono().toString(), listadodechats.get(position).getNombre().toString(), listadodechats.get(position).getUri().toString(), listadodechats.get(position).getToken().toString()));
 
-        System.out.println("usuarioreceptor"+new Usuario(listadodechats.get(position).getTelefono().toString(), listadodechats.get(position).getNombre().toString(), null, listadodechats.get(position).getToken().toString()));
+
         intent.putExtra("contactos", MostrarContactos.contactos);
 
 

@@ -13,17 +13,19 @@ public class Chat implements Serializable {
     private String codigo;
 
 
-    public Chat(String inicio, String codigo, String telefono, String nombre, String token) {
+    public Chat(String inicio, String codigo, String telefono, String nombre, String token, String uri) {
         this.inicio = inicio;
         this.codigo = codigo;
         this.telefono = telefono;
         this.nombre = nombre;
         this.token = token;
+        this.uri=uri;
     }
 
     private String telefono;
     private String nombre;
     private String token;
+    private String uri;
 
     public Chat(){}
 
@@ -71,6 +73,13 @@ public class Chat implements Serializable {
         this.codigo = codigo;
     }
 
+    public String getUri() {
+        return uri;
+    }
+
+    public void setUri(String uri) {
+        this.uri = uri;
+    }
 
     @Override
     public String toString() {
