@@ -1,7 +1,12 @@
 package com.example.mensajesactividad.modelos;
 
+import android.content.ContentResolver;
 import android.content.Context;
+import android.content.Intent;
+import android.database.Cursor;
 import android.net.Uri;
+import android.os.Build;
+import android.provider.ContactsContract;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -10,12 +15,17 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.RequiresApi;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.bumptech.glide.Glide;
 import com.example.mensajesactividad.R;
+import com.example.mensajesactividad.controladores.MainActivity;
+import com.example.mensajesactividad.controladores.MostrarContactos;
 
 import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.Set;
 
 public class AdaptadorContactos extends RecyclerView.Adapter<AdaptadorContactos.ViewHolder> {
 
@@ -31,9 +41,10 @@ public class AdaptadorContactos extends RecyclerView.Adapter<AdaptadorContactos.
 
     public class ViewHolder extends RecyclerView.ViewHolder {
 
-        TextView contacto1,contacto2;
+        TextView contacto1,contacto2, mibadge;
         ImageView imageView;
         CheckBox checkBox;
+
 
         public ViewHolder(@NonNull View itemView) {
             super(itemView);
@@ -42,6 +53,9 @@ public class AdaptadorContactos extends RecyclerView.Adapter<AdaptadorContactos.
             imageView=itemView.findViewById(R.id.imageView);
             checkBox=itemView.findViewById(R.id.checkBox);
             checkBox.setVisibility(View.GONE);
+
+            mibadge=itemView.findViewById(R.id.badgecontacto);
+            mibadge.setVisibility(View.GONE);
         }
     }
 
@@ -78,6 +92,14 @@ public class AdaptadorContactos extends RecyclerView.Adapter<AdaptadorContactos.
 
     @Override
     public int getItemCount()  {
-        return datos.size();
+
+
+
+            return datos.size();
+
+
     }
+
+
+
 }

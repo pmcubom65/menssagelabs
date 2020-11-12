@@ -643,6 +643,7 @@ public class Perfil extends AppCompatActivity implements RequestHandlerInterface
             SharedPreferences preferences=getSharedPreferences("com.example.mensajes.credenciales", Context.MODE_PRIVATE);
             SharedPreferences.Editor editor=preferences.edit();
             editor.putString("foto", mr);
+            Autenticacion.rutafotoimportante=mr;
             System.out.println("guardando preferencias");
 
             editor.commit();

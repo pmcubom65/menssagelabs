@@ -6,6 +6,8 @@ import androidx.appcompat.widget.Toolbar;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import android.app.NotificationManager;
+import android.content.Context;
 import android.content.Intent;
 import android.os.Build;
 import android.os.Bundle;
@@ -78,11 +80,6 @@ public class MostrarListaChats extends AppCompatActivity  {
 
         recyclerView=findViewById(R.id.milistadechats);
 
-
-
-
-
-
         requestQueue= Volley.newRequestQueue(getApplicationContext());
 
         recyclerView.addOnItemTouchListener(
@@ -91,15 +88,12 @@ public class MostrarListaChats extends AppCompatActivity  {
                     @RequiresApi(api = Build.VERSION_CODES.O)
                     @Override
                     public void onItemClick(View view, int position) {
-                        System.out.println("click item");
+                        System.out.println("click chat "+position+" "+ listadodechats.get(position).getCodigo().toString());
                         crearIntent(position);
                     }
 
                     @Override
                     public void onLongItemClick(View view, int position) {
-
-
-
 
                     }
                 })
@@ -119,9 +113,15 @@ public class MostrarListaChats extends AppCompatActivity  {
 
 
 
+    @RequiresApi(api = Build.VERSION_CODES.M)
     public void crearIntent(int position) {
         System.out.println(listadodechats);
+        NotificationManager notificationManager = (NotificationManager) getApplicationContext().getSystemService(Context.NOTIFICATION_SERVICE);
+        notificationManager.cancelAll();
+
+
         Intent intent=new Intent(getApplicationContext(), MainActivity.class);
+
         intent.putExtra("chat_id", listadodechats.get(position).getCodigo().toString());
         intent.putExtra("tokenaenviar",listadodechats.get(position).getToken().toString());
         intent.putExtra("tokenorigen", Autenticacion.tokenorigen);

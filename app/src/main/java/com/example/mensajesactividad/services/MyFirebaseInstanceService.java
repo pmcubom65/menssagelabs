@@ -6,6 +6,7 @@ import android.app.PendingIntent;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.os.Build;
+import android.os.Bundle;
 import android.util.Log;
 import android.widget.RemoteViews;
 
@@ -16,14 +17,31 @@ import androidx.core.app.NotificationManagerCompat;
 import androidx.core.app.RemoteInput;
 import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 
+import com.android.volley.AuthFailureError;
+import com.android.volley.NetworkResponse;
+import com.android.volley.Request;
+import com.android.volley.Response;
+import com.android.volley.RetryPolicy;
+import com.android.volley.ServerError;
+import com.android.volley.VolleyError;
+import com.android.volley.toolbox.HttpHeaderParser;
+import com.android.volley.toolbox.StringRequest;
 import com.bumptech.glide.Glide;
 import com.example.mensajesactividad.controladores.MainActivity;
 import com.example.mensajesactividad.R;
+import com.example.mensajesactividad.controladores.MostrarContactos;
+import com.example.mensajesactividad.modelos.Chat;
 import com.example.mensajesactividad.modelos.Usuario;
 import com.google.firebase.messaging.FirebaseMessagingService;
 import com.google.firebase.messaging.RemoteMessage;
 
 
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import java.io.Serializable;
+import java.io.UnsupportedEncodingException;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ExecutionException;
 
@@ -43,16 +61,12 @@ public class MyFirebaseInstanceService extends FirebaseMessagingService {
 
     Boolean esgrupo=false;
 
-
+    public static Chat michat;
 
     @Override
     public void onNewToken(@NonNull String token) {
         Log.d("TOKEN", "Refreshed token: " + token);
 
-        // If you want to send messages to this application instance or
-        // manage this apps subscriptions on the server side, send the
-        // Instance ID token to your app server.
-      //  sendRegistrationToServer(token);
     }
 
 
@@ -86,12 +100,10 @@ public class MyFirebaseInstanceService extends FirebaseMessagingService {
 
         receptor=new Usuario(telefonoreceptor, nombrereceptor, fotoemisor, tokenreceptor);
 
-        System.out.println("emisor "+emisor);
-        System.out.println("receptor "+receptor);
-
         notificationChannel();
         crearNotificacion();
     }
+
 
 
 
@@ -109,7 +121,6 @@ public class MyFirebaseInstanceService extends FirebaseMessagingService {
 
         if (receptor.getUri()!=null && receptor.getUri().toString().length()>0){
 
-            System.out.println("notificacion creada foto "+receptor.getUri().toString());
 
             try {
 
@@ -233,14 +244,18 @@ public class MyFirebaseInstanceService extends FirebaseMessagingService {
         notificationManagerCompat.notify(notificationid, notification.build());
 
 
-        broadcastIntent();
+        broadcastIntent(emisor, receptor);
   }
 
-    public void broadcastIntent() {
+    public void broadcastIntent(Usuario emisora, Usuario receptora) {
         Intent intent = new Intent();
         intent.setAction("com.myApp.CUSTOM_EVENT");
-        // We should use LocalBroadcastManager when we want INTRA app
-        // communication
+   //     intent.putExtra("chat_id", chat_id);
+        Bundle argsi = new Bundle();
+        argsi.putSerializable("emisor",(Serializable) emisora);
+        argsi.putSerializable("receptor",(Serializable) receptora);
+        intent.putExtra("DATA",argsi);
+
         LocalBroadcastManager.getInstance(getApplicationContext()).sendBroadcast(intent);
     }
 
@@ -257,8 +272,6 @@ public class MyFirebaseInstanceService extends FirebaseMessagingService {
             NotificationManager notificationManager=(NotificationManager) getSystemService(NOTIFICATION_SERVICE);
             notificationManager.createNotificationChannel(notificationChannel);
 
-
-
         }
 
     }
@@ -267,7 +280,6 @@ public class MyFirebaseInstanceService extends FirebaseMessagingService {
     @Override
     public void onCreate() {
         System.out.println("notificacion recibida");
-
 
     }
 }

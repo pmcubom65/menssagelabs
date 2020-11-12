@@ -7,7 +7,7 @@ import androidx.annotation.RequiresApi;
 import java.io.Serializable;
 import java.util.Objects;
 
-public class Chat implements Serializable {
+public class Chat implements Serializable, Comparable<Chat> {
     private String inicio;
 
     private String codigo;
@@ -102,5 +102,10 @@ public class Chat implements Serializable {
     @Override
     public int hashCode() {
         return Objects.hash(getCodigo());
+    }
+
+    @Override
+    public int compareTo(Chat o) {
+        return this.getCodigo().compareTo(o.getCodigo());
     }
 }

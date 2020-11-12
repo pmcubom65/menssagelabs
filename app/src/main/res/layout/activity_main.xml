@@ -80,7 +80,10 @@
             android:layout_weight="2"
             android:layout_height="wrap_content"
             android:clickable="true"
-            app:srcCompat="@android:drawable/ic_menu_send" />
+            app:srcCompat="@android:drawable/ic_menu_send"
+            app:fabCustomSize="56dp"
+            android:layout_marginRight="3dp"
+            />
 
 
         <com.google.android.material.floatingactionbutton.FloatingActionButton
@@ -90,7 +93,8 @@
             android:layout_height="wrap_content"
             android:layout_weight="2"
             android:clickable="true"
-            app:srcCompat="@android:drawable/stat_sys_upload" />
+            app:srcCompat="@android:drawable/stat_sys_upload"
+            app:fabCustomSize="56dp"/>
 
     </LinearLayout>
 

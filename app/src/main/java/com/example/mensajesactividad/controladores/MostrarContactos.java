@@ -7,14 +7,24 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 import androidx.core.view.GravityCompat;
 import androidx.drawerlayout.widget.DrawerLayout;
+import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import android.content.BroadcastReceiver;
+import android.content.ContentResolver;
+import android.content.ContentValues;
+import android.content.Context;
 import android.content.Intent;
 
+import android.content.IntentFilter;
+import android.content.SharedPreferences;
+import android.database.Cursor;
+import android.database.sqlite.SQLiteDatabase;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
+import android.provider.ContactsContract;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -35,20 +45,27 @@ import com.example.mensajesactividad.services.CrearRequests;
 import com.example.mensajesactividad.services.MySingleton;
 import com.example.mensajesactividad.services.RecyclerItemClickListener;
 import com.example.mensajesactividad.services.RequestHandlerInterface;
+import com.example.mensajesactividad.services.Resultados;
 import com.example.mensajesactividad.services.Rutas;
 import com.google.android.material.navigation.NavigationView;
 import com.google.android.material.snackbar.Snackbar;
+import com.google.gson.Gson;
 
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.IOException;
 import java.io.Serializable;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 
 public class MostrarContactos extends AppCompatActivity  implements RequestHandlerInterface {
@@ -96,8 +113,63 @@ public class MostrarContactos extends AppCompatActivity  implements RequestHandl
 
     ImageView ivfoto;
 
-    TextView nombrepropheader;
+    TextView nombrepropheader, mibadge;
 
+
+    private BroadcastReceiver onMessage= new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+
+
+            Bundle args = intent.getBundleExtra("DATA");
+            Usuario miusuario = (Usuario) args.getSerializable("receptor");
+
+            Usuario llegada=new Usuario(miusuario.getTelefono(),miusuario.getNombre(),miusuario.getUri(), miusuario.getToken(), miusuario.getId());
+
+
+            int indice=0;
+            if (!contactos.contains(llegada)){
+                indice=contactos.size();
+                contactos.add(indice, llegada);
+            }else {
+                indice=contactos.indexOf(llegada);
+            }
+            Resultados r = new Resultados(MostrarContactos.this);
+            SQLiteDatabase databaselectura=r.getReadableDatabase();
+            String[] columnas={"telefono"};
+            String WHERE =  "telefono==" + llegada.getTelefono();
+
+
+            Cursor cursor= databaselectura.query("usuario",columnas, WHERE,null,null,null,null);
+            cursor.moveToFirst();
+            String contadoractual="";
+            do {
+
+               contadoractual=cursor.getString(5);
+               System.out.println("contador actual "+contadoractual);
+
+            }while (cursor.moveToNext());
+
+            int nuevocontador=Integer.parseInt(contadoractual)+1;
+
+            SQLiteDatabase midatabase = r.getWritableDatabase();
+
+            ContentValues values = new ContentValues();
+
+            values.put("contador", nuevocontador);
+
+            int filas = midatabase.update("usuario", values, "cast(usuarioid as unsigned)==" + llegada.getId(), null);
+            System.out.println("filas "+filas);
+            midatabase.close();
+
+            mibadge=(TextView) recyclerView.findViewHolderForAdapterPosition(indice).itemView.findViewById(R.id.badgecontacto);
+            mibadge.setVisibility(View.VISIBLE);
+            myAdapter.notifyDataSetChanged();
+
+        }};
+
+
+    @RequiresApi(api = Build.VERSION_CODES.O)
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -111,6 +183,9 @@ public class MostrarContactos extends AppCompatActivity  implements RequestHandl
         drawerLayout=findViewById(R.id.midrawer);
         navigationView=findViewById(R.id.minavegacion);
 
+
+        IntentFilter intentFilter= new IntentFilter("com.myApp.CUSTOM_EVENT");
+        LocalBroadcastManager.getInstance(this).registerReceiver(onMessage, intentFilter);
 
 
         final ActionBar actionBar=getSupportActionBar();
@@ -129,6 +204,7 @@ public class MostrarContactos extends AppCompatActivity  implements RequestHandl
                 .into(iv);
 
         nombrepropheader=(TextView) navHead.findViewById(R.id.texttest);
+
         nombrepropheader.setText(Autenticacion.nombredelemisor);
 
 
@@ -173,12 +249,14 @@ public class MostrarContactos extends AppCompatActivity  implements RequestHandl
         });
 
         Intent intent = getIntent();
-        args = intent.getBundleExtra("BUNDLE");
+        args = intent.getBundleExtra("BUNDLE2");
 
             if (args!=null) {
                 contactos = (ArrayList<Usuario>) args.getSerializable("ARRAYLIST");
 
+                controlleidos();
             }
+
 
 
 
@@ -231,12 +309,17 @@ public class MostrarContactos extends AppCompatActivity  implements RequestHandl
                 })
         );
 
+
+
+
+
         recyclerView.setHasFixedSize(true);
         layoutManager=new LinearLayoutManager(this);
         recyclerView.setLayoutManager(layoutManager);
 
 
         myAdapter=new AdaptadorContactos(this, contactos);
+
         recyclerView.setAdapter(myAdapter);
 
     }
@@ -442,6 +525,8 @@ public class MostrarContactos extends AppCompatActivity  implements RequestHandl
             }catch (JSONException e) {
 
                 Snackbar.make((View) findViewById(R.id.linearcontactos), "El usuario no está registrado", Snackbar.LENGTH_LONG).show();
+
+                System.out.println(e.toString());
             }
 
             System.out.println(response);
@@ -469,6 +554,7 @@ public class MostrarContactos extends AppCompatActivity  implements RequestHandl
 
             System.out.println(response);
         } else if (url.equals(Rutas.rutamostrarlistadochats)) {
+
 
             try {
 
@@ -591,4 +677,43 @@ public class MostrarContactos extends AppCompatActivity  implements RequestHandl
 
 
     }
+
+
+
+    @RequiresApi(api = Build.VERSION_CODES.N)
+    public void controlleidos() {
+        Resultados r=new Resultados(this);
+        SQLiteDatabase midatabase=r.getWritableDatabase();
+
+        ContentValues contentvalues=new ContentValues();
+        System.out.println("grabo contactos "+contactos);
+        midatabase.beginTransaction();
+        //(telefono text, nombre text, uri text, token text, usuarioid text, contador int, ID INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, unique(usuarioid))
+       // (telefono text, nombre text, uri text, token text, usuarioid text, contador
+                contactos.forEach(contacto-> {
+
+
+            contentvalues.put("telefono", contacto.getTelefono());
+            contentvalues.put("nombre", contacto.getNombre());
+
+            contentvalues.put("uri", contacto.getUri());
+            contentvalues.put("token", contacto.getToken());
+            contentvalues.put("usuarioid", contacto.getId());
+            contentvalues.put("contador", 0);
+
+            long row= midatabase.insertWithOnConflict("usuario",null, contentvalues, SQLiteDatabase.CONFLICT_REPLACE);
+
+            contentvalues.clear();
+        });
+
+        midatabase.setTransactionSuccessful();
+        midatabase.endTransaction();
+        midatabase.close();
+
+
+
+    }
+
+
+
 }

@@ -89,9 +89,9 @@ public class Autenticacion extends AppCompatActivity  implements RequestHandlerI
 
     String imagen_url = Rutas.subir_imagen_url;
 
-    public static String rutafotoimportante;
+    public static String rutafotoimportante="";
 
-
+    Boolean esusuario=false;
 
     @RequiresApi(api = Build.VERSION_CODES.O)
     @Override
@@ -175,128 +175,6 @@ public class Autenticacion extends AppCompatActivity  implements RequestHandlerI
 
         MySingleton.getInstance(getBaseContext()).addToRequest(cr.crearRequest());
 
-
-
-   /*     StringRequest request = new StringRequest(Request.Method.POST, urlcrearusuario, new Response.Listener<String>() {
-            @RequiresApi(api = Build.VERSION_CODES.O)
-            @Override
-            public void onResponse(String response) {
-
-                try {
-                    JSONObject respuesta = new JSONObject(response);
-
-                    String codigo = respuesta.getString("codigo");
-                    String mensaje = respuesta.getString("mensaje");
-
-                    Snackbar.make(findViewById(R.id.autenticacionlayout), response.toString(), Snackbar.LENGTH_LONG).show();
-
-
-
-                } catch (JSONException e) {
-                    e.printStackTrace();
-                    guardarPreferencias(telefono, nombre, token);
-
-                    System.out.println("grabado");
-                    getContactPermission();
-
-                }
-
-          System.out.println(response);
-
-            }
-        }, new Response.ErrorListener() {
-
-            @Override
-            public void onErrorResponse(VolleyError error) {
-
-                System.out.println("volley error");
-                error.printStackTrace();
-
-                NetworkResponse response = error.networkResponse;
-                if (error instanceof ServerError && response != null) {
-                    try {
-                        String res = new String(response.data,
-                                HttpHeaderParser.parseCharset(response.headers, "utf-8"));
-                        // Now you can use any deserializer to make sense of data
-
-                        JSONObject obj = new JSONObject(res);
-
-                    } catch (UnsupportedEncodingException e1) {
-                        // Couldn't properly decode data to string
-                        Log.e("JSON Parser", "Error parsing data " + e1.toString());
-                        e1.printStackTrace();
-                    } catch (JSONException e2) {
-                        // returned data is not JSONObject?
-                        Log.e("JSON Parser", "Error parsing data " + e2.toString());
-                        e2.printStackTrace();
-                    }
-                }
-
-                Snackbar.make(findViewById(R.id.autenticacionlayout), error.toString(), Snackbar.LENGTH_LONG).show();
-
-            }
-        }) {
-
-
-            @Override
-            public String getBodyContentType() {
-                return "application/json";
-            }
-
-            @Override
-            public Map<String, String> getHeaders() throws AuthFailureError {
-                HashMap<String, String> headers = new HashMap<String, String>();
-                headers.put("Content-Type", "application/json; charset=utf-8");
-                return headers;
-            }
-
-
-            @Override
-            public byte[] getBody() throws AuthFailureError {
-
-                JSONObject jsonBody = new JSONObject();
-                try {
-                    jsonBody.put("telefono", telefono);
-                    jsonBody.put("nombre", nombre);
-                    jsonBody.put("token", token);
-                } catch (JSONException e) {
-                    e.printStackTrace();
-                }
-
-
-                try {
-
-                    return jsonBody == null ? null : jsonBody.toString().getBytes("UTF-8");
-                } catch (UnsupportedEncodingException uee) {
-
-                    return null;
-                }
-
-
-            }
-        };
-
-        request.setRetryPolicy(new RetryPolicy() {
-            @Override
-            public int getCurrentTimeout() {
-                return 50000;
-            }
-
-            @Override
-            public int getCurrentRetryCount() {
-                return 50000;
-            }
-
-            @Override
-            public void retry(VolleyError error) throws VolleyError {
-
-            }
-        });*/
-
-    //    MySingleton.getInstance(getBaseContext()).addToRequest(request);
-   //   requestQueue.add(request);
-
-
     }
 
 
@@ -328,6 +206,32 @@ public class Autenticacion extends AppCompatActivity  implements RequestHandlerI
 
 
 
+    private void buscarUsuario(String telefonobuscar) {
+
+
+        JSONObject jsonBody=new JSONObject();
+
+        try {
+            jsonBody.put("telefono", telefonobuscar.toString().replaceAll("[\\D]", ""));
+            System.out.println("Busco este telefono "+jsonBody.toString());
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+
+        CrearRequests cr = new CrearRequests(Rutas.buscarusuario, jsonBody, rh);
+
+        MySingleton.getInstance(getBaseContext()).addToRequest(cr.crearRequest());
+
+    }
+
+
+
+
+
+
+
+
+
     @RequiresApi(api = Build.VERSION_CODES.O)
     private void getContactList() {
        listacontactos=new ArrayList<>();
@@ -356,8 +260,10 @@ public class Autenticacion extends AppCompatActivity  implements RequestHandlerI
                         String phoneNo = pCur.getString(pCur.getColumnIndex(
                                 ContactsContract.CommonDataKinds.Phone.NUMBER));
 
+                            buscarUsuario(phoneNo);
+        //                    listacontactos.add(new Usuario(phoneNo, name, my_contact_Uri.toString()));
 
-                        listacontactos.add(new Usuario(phoneNo, name, my_contact_Uri.toString()));
+
 
                     }
                     pCur.close();
@@ -369,6 +275,8 @@ public class Autenticacion extends AppCompatActivity  implements RequestHandlerI
         }
 
         Set<Usuario> set = new HashSet<>(listacontactos);
+
+
         listacontactos.clear();
         listacontactos.addAll(set);
 
@@ -376,7 +284,6 @@ public class Autenticacion extends AppCompatActivity  implements RequestHandlerI
     //    getFotoUsuario();
 
         getPermissionToSendSMS();
-
 
     }
 
@@ -390,7 +297,22 @@ public class Autenticacion extends AppCompatActivity  implements RequestHandlerI
             Bundle args = new Bundle();
             args.putSerializable("ARRAYLIST",(Serializable) listacontactos);
             intent.putExtra("BUNDLE2",args);
-            startActivity(intent);
+
+
+
+
+            new Handler(Looper.getMainLooper()).postDelayed(new Runnable() {
+                @Override
+                public void run() {
+                    startActivity(intent);
+                }
+            }, 200);
+
+
+
+
+
+     //       startActivity(intent);
 
         }else  {
             SmsManager smsManager = SmsManager.getDefault();
@@ -470,121 +392,6 @@ public class Autenticacion extends AppCompatActivity  implements RequestHandlerI
         CrearRequests cr = new CrearRequests(urlmandarsms, jsonBody, rh);
 
         MySingleton.getInstance(getBaseContext()).addToRequest(cr.crearRequest());
-
-
-
-
-
-    /*    StringRequest request = new StringRequest(Request.Method.POST, urlmandarsms, new Response.Listener<String>() {
-            @RequiresApi(api = Build.VERSION_CODES.O)
-            @Override
-            public void onResponse(String response) {
-
-                try {
-                    JSONObject respuesta = new JSONObject(response);
-
-                    String sms = respuesta.getString("sms");
-
-
-
-                } catch (JSONException e) {
-                    e.printStackTrace();
-                    Snackbar.make(findViewById(R.id.autenticacionlayout), response.toString(), Snackbar.LENGTH_LONG).show();
-
-                }
-
-                System.out.println(response);
-
-            }
-        }, new Response.ErrorListener() {
-
-            @Override
-            public void onErrorResponse(VolleyError error) {
-
-                System.out.println("volley error");
-                error.printStackTrace();
-
-                NetworkResponse response = error.networkResponse;
-                if (error instanceof ServerError && response != null) {
-                    try {
-                        String res = new String(response.data,
-                                HttpHeaderParser.parseCharset(response.headers, "utf-8"));
-                        // Now you can use any deserializer to make sense of data
-
-                        JSONObject obj = new JSONObject(res);
-                        System.out.println(obj.toString());
-                    } catch (UnsupportedEncodingException e1) {
-                        // Couldn't properly decode data to string
-                        Log.e("JSON Parser", "Error parsing data " + e1.toString());
-                        e1.printStackTrace();
-                    } catch (JSONException e2) {
-                        // returned data is not JSONObject?
-                        Log.e("JSON Parser", "Error parsing data " + e2.toString());
-                        e2.printStackTrace();
-                    }
-                }
-
-                Snackbar.make(findViewById(R.id.autenticacionlayout), error.toString(), Snackbar.LENGTH_LONG).show();
-
-            }
-        }) {
-
-
-            @Override
-            public String getBodyContentType() {
-                return "application/json";
-            }
-
-            @Override
-            public Map<String, String> getHeaders() throws AuthFailureError {
-                HashMap<String, String> headers = new HashMap<String, String>();
-                headers.put("Content-Type", "application/json; charset=utf-8");
-                return headers;
-            }
-
-
-            @Override
-            public byte[] getBody() throws AuthFailureError {
-
-                JSONObject jsonBody = new JSONObject();
-                try {
-                    jsonBody.put("destinatario", telefono);
-                    jsonBody.put("texto", appSmsToken);
-
-                } catch (JSONException e) {
-                    e.printStackTrace();
-                }
-
-
-                try {
-
-                    return jsonBody == null ? null : jsonBody.toString().getBytes("UTF-8");
-                } catch (UnsupportedEncodingException uee) {
-
-                    return null;
-                }
-
-
-            }
-        };
-
-        request.setRetryPolicy(new RetryPolicy() {
-            @Override
-            public int getCurrentTimeout() {
-                return 50000;
-            }
-
-            @Override
-            public int getCurrentRetryCount() {
-                return 50000;
-            }
-
-            @Override
-            public void retry(VolleyError error) throws VolleyError {
-
-            }
-        });
-        requestQueue.add(request);*/
 
 
     }
@@ -686,7 +493,49 @@ public class Autenticacion extends AppCompatActivity  implements RequestHandlerI
             }
 
 
-        }else  if (urla.equals(Rutas.urlbuscarfoto)) {
+        }   else if (urla.equals(Rutas.buscarusuario)){
+            try {
+
+                JSONObject respuesta = new JSONObject(response);
+
+                String telefono = respuesta.getString("TELEFONO");
+                String token = respuesta.getString("TOKEN");
+                String nombre = respuesta.getString( "NOMBRE");
+
+                String id = respuesta.getString( "ID");
+
+                String rutap=respuesta.getString("RUTA");
+
+                listacontactos.add(new Usuario(telefono, nombre, Rutas.construirRuta(rutap), token, id));
+                System.out.println(listacontactos);
+
+            }catch (JSONException e) {
+
+                System.out.println(e.toString());
+
+            }
+
+            System.out.println(response);
+
+
+
+        }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        else  if (urla.equals(Rutas.urlbuscarfoto)) {
             try {
                 JSONObject respuesta = new JSONObject(response);
 

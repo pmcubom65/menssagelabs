@@ -4,6 +4,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
+import androidx.core.app.NavUtils;
 import androidx.core.app.NotificationCompat;
 import androidx.core.app.NotificationManagerCompat;
 import androidx.core.app.RemoteInput;
@@ -17,13 +18,16 @@ import android.app.NotificationManager;
 import android.app.PendingIntent;
 
 import android.content.BroadcastReceiver;
+import android.content.ContentResolver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.database.Cursor;
 import android.graphics.Insets;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
+import android.provider.ContactsContract;
 import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.MenuItem;
@@ -72,8 +76,9 @@ import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
-
+import java.util.Set;
 
 
 public class MainActivity extends AppCompatActivity implements DialogoArchivo.Datoaactualizar, RequestHandlerInterface   {
@@ -107,17 +112,12 @@ public class MainActivity extends AppCompatActivity implements DialogoArchivo.Da
     RequestHandlerInterface rh = this;
 
     String michatid;
-    // [START declare_analytics]
+
     private FirebaseAnalytics mFirebaseAnalytics;
     Mensaje mensaje;
     ArrayList<Usuario> contactos;
 
- /*   String tokenaenviarlosmensajes;
-    String tokenemisor;
-    String nombreemisor;
-    String nombrereceptor;
 
-    String telefonoreceptor;*/
     Usuario usuarioemisor;
     Usuario usuarioreceptor;
 
@@ -153,6 +153,7 @@ public class MainActivity extends AppCompatActivity implements DialogoArchivo.Da
 
         esgrupo=llegada.getExtras().getBoolean("grupo");
 
+        buscarSiEsGrupo(michatid);
 
 
 
@@ -265,17 +266,10 @@ public class MainActivity extends AppCompatActivity implements DialogoArchivo.Da
 
 
 
-                //String vdia, String vchat_id, String vemisor, String vreceptor
-
-                System.out.println("usuarios emisor"+ usuarioemisor);
-                System.out.println("usuarios receptor"+ usuarioreceptor);
-
                 if (esgrupo){
-                    usuarioemisor=new Usuario(Autenticacion.numerotelefono, Autenticacion.nombredelemisor, null, Autenticacion.tokenorigen);
 
-                    System.out.println("en grupo "+usuarioemisor.toString());
 
-                    mensaje=new Mensaje("Mensaje Enviado", dia, usuarioemisor.getTelefono().toString(), usuarioemisor.getNombre().toString());
+                    mensaje=new Mensaje("Mensaje Enviado", dia, Autenticacion.numerotelefono, Autenticacion.nombredelemisor);
 
                     String id_mensaje=String.valueOf(zdt.toInstant().toEpochMilli());
 
@@ -286,7 +280,7 @@ public class MainActivity extends AppCompatActivity implements DialogoArchivo.Da
                         grabarMensaje(mensaje, id_mensaje);
 
                         dialogoarchivo.setValues(dia, michatid, usuarioemisor.getTelefono().toString(), usuarioreceptor.getTelefono().toString());
-                    //    notificationFirebase();
+
                     }
 
 
@@ -448,7 +442,12 @@ public class MainActivity extends AppCompatActivity implements DialogoArchivo.Da
         try {
             jsonBody.put("contenido", m.getContenido().toString());
             jsonBody.put("dia", m.getFecha().toString());
-            jsonBody.put("usuarioid", m.getTelefono().toString());
+            if (m.getTelefono()!=null) {
+                jsonBody.put("usuarioid", m.getTelefono().toString());
+            }else {
+                jsonBody.put("usuarioid", Autenticacion.numerotelefono);
+            }
+
             jsonBody.put("chatid", michatid);
             jsonBody.put("idusuariorecepcion", usuarioreceptor.getTelefono().toString());
         } catch (JSONException e) {
@@ -483,6 +482,7 @@ public class MainActivity extends AppCompatActivity implements DialogoArchivo.Da
     }
 
 
+    @RequiresApi(api = Build.VERSION_CODES.O)
     @Override
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
 
@@ -493,12 +493,12 @@ public class MainActivity extends AppCompatActivity implements DialogoArchivo.Da
 
 
                 Bundle args = new Bundle();
-                args.putSerializable("ARRAYLIST",(Serializable) contactos);
+                args.putSerializable("ARRAYLIST", getContactList());
 
 
                 volveracontactos.putExtra("BUNDLE",args);
                 startActivity(volveracontactos);
-
+                return true;
         }
 
 
@@ -536,7 +536,6 @@ public class MainActivity extends AppCompatActivity implements DialogoArchivo.Da
 
             jData.put("tokenaenviar", usuarioreceptor.getToken().toString());
             jData.put("tokenemisor", usuarioemisor.getToken().toString());
-
 
             jData.put("nombreemisor", usuarioemisor.getNombre().toString());
             jData.put("nombrereceptor", usuarioreceptor.getNombre().toString());
@@ -604,9 +603,7 @@ public class MainActivity extends AppCompatActivity implements DialogoArchivo.Da
                     System.out.println("grupo encontrado");
                     esgrupo=true;
 
-             //       grupo=(Grupo) llegada.getSerializableExtra("grupoinfo");
                     toolbar.setTitle("Conversando con Grupo "+nombregrupo);
-
 
                     JSONArray jsonArray=respuesta.getJSONArray("MIEMBROS");
                     JSONObject e = null;
@@ -614,7 +611,7 @@ public class MainActivity extends AppCompatActivity implements DialogoArchivo.Da
                     for (int j=0; j < jsonArray.length(); j++) {
                         e = jsonArray.getJSONObject(j);
 
-                        //Usuario(String telefono, String nombre, String uri, String token, String id)
+
 
 
                         Usuario usuariomiembro=new Usuario(e.getString("TELEFONO").toString(), e.getString("NOMBRE").toString(), e.getString("RUTA").toString(), e.getString("TOKEN").toString(), e.getString("ID").toString());
@@ -752,18 +749,13 @@ public class MainActivity extends AppCompatActivity implements DialogoArchivo.Da
 
             if (esgrupo) {
 
-           //     mensaje=new Mensaje("Archivo Enviado", dia, usuarioemisor.getTelefono().toString(), usuarioemisor.getNombre().toString());
-        /*        datosAmostrar.add(datosAmostrar.size(), mensaje);
-                mAdapter.notifyItemChanged(datosAmostrar.size());
-                String id_mensaje=String.valueOf(zdt.toInstant().toEpochMilli());*/
-
                 cargarMensajesChat();
 
 
                 for (int g=0; g<grupo.getDetallesmiembros().size(); g++) {
-             //       usuarioreceptor=(Usuario) grupo.getDetallesmiembros().get(g);
-              //      grabarMensaje(mensaje, id_mensaje);
-                    notificationFirebase();
+                    mensaje=null;
+                     notificationFirebase();
+
                 }
 
 
@@ -772,6 +764,7 @@ public class MainActivity extends AppCompatActivity implements DialogoArchivo.Da
 
             }else {
                 cargarMensajesChat();
+                mensaje=null;
                 notificationFirebase();
             }
 
@@ -834,6 +827,54 @@ public class MainActivity extends AppCompatActivity implements DialogoArchivo.Da
     }
 
 
+    @RequiresApi(api = Build.VERSION_CODES.O)
+    private ArrayList<Usuario> getContactList() {
+        contactos=new ArrayList<>();
+
+        ContentResolver cr = getContentResolver();
+        Cursor cur = cr.query(ContactsContract.Contacts.CONTENT_URI,
+                null, null, null, null);
+
+        if ((cur != null ? cur.getCount() : 0) > 0) {
+            while (cur != null && cur.moveToNext()) {
+                String id = cur.getString(
+                        cur.getColumnIndex(ContactsContract.Contacts._ID));
+                String name = cur.getString(cur.getColumnIndex(
+                        ContactsContract.Contacts.DISPLAY_NAME));
+
+                Uri my_contact_Uri = Uri.withAppendedPath(ContactsContract.Contacts.CONTENT_URI, String.valueOf(id));
+
+                if (cur.getInt(cur.getColumnIndex(
+                        ContactsContract.Contacts.HAS_PHONE_NUMBER)) > 0) {
+                    Cursor pCur = cr.query(
+                            ContactsContract.CommonDataKinds.Phone.CONTENT_URI,
+                            null,
+                            ContactsContract.CommonDataKinds.Phone.CONTACT_ID + " = ?",
+                            new String[]{id}, null);
+                    while (pCur.moveToNext()) {
+                        String phoneNo = pCur.getString(pCur.getColumnIndex(
+                                ContactsContract.CommonDataKinds.Phone.NUMBER));
+
+
+                        contactos.add(new Usuario(phoneNo, name, my_contact_Uri.toString()));
+
+                    }
+                    pCur.close();
+                }
+            }
+        }
+        if(cur!=null){
+            cur.close();
+        }
+
+        Set<Usuario> set = new HashSet<>(contactos);
+        contactos.clear();
+        contactos.addAll(set);
+
+        return contactos;
+
+
+    }
 }
 
 

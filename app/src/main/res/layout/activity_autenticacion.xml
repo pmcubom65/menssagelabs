@@ -30,7 +30,8 @@
         android:layout_height="wrap_content"
 
         android:ems="10"
-        android:inputType="textPersonName"
+
+        android:inputType="number"
         android:hint="Confirme su número de Teléfono"
         android:layout_gravity="center_vertical"
         />
