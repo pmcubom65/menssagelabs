@@ -27,6 +27,8 @@ import android.graphics.Insets;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
 import android.provider.ContactsContract;
 import android.util.DisplayMetrics;
 import android.util.Log;
@@ -518,8 +520,15 @@ public class MainActivity extends AppCompatActivity implements DialogoArchivo.Da
 
 
                 volveracontactos.putExtra("BUNDLE",args);
-                startActivity(volveracontactos);
-                finish();
+
+                new Handler(Looper.getMainLooper()).postDelayed(new Runnable() {
+                    @Override
+                    public void run() {
+                        startActivity(volveracontactos);
+                    }
+                }, 1000);
+
+
                 return true;
         }
 
@@ -813,7 +822,6 @@ public class MainActivity extends AppCompatActivity implements DialogoArchivo.Da
         }
        else if (url.equals(Rutas.buscarusuario)){
             try {
-
                 JSONObject respuesta = new JSONObject(response);
 
                 String telefono = respuesta.getString("TELEFONO");
@@ -831,7 +839,12 @@ public class MainActivity extends AppCompatActivity implements DialogoArchivo.Da
                 usuarioagenda.setMensajesnoleidos(mensajesnoleidos);
                 usuarioagenda.setUltimochat(ultimochat);
 
-                contactos.add(usuarioagenda);
+                contactos.get(contactos.lastIndexOf(usuarioagenda)).setMensajesnoleidos(mensajesnoleidos);
+              //  contactos.add(usuarioagenda);
+
+                System.out.println("Actualiza la agenda" + contactos);
+
+
                 Set<Usuario> set = new HashSet<>(contactos);
 
                 contactos.clear();
@@ -976,7 +989,14 @@ public class MainActivity extends AppCompatActivity implements DialogoArchivo.Da
 
         CrearRequests cr = new CrearRequests(Rutas.buscarusuario, jsonBody, rh);
 
-        MySingleton.getInstance(getBaseContext()).addToRequest(cr.crearRequest());
+        new Handler(Looper.getMainLooper()).postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                MySingleton.getInstance(getBaseContext()).addToRequest(cr.crearRequest());
+            }
+        }, 500);
+
+
 
     }
 

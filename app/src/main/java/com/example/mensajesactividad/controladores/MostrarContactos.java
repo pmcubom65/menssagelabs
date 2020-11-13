@@ -423,15 +423,17 @@ public class MostrarContactos extends AppCompatActivity  implements RequestHandl
     protected void onResume() {
         super.onResume();
         Intent intent = getIntent();
-        args = intent.getBundleExtra("BUNDLE2");
-
+        args = intent.getBundleExtra("BUNDLE");
+        System.out.println("on resuuuuume");
 
 
         if (args!=null) {
             contactos = (ArrayList<Usuario>) args.getSerializable("ARRAYLIST");
             System.out.println("ONRESUME " +contactos.toString());
             myAdapter=new AdaptadorContactos(this, contactos);
-            recyclerView.setAdapter(myAdapter);
+         //   recyclerView.setAdapter(myAdapter);
+
+            myAdapter.notifyDataSetChanged();
 
         }
     }
