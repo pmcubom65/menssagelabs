@@ -85,6 +85,10 @@ public class AdaptadorContactos extends RecyclerView.Adapter<AdaptadorContactos.
                 .into(holder.imageView);
 
 
+        if (Integer.parseInt(datos.get(position).getMensajesnoleidos())>0) {
+            holder.mibadge.setVisibility(View.VISIBLE);
+            holder.mibadge.setText(datos.get(position).getMensajesnoleidos());
+        }
 
 
 

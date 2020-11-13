@@ -19,6 +19,9 @@ public class Usuario implements Serializable {
     private String token;
     private String id;
 
+    private String mensajesnoleidos;
+    private String ultimochat;
+
 
     public Usuario(String telefono, String nombre, String uri) {
         this.telefono = telefono;
@@ -43,6 +46,22 @@ public class Usuario implements Serializable {
         this.id=id;
     }
 
+
+    public String getMensajesnoleidos() {
+        return mensajesnoleidos;
+    }
+
+    public void setMensajesnoleidos(String mensajesnoleidos) {
+        this.mensajesnoleidos = mensajesnoleidos;
+    }
+
+    public String getUltimochat() {
+        return ultimochat;
+    }
+
+    public void setUltimochat(String ultimochat) {
+        this.ultimochat = ultimochat;
+    }
 
     public String getId() {
         return id;
@@ -109,6 +128,8 @@ public class Usuario implements Serializable {
                 ", uri='" + uri + '\'' +
                 ", token='" + token + '\'' +
                 ", id='" + id + '\'' +
+                ", mensajesnoleidos='" + mensajesnoleidos + '\'' +
+                ", ultimochat='" + ultimochat + '\'' +
                 '}';
     }
 }

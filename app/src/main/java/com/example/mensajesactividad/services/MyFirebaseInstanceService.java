@@ -252,6 +252,8 @@ public class MyFirebaseInstanceService extends FirebaseMessagingService {
         intent.setAction("com.myApp.CUSTOM_EVENT");
    //     intent.putExtra("chat_id", chat_id);
         Bundle argsi = new Bundle();
+        emisora.setUltimochat(chat_id);
+        receptora.setUltimochat(chat_id);
         argsi.putSerializable("emisor",(Serializable) emisora);
         argsi.putSerializable("receptor",(Serializable) receptora);
         intent.putExtra("DATA",argsi);

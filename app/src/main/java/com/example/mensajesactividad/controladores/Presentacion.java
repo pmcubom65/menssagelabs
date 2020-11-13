@@ -59,7 +59,7 @@ public class Presentacion extends AppCompatActivity implements RequestHandlerInt
             Intent intent=new Intent(this, MostrarContactos.class);
             Bundle args = new Bundle();
             args.putSerializable("ARRAYLIST",(Serializable) listacontactos);
-            intent.putExtra("BUNDLE2",args);
+            intent.putExtra("BUNDLE",args);
 
             new Handler(Looper.getMainLooper()).postDelayed(new Runnable() {
                 @Override
@@ -168,7 +168,7 @@ public class Presentacion extends AppCompatActivity implements RequestHandlerInt
                         String phoneNo = pCur.getString(pCur.getColumnIndex(
                                 ContactsContract.CommonDataKinds.Phone.NUMBER));
 
-                        buscarUsuario(phoneNo);
+                        buscarUsuario(phoneNo, Autenticacion.idpropietario);
                     }
                     pCur.close();
                 }
@@ -185,14 +185,16 @@ public class Presentacion extends AppCompatActivity implements RequestHandlerInt
 
 
 
-    private void buscarUsuario(String telefonobuscar) {
+    private void buscarUsuario(String telefonobuscar, String idowner) {
 
 
         JSONObject jsonBody=new JSONObject();
 
         try {
             jsonBody.put("telefono", telefonobuscar.toString().replaceAll("[\\D]", ""));
+            jsonBody.put("id", idowner);
             System.out.println("Busco este telefono "+jsonBody.toString());
+
         } catch (JSONException e) {
             e.printStackTrace();
         }
@@ -220,7 +222,14 @@ public class Presentacion extends AppCompatActivity implements RequestHandlerInt
 
                 String rutap=respuesta.getString("RUTA");
 
-                listacontactos.add(new Usuario(telefono, nombre, Rutas.construirRuta(rutap), token, id));
+                String mensajesnoleidos=respuesta.getString("MENSAJES");
+                String ultimochat=respuesta.getString("ULTIMOCHAT");
+
+                Usuario usuarioagenda=new Usuario(telefono, nombre, Rutas.construirRuta(rutap), token, id);
+                usuarioagenda.setMensajesnoleidos(mensajesnoleidos);
+                usuarioagenda.setUltimochat(ultimochat);
+
+                listacontactos.add(usuarioagenda);
                 Set<Usuario> set = new HashSet<>(listacontactos);
 
                 listacontactos.clear();

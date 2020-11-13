@@ -12,19 +12,12 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import android.content.BroadcastReceiver;
-import android.content.ContentResolver;
-import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
 
 import android.content.IntentFilter;
-import android.content.SharedPreferences;
-import android.database.Cursor;
-import android.database.sqlite.SQLiteDatabase;
-import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
-import android.provider.ContactsContract;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -45,27 +38,20 @@ import com.example.mensajesactividad.services.CrearRequests;
 import com.example.mensajesactividad.services.MySingleton;
 import com.example.mensajesactividad.services.RecyclerItemClickListener;
 import com.example.mensajesactividad.services.RequestHandlerInterface;
-import com.example.mensajesactividad.services.Resultados;
 import com.example.mensajesactividad.services.Rutas;
 import com.google.android.material.navigation.NavigationView;
 import com.google.android.material.snackbar.Snackbar;
-import com.google.gson.Gson;
 
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.io.IOException;
 import java.io.Serializable;
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
 
 
 public class MostrarContactos extends AppCompatActivity  implements RequestHandlerInterface {
@@ -92,8 +78,8 @@ public class MostrarContactos extends AppCompatActivity  implements RequestHandl
 
     public static String chat_id_empiece;
     public static String telefono_chat;
-    String idcodigo;
-    String inicio;
+    String idcodigo="";
+    String inicio="";
 
     private Usuario usuario;
     private Toolbar toolbar;
@@ -134,37 +120,22 @@ public class MostrarContactos extends AppCompatActivity  implements RequestHandl
             }else {
                 indice=contactos.indexOf(llegada);
             }
-            Resultados r = new Resultados(MostrarContactos.this);
-            SQLiteDatabase databaselectura=r.getReadableDatabase();
-            String[] columnas={"telefono"};
-            String WHERE =  "telefono==" + llegada.getTelefono();
-
-
-            Cursor cursor= databaselectura.query("usuario",columnas, WHERE,null,null,null,null);
-            cursor.moveToFirst();
-            String contadoractual="";
-            do {
-
-               contadoractual=cursor.getString(5);
-               System.out.println("contador actual "+contadoractual);
-
-            }while (cursor.moveToNext());
-
-            int nuevocontador=Integer.parseInt(contadoractual)+1;
-
-            SQLiteDatabase midatabase = r.getWritableDatabase();
-
-            ContentValues values = new ContentValues();
-
-            values.put("contador", nuevocontador);
-
-            int filas = midatabase.update("usuario", values, "cast(usuarioid as unsigned)==" + llegada.getId(), null);
-            System.out.println("filas "+filas);
-            midatabase.close();
 
             mibadge=(TextView) recyclerView.findViewHolderForAdapterPosition(indice).itemView.findViewById(R.id.badgecontacto);
+
+            String aumento=String.valueOf(Integer.valueOf(contactos.get(indice).getMensajesnoleidos())+1);
+            contactos.get(indice).setMensajesnoleidos(aumento);
+
+            mibadge.setText(aumento);
             mibadge.setVisibility(View.VISIBLE);
-            myAdapter.notifyDataSetChanged();
+            myAdapter.notifyItemChanged(indice);
+
+
+            System.out.println("este es el broadcast "+miusuario);
+
+            usuario=miusuario;
+
+            idcodigo=miusuario.getUltimochat().toString();
 
         }};
 
@@ -249,12 +220,14 @@ public class MostrarContactos extends AppCompatActivity  implements RequestHandl
         });
 
         Intent intent = getIntent();
-        args = intent.getBundleExtra("BUNDLE2");
+        args = intent.getBundleExtra("BUNDLE");
 
             if (args!=null) {
-                contactos = (ArrayList<Usuario>) args.getSerializable("ARRAYLIST");
 
-                controlleidos();
+                System.out.println("pasa por aqui");
+                contactos=new ArrayList<>();
+
+                contactos = (ArrayList<Usuario>) args.getSerializable("ARRAYLIST");
             }
 
 
@@ -274,16 +247,28 @@ public class MostrarContactos extends AppCompatActivity  implements RequestHandl
                     public void onItemClick(View view, int position) {
                         System.out.println("click item");
 
-                        LocalDateTime fechaactual= LocalDateTime.now();
-                        ZonedDateTime zdt = fechaactual.atZone(ZoneId.of("Europe/Madrid"));
-                        idcodigo= String.valueOf(zdt.toInstant().toEpochMilli());
+                  //      telefono_chat=contactos.get(position).getTelefono().toString().replaceAll("[\\D]", "");
 
-                        DateTimeFormatter dtf=DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
-                        inicio=fechaactual.format(dtf);
+             //           buscarUsuario(telefono_chat);
 
-                        telefono_chat=contactos.get(position).getTelefono().toString().replaceAll("[\\D]", "");
+                        System.out.println("pantalla de contactos "+contactos);
 
-                        buscarUsuario(telefono_chat);
+                        usuario=contactos.get(position);
+                        usuario.setUltimochat(idcodigo);
+
+                        if (usuario.getUltimochat()!="") {
+
+                            System.out.println("aqui hay ulitmo chat "+usuario.getUltimochat());
+
+                            crearIntent(usuario.getUltimochat(), Rutas.crearfechaHora());
+                        }else {
+                            LocalDateTime fechaactual= LocalDateTime.now();
+                            ZonedDateTime zdt = fechaactual.atZone(ZoneId.of("Europe/Madrid"));
+                            idcodigo= String.valueOf(zdt.toInstant().toEpochMilli());
+
+                            System.out.println("aqui nOOO hay ulitmo chat "+usuario.getUltimochat());
+                            crearChat(idcodigo, Rutas.crearfechaHora());
+                        }
 
 
 
@@ -367,9 +352,11 @@ public class MostrarContactos extends AppCompatActivity  implements RequestHandl
 
 
 
- public void crearIntent(String id, String inicio) {
+ public void crearIntent(String idct, String inicio) {
      Intent intent=new Intent(getApplicationContext(), MainActivity.class);
-     intent.putExtra("chat_id", id);
+
+     System.out.println("estoy pasandole el chat "+idct);
+     intent.putExtra("chat_id", idct);
         intent.putExtra("tokenaenviar", usuario.getToken().toString());
         intent.putExtra("tokenorigen", Autenticacion.tokenorigen);
         intent.putExtra("nombreemisor", Autenticacion.nombredelemisor);
@@ -387,6 +374,7 @@ public class MostrarContactos extends AppCompatActivity  implements RequestHandl
 
 
         startActivity(intent);
+     finish();
  }
 
 
@@ -679,40 +667,6 @@ public class MostrarContactos extends AppCompatActivity  implements RequestHandl
     }
 
 
-
-    @RequiresApi(api = Build.VERSION_CODES.N)
-    public void controlleidos() {
-        Resultados r=new Resultados(this);
-        SQLiteDatabase midatabase=r.getWritableDatabase();
-
-        ContentValues contentvalues=new ContentValues();
-        System.out.println("grabo contactos "+contactos);
-        midatabase.beginTransaction();
-        //(telefono text, nombre text, uri text, token text, usuarioid text, contador int, ID INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, unique(usuarioid))
-       // (telefono text, nombre text, uri text, token text, usuarioid text, contador
-                contactos.forEach(contacto-> {
-
-
-            contentvalues.put("telefono", contacto.getTelefono());
-            contentvalues.put("nombre", contacto.getNombre());
-
-            contentvalues.put("uri", contacto.getUri());
-            contentvalues.put("token", contacto.getToken());
-            contentvalues.put("usuarioid", contacto.getId());
-            contentvalues.put("contador", 0);
-
-            long row= midatabase.insertWithOnConflict("usuario",null, contentvalues, SQLiteDatabase.CONFLICT_REPLACE);
-
-            contentvalues.clear();
-        });
-
-        midatabase.setTransactionSuccessful();
-        midatabase.endTransaction();
-        midatabase.close();
-
-
-
-    }
 
 
 

@@ -132,6 +132,7 @@ public class MainActivity extends AppCompatActivity implements DialogoArchivo.Da
         public void onReceive(Context context, Intent intent) {
             System.out.println("cambio el recycler");
             cargarMensajesChat();
+            marcarcomoleidos(michatid, Autenticacion.idpropietario);
         }};
 
     @Override
@@ -154,8 +155,6 @@ public class MainActivity extends AppCompatActivity implements DialogoArchivo.Da
         esgrupo=llegada.getExtras().getBoolean("grupo");
 
         buscarSiEsGrupo(michatid);
-
-
 
         requestQueue= Volley.newRequestQueue(getApplicationContext());
         recyclerView = (RecyclerView) findViewById(R.id.my_recycler_view);
@@ -297,7 +296,7 @@ public class MainActivity extends AppCompatActivity implements DialogoArchivo.Da
 
 
 
-
+        marcarcomoleidos(michatid, Autenticacion.idpropietario);
 
 
         IntentFilter intentFilter= new IntentFilter("com.myApp.CUSTOM_EVENT");
@@ -462,10 +461,28 @@ public class MainActivity extends AppCompatActivity implements DialogoArchivo.Da
 
 
 
+    public void marcarcomoleidos(String elchat, String elid){
+
+        JSONObject jsonBody=new JSONObject();
+
+        try {
+            jsonBody.put("chatid", elchat);
+            jsonBody.put("id", elid);
+
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+
+        CrearRequests cr = new CrearRequests(Rutas.marcarcomoleidos, jsonBody, rh);
+
+        MySingleton.getInstance(getBaseContext()).addToRequest(cr.crearRequest());
+
+    }
+
+
+
 
     public void  cargarMensajesChat() {
-
-
 
         JSONObject jsonBody=new JSONObject();
 
@@ -493,11 +510,16 @@ public class MainActivity extends AppCompatActivity implements DialogoArchivo.Da
 
 
                 Bundle args = new Bundle();
-                args.putSerializable("ARRAYLIST", getContactList());
+                usuarioreceptor.setMensajesnoleidos("0");
+
+                getContactList();
+
+                args.putSerializable("ARRAYLIST", contactos);
 
 
                 volveracontactos.putExtra("BUNDLE",args);
                 startActivity(volveracontactos);
+                finish();
                 return true;
         }
 
@@ -788,7 +810,54 @@ public class MainActivity extends AppCompatActivity implements DialogoArchivo.Da
             }
 
             System.out.println("mensaje grabado "+ response.toString());
-        }else if (url.equals(urlcargarmensajeschat)) {
+        }
+       else if (url.equals(Rutas.buscarusuario)){
+            try {
+
+                JSONObject respuesta = new JSONObject(response);
+
+                String telefono = respuesta.getString("TELEFONO");
+                String token = respuesta.getString("TOKEN");
+                String nombre = respuesta.getString( "NOMBRE");
+
+                String id = respuesta.getString( "ID");
+
+                String rutap=respuesta.getString("RUTA");
+
+                String mensajesnoleidos=respuesta.getString("MENSAJES");
+                String ultimochat=respuesta.getString("ULTIMOCHAT");
+
+                Usuario usuarioagenda=new Usuario(telefono, nombre, Rutas.construirRuta(rutap), token, id);
+                usuarioagenda.setMensajesnoleidos(mensajesnoleidos);
+                usuarioagenda.setUltimochat(ultimochat);
+
+                contactos.add(usuarioagenda);
+                Set<Usuario> set = new HashSet<>(contactos);
+
+                contactos.clear();
+                contactos.addAll(set);
+
+
+            }catch (JSONException e) {
+
+                System.out.println(e.toString());
+
+            }
+
+        }
+
+
+
+
+
+
+
+
+
+
+
+
+        else if (url.equals(urlcargarmensajeschat)) {
 
             try {
                 JSONObject jsnobject = new JSONObject(response.toString());
@@ -822,14 +891,34 @@ public class MainActivity extends AppCompatActivity implements DialogoArchivo.Da
 
 
 
+        }else if (url.equals(Rutas.marcarcomoleidos)){
+
+
+
+            try {
+                JSONObject jsnobject = new JSONObject(response.toString());
+
+                String leidos = jsnobject.getString("leidos");
+
+                System.out.println("mensajes leidos");
+
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+
+
+
         }
 
     }
 
 
-    @RequiresApi(api = Build.VERSION_CODES.O)
-    private ArrayList<Usuario> getContactList() {
-        contactos=new ArrayList<>();
+
+
+
+
+    private void getContactList() {
+      //  contactos=new ArrayList<>();
 
         ContentResolver cr = getContentResolver();
         Cursor cur = cr.query(ContactsContract.Contacts.CONTENT_URI,
@@ -855,9 +944,7 @@ public class MainActivity extends AppCompatActivity implements DialogoArchivo.Da
                         String phoneNo = pCur.getString(pCur.getColumnIndex(
                                 ContactsContract.CommonDataKinds.Phone.NUMBER));
 
-
-                        contactos.add(new Usuario(phoneNo, name, my_contact_Uri.toString()));
-
+                        buscarUsuario(phoneNo, Autenticacion.idpropietario);
                     }
                     pCur.close();
                 }
@@ -867,14 +954,32 @@ public class MainActivity extends AppCompatActivity implements DialogoArchivo.Da
             cur.close();
         }
 
-        Set<Usuario> set = new HashSet<>(contactos);
-        contactos.clear();
-        contactos.addAll(set);
-
-        return contactos;
-
 
     }
+
+
+
+
+    private void buscarUsuario(String telefonobuscar, String idowner) {
+
+
+        JSONObject jsonBody=new JSONObject();
+
+        try {
+            jsonBody.put("telefono", telefonobuscar.toString().replaceAll("[\\D]", ""));
+            jsonBody.put("id", idowner);
+            System.out.println("Busco este telefono "+jsonBody.toString());
+
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+
+        CrearRequests cr = new CrearRequests(Rutas.buscarusuario, jsonBody, rh);
+
+        MySingleton.getInstance(getBaseContext()).addToRequest(cr.crearRequest());
+
+    }
+
 }
 
 

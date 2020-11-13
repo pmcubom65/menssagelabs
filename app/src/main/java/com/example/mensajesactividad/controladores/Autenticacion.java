@@ -100,7 +100,7 @@ public class Autenticacion extends AppCompatActivity  implements RequestHandlerI
         setContentView(R.layout.activity_autenticacion);
 
 
-        cargarPreferencias();
+      //  cargarPreferencias();
 
 
 
@@ -206,13 +206,14 @@ public class Autenticacion extends AppCompatActivity  implements RequestHandlerI
 
 
 
-    private void buscarUsuario(String telefonobuscar) {
+    private void buscarUsuario(String telefonobuscar, String idowner) {
 
 
         JSONObject jsonBody=new JSONObject();
 
         try {
             jsonBody.put("telefono", telefonobuscar.toString().replaceAll("[\\D]", ""));
+            jsonBody.put("id", idowner);
             System.out.println("Busco este telefono "+jsonBody.toString());
         } catch (JSONException e) {
             e.printStackTrace();
@@ -260,7 +261,7 @@ public class Autenticacion extends AppCompatActivity  implements RequestHandlerI
                         String phoneNo = pCur.getString(pCur.getColumnIndex(
                                 ContactsContract.CommonDataKinds.Phone.NUMBER));
 
-                            buscarUsuario(phoneNo);
+                            buscarUsuario(phoneNo, idpropietario);
         //                    listacontactos.add(new Usuario(phoneNo, name, my_contact_Uri.toString()));
 
 
@@ -506,7 +507,16 @@ public class Autenticacion extends AppCompatActivity  implements RequestHandlerI
 
                 String rutap=respuesta.getString("RUTA");
 
-                listacontactos.add(new Usuario(telefono, nombre, Rutas.construirRuta(rutap), token, id));
+                String mensajesnoleidos=respuesta.getString("MENSAJES");
+                String ultimochat=respuesta.getString("ULTIMOCHAT");
+
+                Usuario usuarioagenda=new Usuario(telefono, nombre, Rutas.construirRuta(rutap), token, id);
+                usuarioagenda.setMensajesnoleidos(mensajesnoleidos);
+                usuarioagenda.setUltimochat(ultimochat);
+
+
+
+                listacontactos.add(usuarioagenda);
                 System.out.println(listacontactos);
 
             }catch (JSONException e) {
