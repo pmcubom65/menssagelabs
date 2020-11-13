@@ -526,7 +526,7 @@ public class MainActivity extends AppCompatActivity implements DialogoArchivo.Da
                     public void run() {
                         startActivity(volveracontactos);
                     }
-                }, 1000);
+                }, 800);
 
 
                 return true;

@@ -18,6 +18,8 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -107,7 +109,7 @@ public class MostrarContactos extends AppCompatActivity  implements RequestHandl
         public void onReceive(Context context, Intent intent) {
 
 
-            Bundle args = intent.getBundleExtra("DATA");
+          Bundle args = intent.getBundleExtra("DATA");
             Usuario miusuario = (Usuario) args.getSerializable("receptor");
 
             Usuario llegada=new Usuario(miusuario.getTelefono(),miusuario.getNombre(),miusuario.getUri(), miusuario.getToken(), miusuario.getId());
@@ -124,7 +126,19 @@ public class MostrarContactos extends AppCompatActivity  implements RequestHandl
 
             mibadge=(TextView) recyclerView.findViewHolderForAdapterPosition(indice).itemView.findViewById(R.id.badgecontacto);
 
+            System.out.println("voy a añadir al badge al "+ contactos.get(indice).toString());
+
             String aumento=String.valueOf(Integer.valueOf(contactos.get(indice).getMensajesnoleidos())+1);
+
+
+
+            System.out.println("aumento "+aumento);
+
+
+
+
+
+
             contactos.get(indice).setMensajesnoleidos(aumento);
 
             mibadge.setText(aumento);
@@ -142,7 +156,11 @@ public class MostrarContactos extends AppCompatActivity  implements RequestHandl
 
             myAdapter.notifyItemChanged(indice);
 
-        }};
+
+        }
+
+
+    };
 
 
     @RequiresApi(api = Build.VERSION_CODES.O)

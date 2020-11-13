@@ -7,6 +7,8 @@ import android.content.Intent;
 import android.graphics.Bitmap;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
 import android.util.Log;
 import android.widget.RemoteViews;
 
@@ -77,13 +79,10 @@ public class MyFirebaseInstanceService extends FirebaseMessagingService {
     public void onMessageReceived(@NonNull RemoteMessage remoteMessage) {
        System.out.println( "From: " + remoteMessage.toString());
 
-
-
         Map<String, String> data = remoteMessage.getData();
 
         chat_id=(String) data.get("michatid");
         titulo=(String) data.get("titulo");
-
 
         String tokenemisor=(String) data.get("tokenaenviar");
         String nombreemisor=(String) data.get("nombrereceptor");
@@ -103,13 +102,6 @@ public class MyFirebaseInstanceService extends FirebaseMessagingService {
         notificationChannel();
         crearNotificacion();
     }
-
-
-
-
-
-
-
 
 
     @RequiresApi(api = Build.VERSION_CODES.KITKAT_WATCH)
@@ -259,6 +251,7 @@ public class MyFirebaseInstanceService extends FirebaseMessagingService {
         intent.putExtra("DATA",argsi);
 
         LocalBroadcastManager.getInstance(getApplicationContext()).sendBroadcast(intent);
+
     }
 
 
