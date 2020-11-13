@@ -112,6 +112,7 @@ public class MostrarContactos extends AppCompatActivity  implements RequestHandl
 
             Usuario llegada=new Usuario(miusuario.getTelefono(),miusuario.getNombre(),miusuario.getUri(), miusuario.getToken(), miusuario.getId());
 
+            System.out.println("usuario llegada broadcast "+ llegada);
 
             int indice=0;
             if (!contactos.contains(llegada)){
@@ -128,7 +129,7 @@ public class MostrarContactos extends AppCompatActivity  implements RequestHandl
 
             mibadge.setText(aumento);
             mibadge.setVisibility(View.VISIBLE);
-            myAdapter.notifyItemChanged(indice);
+
 
 
             System.out.println("este es el broadcast "+miusuario);
@@ -136,6 +137,10 @@ public class MostrarContactos extends AppCompatActivity  implements RequestHandl
             usuario=miusuario;
 
             idcodigo=miusuario.getUltimochat().toString();
+
+            contactos.get(indice).setUltimochat(miusuario.getUltimochat());
+
+            myAdapter.notifyItemChanged(indice);
 
         }};
 
@@ -254,7 +259,10 @@ public class MostrarContactos extends AppCompatActivity  implements RequestHandl
                         System.out.println("pantalla de contactos "+contactos);
 
                         usuario=contactos.get(position);
-                        usuario.setUltimochat(idcodigo);
+                      //  usuario.setUltimochat(idcodigo);
+
+
+                        System.out.println("este que datos tiene "+usuario);
 
                         if (usuario.getUltimochat()!="") {
 
