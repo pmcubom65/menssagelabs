@@ -4,6 +4,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
+import androidx.core.app.ActivityCompat;
 import androidx.core.app.NavUtils;
 import androidx.core.app.NotificationCompat;
 import androidx.core.app.NotificationManagerCompat;
@@ -12,6 +13,7 @@ import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import android.Manifest;
 import android.app.Activity;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
@@ -22,20 +24,26 @@ import android.content.ContentResolver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.graphics.Insets;
+import android.location.Location;
+import android.location.LocationListener;
+import android.location.LocationManager;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
 import android.provider.ContactsContract;
+import android.provider.Settings;
 import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.WindowInsets;
+import android.view.WindowManager;
 import android.view.WindowMetrics;
 import android.widget.TextView;
 
@@ -83,7 +91,7 @@ import java.util.Map;
 import java.util.Set;
 
 
-public class MainActivity extends AppCompatActivity implements DialogoArchivo.Datoaactualizar, RequestHandlerInterface   {
+public class MainActivity extends AppCompatActivity implements DialogoArchivo.Datoaactualizar, RequestHandlerInterface {
 
     private RecyclerView recyclerView;
     private RecyclerView.Adapter mAdapter;
@@ -94,20 +102,21 @@ public class MainActivity extends AppCompatActivity implements DialogoArchivo.Da
 
     private TextView textoenviar;
 
-    private final String canal="5555";
-    private final int notificationid=001;
+    private final String canal = "5555";
+    private final int notificationid = 001;
     String KEY_REPLY = "key_reply";
     public static int datos;
+    private static final int REQUEST_LOCATION_PERMISSION = 1;
 
-    String insertchat= Rutas.insertchat;
+    String insertchat = Rutas.insertchat;
 
-    String urlcrearmensaje=Rutas.rutacrearmensaje;
+    String urlcrearmensaje = Rutas.rutacrearmensaje;
 
-    String urlcargarmensajeschat=Rutas.rutaurlcargarmensajeschat;
+    String urlcargarmensajeschat = Rutas.rutaurlcargarmensajeschat;
 
-    String buscargrupo=Rutas.rutabuscargrupo;
+    String buscargrupo = Rutas.rutabuscargrupo;
 
-    String url="https://fcm.googleapis.com/fcm/send";
+    String url = "https://fcm.googleapis.com/fcm/send";
 
     RequestQueue requestQueue;
 
@@ -125,50 +134,53 @@ public class MainActivity extends AppCompatActivity implements DialogoArchivo.Da
 
     private Toolbar toolbar;
 
-    boolean esgrupo=false;
+    boolean esgrupo = false;
     Grupo grupo;
 
 
-    private BroadcastReceiver onMessage= new BroadcastReceiver() {
+
+    private BroadcastReceiver onMessage = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
             System.out.println("cambio el recycler");
             cargarMensajesChat();
             marcarcomoleidos(michatid, Autenticacion.idpropietario);
-        }};
+        }
+    };
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN);
+
+        Intent llegada = getIntent();
+        michatid = (String) llegada.getExtras().get("chat_id");
+
+        contactos = (ArrayList<Usuario>) llegada.getExtras().get("contactos");
 
 
+        usuarioemisor = (Usuario) llegada.getSerializableExtra("usuarioemisor");
+        usuarioreceptor = (Usuario) llegada.getSerializableExtra("usuarioreceptor");
 
-        Intent llegada=getIntent();
-        michatid=(String) llegada.getExtras().get("chat_id");
-
-        contactos=(ArrayList<Usuario>) llegada.getExtras().get("contactos");
-
-
-        usuarioemisor=(Usuario) llegada.getSerializableExtra("usuarioemisor");
-        usuarioreceptor=(Usuario) llegada.getSerializableExtra("usuarioreceptor");
+        System.out.println("el usuario receptor es "+usuarioreceptor);
 
 
-        esgrupo=llegada.getExtras().getBoolean("grupo");
+        esgrupo = llegada.getExtras().getBoolean("grupo");
 
         buscarSiEsGrupo(michatid);
 
-        requestQueue= Volley.newRequestQueue(getApplicationContext());
+        requestQueue = Volley.newRequestQueue(getApplicationContext());
         recyclerView = (RecyclerView) findViewById(R.id.my_recycler_view);
         mFirebaseAnalytics = FirebaseAnalytics.getInstance(this);
 
-        toolbar=findViewById(R.id.mitoolbarmensajes);
+        toolbar = findViewById(R.id.mitoolbarmensajes);
 
         if (esgrupo) {
-            grupo=(Grupo) llegada.getSerializableExtra("grupoinfo");
-            toolbar.setTitle("Conversando con Grupo "+grupo.getNombre().toString());
-        }else {
-            toolbar.setTitle("Conversando con "+usuarioreceptor.getNombre());
+            grupo = (Grupo) llegada.getSerializableExtra("grupoinfo");
+            toolbar.setTitle("Conversando con Grupo " + grupo.getNombre().toString());
+        } else {
+            toolbar.setTitle("Conversando con " + usuarioreceptor.getNombre());
         }
 
         setSupportActionBar(toolbar);
@@ -176,9 +188,9 @@ public class MainActivity extends AppCompatActivity implements DialogoArchivo.Da
 
         recyclerView.setHasFixedSize(false);
 
-        ViewGroup.LayoutParams params=recyclerView.getLayoutParams();
+        ViewGroup.LayoutParams params = recyclerView.getLayoutParams();
 
-        params.height=  getScreenWidth(MainActivity.this) -400;
+        params.height = getScreenWidth(MainActivity.this) - 400;
         recyclerView.setLayoutParams(params);
 
         layoutManager = new LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false);
@@ -191,12 +203,11 @@ public class MainActivity extends AppCompatActivity implements DialogoArchivo.Da
         mAdapter = new MyAdapter(this, datosAmostrar);
         recyclerView.setAdapter(mAdapter);
 
-        requestQueue= Volley.newRequestQueue(getApplicationContext());
+        requestQueue = Volley.newRequestQueue(getApplicationContext());
 
-        botonenviar=(FloatingActionButton) findViewById(R.id.botonmandarmensaje);
-        botonadjuntar=(FloatingActionButton) findViewById(R.id.botonadjunto);
-        textoenviar=(TextView) findViewById(R.id.textoanadir);
-
+        botonenviar = (FloatingActionButton) findViewById(R.id.botonmandarmensaje);
+        botonadjuntar = (FloatingActionButton) findViewById(R.id.botonadjunto);
+        textoenviar = (TextView) findViewById(R.id.textoanadir);
 
 
 
@@ -257,27 +268,25 @@ public class MainActivity extends AppCompatActivity implements DialogoArchivo.Da
             @RequiresApi(api = Build.VERSION_CODES.O)
             @Override
             public void onClick(View v) {
-                DialogoArchivo dialogoarchivo=new  DialogoArchivo();
+                DialogoArchivo dialogoarchivo = new DialogoArchivo();
 
-                LocalDateTime ahora= LocalDateTime.now();
+                LocalDateTime ahora = LocalDateTime.now();
                 ZonedDateTime zdt = ahora.atZone(ZoneId.of("Europe/Madrid"));
 
-                DateTimeFormatter dtf=DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
-                String dia=ahora.format(dtf);
+                DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+                String dia = ahora.format(dtf);
 
 
-
-                if (esgrupo){
-
-
-                    mensaje=new Mensaje("Mensaje Enviado", dia, Autenticacion.numerotelefono, Autenticacion.nombredelemisor);
-
-                    String id_mensaje=String.valueOf(zdt.toInstant().toEpochMilli());
+                if (esgrupo) {
 
 
+                    mensaje = new Mensaje("Mensaje Enviado", dia, Autenticacion.numerotelefono, Autenticacion.nombredelemisor);
 
-                    for (int g=0; g<grupo.getDetallesmiembros().size(); g++) {
-                        usuarioreceptor=(Usuario) grupo.getDetallesmiembros().get(g);
+                    String id_mensaje = String.valueOf(zdt.toInstant().toEpochMilli());
+
+
+                    for (int g = 0; g < grupo.getDetallesmiembros().size(); g++) {
+                        usuarioreceptor = (Usuario) grupo.getDetallesmiembros().get(g);
                         grabarMensaje(mensaje, id_mensaje);
 
                         dialogoarchivo.setValues(dia, michatid, usuarioemisor.getTelefono().toString(), usuarioreceptor.getTelefono().toString());
@@ -285,9 +294,7 @@ public class MainActivity extends AppCompatActivity implements DialogoArchivo.Da
                     }
 
 
-
-
-                }else {
+                } else {
                     dialogoarchivo.setValues(dia, michatid, usuarioemisor.getTelefono().toString(), usuarioreceptor.getTelefono().toString());
                 }
 
@@ -297,25 +304,22 @@ public class MainActivity extends AppCompatActivity implements DialogoArchivo.Da
         });
 
 
-
         marcarcomoleidos(michatid, Autenticacion.idpropietario);
 
 
-        IntentFilter intentFilter= new IntentFilter("com.myApp.CUSTOM_EVENT");
+        IntentFilter intentFilter = new IntentFilter("com.myApp.CUSTOM_EVENT");
         LocalBroadcastManager.getInstance(this).registerReceiver(onMessage, intentFilter);
 
 
-
-
         recyclerView.addOnItemTouchListener(
-                new RecyclerItemClickListener(this, recyclerView ,new RecyclerItemClickListener.OnItemClickListener() {
+                new RecyclerItemClickListener(this, recyclerView, new RecyclerItemClickListener.OnItemClickListener() {
 
                     @RequiresApi(api = Build.VERSION_CODES.O)
                     @Override
                     public void onItemClick(View view, int position) {
                         System.out.println("click item");
 
-                        if (datosAmostrar.get(position).getRutaarchivo() instanceof  String) {
+                        if (datosAmostrar.get(position).getRutaarchivo() instanceof String) {
 
                             descargarArchivo(datosAmostrar.get(position).getRutaarchivo().toString());
                         }
@@ -334,12 +338,11 @@ public class MainActivity extends AppCompatActivity implements DialogoArchivo.Da
 
 
     public void descargarArchivo(String ruta) {
-        String name=ruta.substring(ruta.lastIndexOf("\\")+1);
+        String name = ruta.substring(ruta.lastIndexOf("\\") + 1);
 
-        String nuevaruta=ruta.substring(2).replace('\\', '/');
+        String nuevaruta = ruta.substring(2).replace('\\', '/');
 
-        String rutamodificada="https://"+nuevaruta.replace("SRVWEB-01/inetpub/wwwroot/SmartChat", "smartchat.smartlabs.es");
-
+        String rutamodificada = "https://" + nuevaruta.replace("SRVWEB-01/inetpub/wwwroot/SmartChat", "smartchat.smartlabs.es");
 
 
         System.out.println(rutamodificada);
@@ -353,14 +356,10 @@ public class MainActivity extends AppCompatActivity implements DialogoArchivo.Da
     }
 
 
-
-
-
-
     @RequiresApi(api = Build.VERSION_CODES.KITKAT_WATCH)
     public void crearNotificacion() {
 
-        NotificationCompat.Builder notification=new NotificationCompat.Builder(this, canal);
+        NotificationCompat.Builder notification = new NotificationCompat.Builder(this, canal);
         notification.setSmallIcon(R.drawable.smartlabs);
         notification.setContentTitle(textoenviar.getText().toString());
         notification.setStyle(new NotificationCompat.BigTextStyle()
@@ -392,8 +391,6 @@ public class MainActivity extends AppCompatActivity implements DialogoArchivo.Da
                         PendingIntent.FLAG_UPDATE_CURRENT);
 
 
-
-
         //Notification Action with RemoteInput instance added.
         NotificationCompat.Action replyAction = new NotificationCompat.Action.Builder(
                 android.R.drawable.sym_action_chat, "RESPONDER", replyPendingIntent)
@@ -413,39 +410,39 @@ public class MainActivity extends AppCompatActivity implements DialogoArchivo.Da
 
         notification.addAction(android.R.drawable.ic_menu_close_clear_cancel, "Rechazar", dismissIntent);
 
-        NotificationManagerCompat notificationManagerCompat=NotificationManagerCompat.from(this);
+        NotificationManagerCompat notificationManagerCompat = NotificationManagerCompat.from(this);
 
         notificationManagerCompat.notify(notificationid, notification.build());
     }
 
 
     public void notificationChannel() {
-        if(Build.VERSION.SDK_INT>=Build.VERSION_CODES.O) {
-            String indicar= textoenviar.getText().toString();
-            CharSequence personal=indicar;
-            String descripcion=indicar;
-            int importancia= NotificationManager.IMPORTANCE_DEFAULT;
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            String indicar = textoenviar.getText().toString();
+            CharSequence personal = indicar;
+            String descripcion = indicar;
+            int importancia = NotificationManager.IMPORTANCE_DEFAULT;
 
-            NotificationChannel notificationChannel=new NotificationChannel(canal, personal, importancia);
+            NotificationChannel notificationChannel = new NotificationChannel(canal, personal, importancia);
             notificationChannel.setDescription(indicar);
-            NotificationManager notificationManager=(NotificationManager) getSystemService(NOTIFICATION_SERVICE);
+            NotificationManager notificationManager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
             notificationManager.createNotificationChannel(notificationChannel);
 
         }
     }
 
 
-    public void grabarMensaje(Mensaje m, String id){
+    public void grabarMensaje(Mensaje m, String id) {
 
 
-        JSONObject jsonBody=new JSONObject();
+        JSONObject jsonBody = new JSONObject();
 
         try {
             jsonBody.put("contenido", m.getContenido().toString());
             jsonBody.put("dia", m.getFecha().toString());
-            if (m.getTelefono()!=null) {
+            if (m.getTelefono() != null) {
                 jsonBody.put("usuarioid", m.getTelefono().toString());
-            }else {
+            } else {
                 jsonBody.put("usuarioid", Autenticacion.numerotelefono);
             }
 
@@ -462,10 +459,9 @@ public class MainActivity extends AppCompatActivity implements DialogoArchivo.Da
     }
 
 
+    public void marcarcomoleidos(String elchat, String elid) {
 
-    public void marcarcomoleidos(String elchat, String elid){
-
-        JSONObject jsonBody=new JSONObject();
+        JSONObject jsonBody = new JSONObject();
 
         try {
             jsonBody.put("chatid", elchat);
@@ -482,11 +478,9 @@ public class MainActivity extends AppCompatActivity implements DialogoArchivo.Da
     }
 
 
+    public void cargarMensajesChat() {
 
-
-    public void  cargarMensajesChat() {
-
-        JSONObject jsonBody=new JSONObject();
+        JSONObject jsonBody = new JSONObject();
 
         try {
             jsonBody.put("codigo", michatid);
@@ -507,7 +501,7 @@ public class MainActivity extends AppCompatActivity implements DialogoArchivo.Da
 
         switch (item.getItemId()) {
             case android.R.id.home:
-                Intent volveracontactos=new Intent(this, MostrarContactos.class);
+                Intent volveracontactos = new Intent(this, MostrarContactos.class);
                 volveracontactos.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
 
 
@@ -519,12 +513,13 @@ public class MainActivity extends AppCompatActivity implements DialogoArchivo.Da
                 args.putSerializable("ARRAYLIST", contactos);
 
 
-                volveracontactos.putExtra("BUNDLE",args);
+                volveracontactos.putExtra("BUNDLE", args);
 
                 new Handler(Looper.getMainLooper()).postDelayed(new Runnable() {
                     @Override
                     public void run() {
                         startActivity(volveracontactos);
+                        finish();
                     }
                 }, 800);
 
@@ -533,12 +528,10 @@ public class MainActivity extends AppCompatActivity implements DialogoArchivo.Da
         }
 
 
-
-
         return super.onOptionsItemSelected(item);
     }
 
-    public void notificationFirebase()   {
+    public void notificationFirebase() {
 
         Bundle bundle = new Bundle();
         bundle.putString(FirebaseAnalytics.Param.ITEM_ID, michatid);
@@ -547,19 +540,19 @@ public class MainActivity extends AppCompatActivity implements DialogoArchivo.Da
         bundle.putString(FirebaseAnalytics.Param.CONTENT_TYPE, "String");
         mFirebaseAnalytics.logEvent(FirebaseAnalytics.Event.SELECT_CONTENT, bundle);
 
-        JSONObject mainObj=new JSONObject();
-        String token="";
+        JSONObject mainObj = new JSONObject();
+        String token = "";
 
         try {
 
             mainObj.put("to", usuarioreceptor.getToken().toString());
-            JSONObject notificationObj=new JSONObject();
+            JSONObject notificationObj = new JSONObject();
             JSONObject jData = new JSONObject();
             jData.put("michatid", michatid);
 
-            if (mensaje!=null) {
+            if (mensaje != null) {
                 jData.put("titulo", mensaje.getContenido());
-            }else {
+            } else {
                 jData.put("titulo", "Archivo enviado");
             }
             jData.put("fotoemisor", usuarioemisor.getUri().toString());
@@ -575,10 +568,10 @@ public class MainActivity extends AppCompatActivity implements DialogoArchivo.Da
             jData.put("telefonoemisor", usuarioemisor.getTelefono().toString());
             jData.put("telefonoreceptor", usuarioreceptor.getTelefono().toString());
 
-            mainObj.put("priority","high");
+            mainObj.put("priority", "high");
 
             mainObj.put("data", jData);
-            JsonObjectRequest request=new JsonObjectRequest(Request.Method.POST, url, mainObj, new Response.Listener<JSONObject>() {
+            JsonObjectRequest request = new JsonObjectRequest(Request.Method.POST, url, mainObj, new Response.Listener<JSONObject>() {
                 @Override
                 public void onResponse(JSONObject response) {
                     System.out.println(response);
@@ -587,12 +580,12 @@ public class MainActivity extends AppCompatActivity implements DialogoArchivo.Da
             }, new Response.ErrorListener() {
                 @Override
                 public void onErrorResponse(VolleyError error) {
-                        System.out.println("Notificación erronea");
+                    System.out.println("Notificación erronea");
                 }
-            }){
+            }) {
                 @Override
                 public Map<String, String> getHeaders() throws AuthFailureError {
-                    Map<String, String> header=new HashMap<>();
+                    Map<String, String> header = new HashMap<>();
                     header.put("content-type", "application/json");
                     header.put("authorization", "key=AAAAafa8PTg:APA91bEafAQa2vygzlPALqd72Dik0BflDS7b-hCraAwZvzAkK-hLHsohWvsN1C5kHSSym3pdZx5M63COhYBPosP7Icu-JDXguENKkH3fvXco4CXroInSeLadlujJKpUrqoROt1ttGiW0");
                     return header;
@@ -606,15 +599,15 @@ public class MainActivity extends AppCompatActivity implements DialogoArchivo.Da
         }
 
 
-
-
     }
 
 
+    @Override
+    protected void onResume() {
+        super.onResume();
+        System.out.println("oooon resume?????????");
 
-
-
-
+    }
 
     private void buscarSiEsGrupo(String id) {
 
@@ -632,31 +625,29 @@ public class MainActivity extends AppCompatActivity implements DialogoArchivo.Da
 
 
                     System.out.println("grupo encontrado");
-                    esgrupo=true;
+                    esgrupo = true;
 
-                    toolbar.setTitle("Conversando con Grupo "+nombregrupo);
+                    toolbar.setTitle("Conversando con Grupo " + nombregrupo);
 
-                    JSONArray jsonArray=respuesta.getJSONArray("MIEMBROS");
+                    JSONArray jsonArray = respuesta.getJSONArray("MIEMBROS");
                     JSONObject e = null;
-                    ArrayList<Usuario> usuariogrupo=new ArrayList<>();
-                    for (int j=0; j < jsonArray.length(); j++) {
+                    ArrayList<Usuario> usuariogrupo = new ArrayList<>();
+                    for (int j = 0; j < jsonArray.length(); j++) {
                         e = jsonArray.getJSONObject(j);
 
 
-
-
-                        Usuario usuariomiembro=new Usuario(e.getString("TELEFONO").toString(), e.getString("NOMBRE").toString(), e.getString("RUTA").toString(), e.getString("TOKEN").toString(), e.getString("ID").toString());
+                        Usuario usuariomiembro = new Usuario(e.getString("TELEFONO").toString(), e.getString("NOMBRE").toString(), e.getString("RUTA").toString(), e.getString("TOKEN").toString(), e.getString("ID").toString());
 
                         usuariomiembro.setUri(Rutas.construirRuta(usuariomiembro.getUri()));
 
                         usuariogrupo.add(usuariomiembro);
                     }
 
-                    grupo=new Grupo(nombregrupo, iddelgrupo, "", usuariogrupo);
+                    grupo = new Grupo(nombregrupo, iddelgrupo, "", usuariogrupo);
 
-                }catch (JSONException e) {
+                } catch (JSONException e) {
 
-                   System.out.println("No es grupo");
+                    System.out.println("No es grupo");
                 }
 
                 System.out.println(response);
@@ -772,10 +763,10 @@ public class MainActivity extends AppCompatActivity implements DialogoArchivo.Da
     @RequiresApi(api = Build.VERSION_CODES.O)
     @Override
     public void onNombreAActualizar(String s) {
-        if (s.equals("actualizar")){
+        if (s.equals("actualizar")) {
 
 
-            String dia=Rutas.crearfechaHora();
+            String dia = Rutas.crearfechaHora();
 
 
             if (esgrupo) {
@@ -783,19 +774,16 @@ public class MainActivity extends AppCompatActivity implements DialogoArchivo.Da
                 cargarMensajesChat();
 
 
-                for (int g=0; g<grupo.getDetallesmiembros().size(); g++) {
-                    mensaje=null;
-                     notificationFirebase();
+                for (int g = 0; g < grupo.getDetallesmiembros().size(); g++) {
+                    mensaje = null;
+                    notificationFirebase();
 
                 }
 
 
-
-
-
-            }else {
+            } else {
                 cargarMensajesChat();
-                mensaje=null;
+                mensaje = null;
                 notificationFirebase();
             }
 
@@ -806,7 +794,7 @@ public class MainActivity extends AppCompatActivity implements DialogoArchivo.Da
     @Override
     public void onResponse(String response, String url) {
 
-        if (url.equals(urlcrearmensaje)){
+        if (url.equals(urlcrearmensaje)) {
             try {
                 JSONObject jsnobject = new JSONObject(response.toString());
 
@@ -818,29 +806,32 @@ public class MainActivity extends AppCompatActivity implements DialogoArchivo.Da
                 e.printStackTrace();
             }
 
-            System.out.println("mensaje grabado "+ response.toString());
-        }
-       else if (url.equals(Rutas.buscarusuario)){
+            System.out.println("mensaje grabado " + response.toString());
+        } else if (url.equals(Rutas.buscarusuario)) {
             try {
                 JSONObject respuesta = new JSONObject(response);
 
                 String telefono = respuesta.getString("TELEFONO");
                 String token = respuesta.getString("TOKEN");
-                String nombre = respuesta.getString( "NOMBRE");
+                String nombre = respuesta.getString("NOMBRE");
 
-                String id = respuesta.getString( "ID");
+                String id = respuesta.getString("ID");
 
-                String rutap=respuesta.getString("RUTA");
+                String rutap = respuesta.getString("RUTA");
 
-                String mensajesnoleidos=respuesta.getString("MENSAJES");
-                String ultimochat=respuesta.getString("ULTIMOCHAT");
+                String mensajesnoleidos = respuesta.getString("MENSAJES");
+                String ultimochat = respuesta.getString("ULTIMOCHAT");
 
-                Usuario usuarioagenda=new Usuario(telefono, nombre, Rutas.construirRuta(rutap), token, id);
+                Usuario usuarioagenda = new Usuario(telefono, nombre, Rutas.construirRuta(rutap), token, id);
                 usuarioagenda.setMensajesnoleidos(mensajesnoleidos);
                 usuarioagenda.setUltimochat(ultimochat);
 
-                contactos.get(contactos.lastIndexOf(usuarioagenda)).setMensajesnoleidos(mensajesnoleidos);
-              //  contactos.add(usuarioagenda);
+                if (contactos.lastIndexOf(usuarioagenda)!=-1){
+
+                    contactos.get(contactos.lastIndexOf(usuarioagenda)).setMensajesnoleidos(mensajesnoleidos);
+                }
+
+                //  contactos.add(usuarioagenda);
 
                 System.out.println("Actualiza la agenda" + contactos);
 
@@ -851,43 +842,27 @@ public class MainActivity extends AppCompatActivity implements DialogoArchivo.Da
                 contactos.addAll(set);
 
 
-            }catch (JSONException e) {
+            } catch (JSONException e) {
 
                 System.out.println(e.toString());
 
             }
 
-        }
-
-
-
-
-
-
-
-
-
-
-
-
-        else if (url.equals(urlcargarmensajeschat)) {
+        } else if (url.equals(urlcargarmensajeschat)) {
 
             try {
                 JSONObject jsnobject = new JSONObject(response.toString());
                 JSONArray jsonArray = jsnobject.getJSONArray("mensajes");
                 for (int i = 0; i < jsonArray.length(); i++) {
                     JSONObject explrObject = jsonArray.getJSONObject(i);
-                    Mensaje m=new Mensaje(explrObject.getString("CONTENIDO"), explrObject.getString("DIA").replace('T', ' '), explrObject.getString("TELEFONO"), explrObject.getString("NOMBRE"));
-                    JSONArray archivos=explrObject.getJSONArray("ARCHIVOS");
+                    Mensaje m = new Mensaje(explrObject.getString("CONTENIDO"), explrObject.getString("DIA").replace('T', ' '), explrObject.getString("TELEFONO"), explrObject.getString("NOMBRE"));
+                    JSONArray archivos = explrObject.getJSONArray("ARCHIVOS");
 
-                    for (int arc=0; arc< archivos.length(); arc++) {
+                    for (int arc = 0; arc < archivos.length(); arc++) {
 
-                        JSONObject archivodelmensaje=archivos.getJSONObject(arc);
+                        JSONObject archivodelmensaje = archivos.getJSONObject(arc);
                         m.setRutaarchivo(archivodelmensaje.getString("RUTA").toString());
                     }
-
-
-
 
 
                     if (!datosAmostrar.contains(m)) {
@@ -902,10 +877,7 @@ public class MainActivity extends AppCompatActivity implements DialogoArchivo.Da
             }
 
 
-
-
-        }else if (url.equals(Rutas.marcarcomoleidos)){
-
+        } else if (url.equals(Rutas.marcarcomoleidos)) {
 
 
             try {
@@ -920,18 +892,13 @@ public class MainActivity extends AppCompatActivity implements DialogoArchivo.Da
             }
 
 
-
         }
 
     }
 
 
-
-
-
-
     private void getContactList() {
-      //  contactos=new ArrayList<>();
+        //  contactos=new ArrayList<>();
 
         ContentResolver cr = getContentResolver();
         Cursor cur = cr.query(ContactsContract.Contacts.CONTENT_URI,
@@ -963,7 +930,7 @@ public class MainActivity extends AppCompatActivity implements DialogoArchivo.Da
                 }
             }
         }
-        if(cur!=null){
+        if (cur != null) {
             cur.close();
         }
 
@@ -971,17 +938,15 @@ public class MainActivity extends AppCompatActivity implements DialogoArchivo.Da
     }
 
 
-
-
     private void buscarUsuario(String telefonobuscar, String idowner) {
 
 
-        JSONObject jsonBody=new JSONObject();
+        JSONObject jsonBody = new JSONObject();
 
         try {
             jsonBody.put("telefono", telefonobuscar.toString().replaceAll("[\\D]", ""));
             jsonBody.put("id", idowner);
-            System.out.println("Busco este telefono "+jsonBody.toString());
+            System.out.println("Busco este telefono " + jsonBody.toString());
 
         } catch (JSONException e) {
             e.printStackTrace();
@@ -997,9 +962,12 @@ public class MainActivity extends AppCompatActivity implements DialogoArchivo.Da
         }, 500);
 
 
-
     }
 
+
+
+
+
+
+
 }
-
-

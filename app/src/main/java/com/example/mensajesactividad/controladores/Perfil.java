@@ -1,5 +1,4 @@
 package com.example.mensajesactividad.controladores;
-
 import androidx.annotation.Nullable;
 import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AppCompatActivity;
@@ -64,11 +63,9 @@ public class Perfil extends AppCompatActivity implements RequestHandlerInterface
     TextView tnombre;
     TextView ttelefono;
 
+    String lfoto=Autenticacion.rutafotoimportante;
 
     String imagen_url = Rutas.subir_imagen_url;
-
-
-    String buscarusuario = "http://10.0.2.2:54119/api/smartchat/buscarusuario";
 
     RequestQueue requestQueue;
     RequestHandlerInterface rh = this;
@@ -94,7 +91,12 @@ public class Perfil extends AppCompatActivity implements RequestHandlerInterface
         tv = findViewById(R.id.ruta);
         iv = findViewById(R.id.imageView4);
 
-        tv.setVisibility(View.GONE);
+        System.out.println("hay foto?? "+Autenticacion.rutafotoimportante);
+
+        Glide.with(getApplicationContext()).load(lfoto)
+                .placeholder(R.drawable.account_circle)
+                .into(iv);
+
 
         tnombre = findViewById(R.id.perfilnombre);
         ttelefono = findViewById(R.id.perfiltelefono);
@@ -113,7 +115,7 @@ public class Perfil extends AppCompatActivity implements RequestHandlerInterface
         toolbar = findViewById(R.id.mitoolbarperfil);
         toolbar.setLogo(R.drawable.smart_prod);
         setSupportActionBar(toolbar);
-  //      getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+        //      getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
         final Drawable upArrow = getApplicationContext().getDrawable(R.drawable.abc_ic_ab_back_material);
         upArrow.setColorFilter(Color.parseColor("#000000"), PorterDuff.Mode.SRC_ATOP);
@@ -133,51 +135,10 @@ public class Perfil extends AppCompatActivity implements RequestHandlerInterface
         progressDialog.setMessage("Uploading, please wait...");
         progressDialog.show();
 
-
-        //converting image to base64 string
-    /*    ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        bitmap.compress(Bitmap.CompressFormat.JPEG, 100, baos);
-        byte[] imageBytes = baos.toByteArray();
-        final String imageString = Base64.encodeToString(imageBytes, Base64.DEFAULT);*/
-
-
-
-
-    /*    StringRequest request = new StringRequest(Request.Method.POST, URL, new Response.Listener<String>(){
-            @Override
-            public void onResponse(String s) {
-                progressDialog.dismiss();
-                if(s.equals("true")){
-                    Toast.makeText(Perfil.this, "Uploaded Successful", Toast.LENGTH_LONG).show();
-                }
-                else{
-                    Toast.makeText(Perfil.this, "Some error occurred!", Toast.LENGTH_LONG).show();
-                }
-            }
-        },new Response.ErrorListener(){
-            @Override
-            public void onErrorResponse(VolleyError volleyError) {
-                Toast.makeText(Perfil.this, "Some error occurred -> "+volleyError, Toast.LENGTH_LONG).show();;
-            }
-        }) {
-            //adding parameters to send
-            @Override
-            protected Map<String, String> getParams() throws AuthFailureError {
-                Map<String, String> parameters = new HashMap<String, String>();
-                parameters.put("image", imageString);
-                return parameters;
-            }
-        };
-
-        RequestQueue rQueue = Volley.newRequestQueue(Perfil.this);
-        rQueue.add(request);*/
-
-
         Intent intent = new Intent();
         intent.setType("image/*");
         intent.setAction(Intent.ACTION_GET_CONTENT);
         startActivityForResult(Intent.createChooser(intent, "Select Picture"), PICK_IMAGE);
-
 
     }
 
@@ -189,7 +150,7 @@ public class Perfil extends AppCompatActivity implements RequestHandlerInterface
 
         if (requestCode == PICK_IMAGE && resultCode == Activity.RESULT_OK) {
             if (data == null) {
-                //error
+
                 return;
             }
             Uri uri = data.getData();
@@ -220,7 +181,7 @@ public class Perfil extends AppCompatActivity implements RequestHandlerInterface
 
             //     buscarUsuario(Autenticacion.numerotelefono, imgString, extension);
 
-        //    buscarFotoUsuario(Autenticacion.idpropietario);
+            //    buscarFotoUsuario(Autenticacion.idpropietario);
 
             subirImagen(imgString, Autenticacion.idpropietario, extension);
 
@@ -306,143 +267,12 @@ public class Perfil extends AppCompatActivity implements RequestHandlerInterface
         MySingleton.getInstance(getBaseContext()).addToRequest(cr.crearRequest());
 
 
-
-
-    /*    StringRequest request = new StringRequest(Request.Method.POST, imagen_url, new Response.Listener<String>() {
-            @RequiresApi(api = Build.VERSION_CODES.O)
-            @Override
-            public void onResponse(String response) {
-
-                try {
-
-                    JSONObject respuesta = new JSONObject(response);
-
-                    String id = respuesta.getString("GRABADO").toString();
-
-                    tv.setVisibility(View.VISIBLE);
-                    tv.setText("FOTO SUBIDA CON ÉXITO");
-
-                    progressDialog.dismiss();
-
-
-                } catch (JSONException e) {
-
-                    System.out.println(e.toString());
-                }
-
-                System.out.println(response);
-
-            }
-        }, new Response.ErrorListener() {
-
-            @Override
-            public void onErrorResponse(VolleyError error) {
-
-                System.out.println("volley error");
-                error.printStackTrace();
-
-                NetworkResponse response = error.networkResponse;
-                if (error instanceof ServerError && response != null) {
-                    try {
-                        String res = new String(response.data,
-                                HttpHeaderParser.parseCharset(response.headers, "utf-8"));
-                        // Now you can use any deserializer to make sense of data
-
-                        JSONObject obj = new JSONObject(res);
-                        System.out.println(obj.toString());
-                    } catch (UnsupportedEncodingException e1) {
-                        // Couldn't properly decode data to string
-                        Log.e("JSON Parser", "Error parsing data " + e1.toString());
-                        e1.printStackTrace();
-                    } catch (JSONException e2) {
-                        // returned data is not JSONObject?
-                        Log.e("JSON Parser", "Error parsing data " + e2.toString());
-                        e2.printStackTrace();
-                    }
-                }
-
-                System.out.println(error.toString());
-
-            }
-        }) {
-
-
-            @Override
-            public String getBodyContentType() {
-                return "application/json";
-            }
-
-            @Override
-            public Map<String, String> getHeaders() throws AuthFailureError {
-                HashMap<String, String> headers = new HashMap<String, String>();
-                headers.put("Content-Type", "application/json; charset=utf-8");
-                return headers;
-            }
-
-
-            @Override
-            public byte[] getBody() throws AuthFailureError {
-
-                JSONObject jsonBody = new JSONObject();
-
-                try {
-                    jsonBody.put("ID", id);
-                    jsonBody.put("IMAGEN", imagen);
-                    jsonBody.put("EXTENSION", extension);
-                    jsonBody.put("DIA", "");
-                    jsonBody.put("CHAT_ID", "");
-                    jsonBody.put("EMISOR", Autenticacion.numerotelefono);
-                    jsonBody.put("RECEPTOR", "");
-
-
-
-            /*        valores.put("DIA", vdia);
-                    valores.put("CHAT_ID", vchat_id);
-                    valores.put("EMISOR", vemisor);
-                    valores.put("RECEPTOR", vreceptor);*/
-
-
-            /*    } catch (JSONException e) {
-                    e.printStackTrace();
-                }
-
-
-                try {
-
-                    return jsonBody == null ? null : jsonBody.toString().getBytes("UTF-8");
-                } catch (UnsupportedEncodingException uee) {
-
-                    return null;
-                }
-
-
-            }
-        };
-
-        request.setRetryPolicy(new RetryPolicy() {
-            @Override
-            public int getCurrentTimeout() {
-                return 50000;
-            }
-
-            @Override
-            public int getCurrentRetryCount() {
-                return 50000;
-            }
-
-            @Override
-            public void retry(VolleyError error) throws VolleyError {
-
-            }
-        });
-        MySingleton.getInstance(getBaseContext()).addToRequest(request);*/
-
     }
 
 
     private void buscarUsuario(String telefonobuscar, String imagen, String extension) {
 
-        StringRequest request = new StringRequest(Request.Method.POST, buscarusuario, new Response.Listener<String>() {
+        StringRequest request = new StringRequest(Request.Method.POST, Rutas.buscarusuario, new Response.Listener<String>() {
             @RequiresApi(api = Build.VERSION_CODES.O)
             @Override
             public void onResponse(String response) {
@@ -640,13 +470,13 @@ public class Perfil extends AppCompatActivity implements RequestHandlerInterface
 
     public void guardarimagenpreferencias(String mr){
 
-            SharedPreferences preferences=getSharedPreferences("com.example.mensajes.credenciales", Context.MODE_PRIVATE);
-            SharedPreferences.Editor editor=preferences.edit();
-            editor.putString("foto", mr);
-            Autenticacion.rutafotoimportante=mr;
-            System.out.println("guardando preferencias");
+        SharedPreferences preferences=getSharedPreferences("com.example.mensajes.credenciales", Context.MODE_PRIVATE);
+        SharedPreferences.Editor editor=preferences.edit();
+        editor.putString("foto", mr);
+        Autenticacion.rutafotoimportante=mr;
+        System.out.println("guardando preferencias");
 
-            editor.commit();
+        editor.commit();
 
 
         Thread mithread=new Thread(){
@@ -658,7 +488,7 @@ public class Perfil extends AppCompatActivity implements RequestHandlerInterface
 
                 }finally {
 
-                    Intent intent=new Intent(Perfil.this, Autenticacion.class);
+                    Intent intent=new Intent(Perfil.this, MostrarContactos.class);
                     startActivity(intent);
                 }
             }

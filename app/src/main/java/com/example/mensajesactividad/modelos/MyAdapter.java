@@ -72,6 +72,8 @@ public class MyAdapter extends RecyclerView.Adapter<MyAdapter.MyViewHolder> {
         LinearLayout.LayoutParams misparametros=new LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT);
         misparametros.setMarginStart(440);
         String telefono= Autenticacion.numerotelefono;
+        holder.itemView.setTag(datos.get(position));
+
 
         if (!datos.get(position).getTelefono().toString().equals(telefono)) {
             holder.mitextview.setLayoutParams(misparametros);
@@ -82,7 +84,7 @@ public class MyAdapter extends RecyclerView.Adapter<MyAdapter.MyViewHolder> {
 
 
 
-        holder.itemView.setTag(datos.get(position));
+
 
         if (datos.get(position).getRutaarchivo() instanceof String && datos.get(position).getRutaarchivo().length()>0 && datos.get(position).getRutaarchivo().toString().lastIndexOf("\\")!=-1) {
             holder.mitextview.setText(datos.get(position).getRutaarchivo().substring(datos.get(position).getRutaarchivo().toString().lastIndexOf("\\")+1));

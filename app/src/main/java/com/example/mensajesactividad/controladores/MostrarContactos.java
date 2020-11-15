@@ -12,13 +12,16 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import android.content.BroadcastReceiver;
+import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 
 import android.content.IntentFilter;
+import android.content.ServiceConnection;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
+import android.os.IBinder;
 import android.os.Looper;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -37,6 +40,7 @@ import com.example.mensajesactividad.modelos.Chat;
 import com.example.mensajesactividad.modelos.Grupo;
 import com.example.mensajesactividad.modelos.Usuario;
 import com.example.mensajesactividad.services.CrearRequests;
+import com.example.mensajesactividad.services.MyService;
 import com.example.mensajesactividad.services.MySingleton;
 import com.example.mensajesactividad.services.RecyclerItemClickListener;
 import com.example.mensajesactividad.services.RequestHandlerInterface;
@@ -99,9 +103,11 @@ public class MostrarContactos extends AppCompatActivity  implements RequestHandl
 
     Bundle args;
 
-    ImageView ivfoto;
+    ImageView ivfoto, imageView5;
 
-    TextView nombrepropheader, mibadge;
+    TextView nombrepropheader, mibadge, textview2;
+
+    public static Boolean nolocalizacion=true;
 
 
     private BroadcastReceiver onMessage= new BroadcastReceiver() {
@@ -143,6 +149,8 @@ public class MostrarContactos extends AppCompatActivity  implements RequestHandl
 
             mibadge.setText(aumento);
             mibadge.setVisibility(View.VISIBLE);
+
+
 
 
 
@@ -198,8 +206,11 @@ public class MostrarContactos extends AppCompatActivity  implements RequestHandl
                 .into(iv);
 
         nombrepropheader=(TextView) navHead.findViewById(R.id.texttest);
+        imageView5=findViewById(R.id.imageView5);
 
         nombrepropheader.setText(Autenticacion.nombredelemisor);
+
+        textview2=findViewById(R.id.textView2);
 
 
         navigationView.setNavigationItemSelectedListener(new NavigationView.OnNavigationItemSelectedListener() {
@@ -227,6 +238,7 @@ public class MostrarContactos extends AppCompatActivity  implements RequestHandl
                     case R.id.menugrupo:
 
                         drawerLayout.closeDrawers();
+                        nolocalizacion=false;
                         recogerMisGruposChats();
                         return true;
 
@@ -235,6 +247,21 @@ public class MostrarContactos extends AppCompatActivity  implements RequestHandl
                         drawerLayout.closeDrawers();
                         Intent i=new Intent(MostrarContactos.this, Perfil.class);
                         startActivity(i);
+                        return true;
+
+
+                    case R.id.localizacion:
+                        textview2.setText("Compartir localización con...");
+                        drawerLayout.closeDrawers();
+
+
+                        nolocalizacion=false;
+                        recyclerView.setAdapter(null);
+                        recyclerView.setLayoutManager(null);
+                        recyclerView.setAdapter(myAdapter);
+                        recyclerView.setLayoutManager(layoutManager);
+                        myAdapter.notifyDataSetChanged();
+
                         return true;
                 }
 
@@ -261,6 +288,7 @@ public class MostrarContactos extends AppCompatActivity  implements RequestHandl
 
         recyclerView=findViewById(R.id.miscontactos);
         requestQueue= Volley.newRequestQueue(getApplicationContext());
+        usuario=null;
 
         recyclerView.addOnItemTouchListener(
                 new RecyclerItemClickListener(this, recyclerView ,new RecyclerItemClickListener.OnItemClickListener() {
@@ -282,18 +310,38 @@ public class MostrarContactos extends AppCompatActivity  implements RequestHandl
 
                         System.out.println("este que datos tiene "+usuario);
 
-                        if (usuario.getUltimochat()!="") {
+                        System.out.println("localizacion "+nolocalizacion);
+
+                        if (usuario.getUltimochat()!="" && nolocalizacion) {
 
                             System.out.println("aqui hay ulitmo chat "+usuario.getUltimochat());
 
-                            crearIntent(usuario.getUltimochat(), Rutas.crearfechaHora());
-                        }else {
+                            crearIntent(usuario.getUltimochat(), Rutas.crearfechaHora(), usuario);
+
+                        }else if (usuario.getUltimochat()!="" && !nolocalizacion){
+
+                            crearServicio(usuario);
+
+                            crearIntent(usuario.getUltimochat(), Rutas.crearfechaHora(), usuario);
+
+                        } else if (usuario.getUltimochat()=="" && !nolocalizacion){
+
                             LocalDateTime fechaactual= LocalDateTime.now();
                             ZonedDateTime zdt = fechaactual.atZone(ZoneId.of("Europe/Madrid"));
                             idcodigo= String.valueOf(zdt.toInstant().toEpochMilli());
 
                             System.out.println("aqui nOOO hay ulitmo chat "+usuario.getUltimochat());
                             crearChat(idcodigo, Rutas.crearfechaHora());
+                            crearIntent(idcodigo, inicio, usuario);
+                        }else {
+                       /*     LocalDateTime fechaactual= LocalDateTime.now();
+                            ZonedDateTime zdt = fechaactual.atZone(ZoneId.of("Europe/Madrid"));
+                            idcodigo= String.valueOf(zdt.toInstant().toEpochMilli());
+
+                            System.out.println("aqui nOOO hay ulitmo chat "+usuario.getUltimochat());
+                            crearChat(idcodigo, Rutas.crearfechaHora());*/
+
+                            crearIntent(usuario.getUltimochat(), Rutas.crearfechaHora(), usuario);
                         }
 
 
@@ -315,7 +363,7 @@ public class MostrarContactos extends AppCompatActivity  implements RequestHandl
                             alGrupo.remove(contactos.get(position));
                         }
 
-
+                        nolocalizacion=false;
                     }
                 })
         );
@@ -378,22 +426,23 @@ public class MostrarContactos extends AppCompatActivity  implements RequestHandl
 
 
 
- public void crearIntent(String idct, String inicio) {
+ public void crearIntent(String idct, String inicio, Usuario usuario1) {
      Intent intent=new Intent(getApplicationContext(), MainActivity.class);
 
      System.out.println("estoy pasandole el chat "+idct);
      intent.putExtra("chat_id", idct);
-        intent.putExtra("tokenaenviar", usuario.getToken().toString());
+        intent.putExtra("tokenaenviar", usuario1.getToken().toString());
         intent.putExtra("tokenorigen", Autenticacion.tokenorigen);
         intent.putExtra("nombreemisor", Autenticacion.nombredelemisor);
 
-        intent.putExtra("nombrereceptor", usuario.getNombre().toString());
+        intent.putExtra("nombrereceptor", usuario1.getNombre().toString());
 
         intent.putExtra("numerodetelefono", Autenticacion.numerotelefono);
-        intent.putExtra("numerodetelefonoreceptor", usuario.getTelefono().toString());
+        intent.putExtra("numerodetelefonoreceptor", usuario1.getTelefono().toString());
 
        intent.putExtra("usuarioemisor", new Usuario(Autenticacion.numerotelefono, Autenticacion.nombredelemisor, Autenticacion.rutafotoimportante, Autenticacion.tokenorigen));
-       intent.putExtra("usuarioreceptor", usuario);
+       intent.putExtra("usuarioreceptor", usuario1);
+
 
 
        intent.putExtra("contactos", contactos);
@@ -443,7 +492,7 @@ public class MostrarContactos extends AppCompatActivity  implements RequestHandl
         Intent intent = getIntent();
         args = intent.getBundleExtra("BUNDLE");
         System.out.println("on resuuuuume");
-
+        nolocalizacion=true;
 
         if (args!=null) {
             contactos = (ArrayList<Usuario>) args.getSerializable("ARRAYLIST");
@@ -559,7 +608,12 @@ public class MostrarContactos extends AppCompatActivity  implements RequestHandl
 
                 System.out.println("chat creado");
 
-                crearIntent(codigo, inicio);
+                if (!nolocalizacion){
+                   crearServicio(usuario);
+
+                }
+
+
 
 
 
@@ -695,6 +749,15 @@ public class MostrarContactos extends AppCompatActivity  implements RequestHandl
     }
 
 
+    public void crearServicio(Usuario usuarioamandar) {
+
+
+        Intent intentservice=new Intent(MostrarContactos.this, MyService.class);
+
+        intentservice.putExtra("usuarioreceptor", usuarioamandar);
+        startService(intentservice);
+
+    }
 
 
 

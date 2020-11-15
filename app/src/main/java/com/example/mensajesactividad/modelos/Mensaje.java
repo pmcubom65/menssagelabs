@@ -15,6 +15,8 @@ public class Mensaje {
 
     private String rutaarchivo;
 
+    Localizacion l;
+
 
     public Mensaje(String contenido, String fecha, String telefono) {
         this.contenido = contenido;
@@ -37,6 +39,14 @@ public class Mensaje {
         this.telefono=telefono;
         this.nombre=nombre;
         this.rutaarchivo=ruta;
+    }
+
+    public Localizacion getL() {
+        return l;
+    }
+
+    public void setL(Localizacion l) {
+        this.l = l;
     }
 
     public String getRutaarchivo() {

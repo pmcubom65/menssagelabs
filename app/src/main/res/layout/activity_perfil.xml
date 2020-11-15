@@ -46,20 +46,22 @@
         android:id="@+id/perfiltelefono"
         android:layout_width="match_parent"
         android:layout_height="30dp"
-        android:gravity="center"
 
+
+        android:gravity="center"
         android:textColor="#000000"
         android:textSize="25sp"
         android:textStyle="bold"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="0.114"
+        app:layout_constraintVertical_bias="0.192"
         tools:layout_editor_absoluteX="0dp" />
 
     <Button
         android:id="@+id/subirimagen"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_marginTop="10dp"
         android:background="@color/colorPrimary"
         android:onClick="subirimagenonclick"
         android:padding="10dp"
@@ -68,10 +70,10 @@
         android:textSize="18sp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.524"
+        app:layout_constraintHorizontal_bias="0.471"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="@+id/mitoolbarperfil"
-        app:layout_constraintVertical_bias="0.822" />
+        app:layout_constraintVertical_bias="0.897" />
 
     <TextView
         android:id="@+id/ruta"
@@ -97,7 +99,7 @@
         app:civ_border_width="2dp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.497"
+        app:layout_constraintHorizontal_bias="0.447"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/ruta"
         app:layout_constraintVertical_bias="0.0"

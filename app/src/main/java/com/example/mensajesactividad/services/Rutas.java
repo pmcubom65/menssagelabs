@@ -52,10 +52,10 @@ public class Rutas {
 
     public static String rutaanadirusuarioagrupo="https://sdi.smartlabs.es/api/smartchat/anadirusuarioagrupo";
 
-    public static String rutacreargrupo="https://sdi.smartlabs.es/api/smartchat/creargrupo";*/
+    public static String rutacreargrupo="https://sdi.smartlabs.es/api/smartchat/creargrupo";
 
 
-    public static String urlcrearusuario="http://10.0.2.2:54119/api/smartchat/crearusuario/";
+   /* public static String urlcrearusuario="http://10.0.2.2:54119/api/smartchat/crearusuario/";
     public static String urlmandarsms="http://10.0.2.2:54119/api/smartchat/crearSMS";
 
 
@@ -89,7 +89,7 @@ public class Rutas {
 
     public static String rutacreargrupo="http://10.0.2.2:54119/api/smartchat/creargrupo";
 
-        public static String marcarcomoleidos="http://10.0.2.2:54119/api/smartchat/ponerMensajesComoLeidos";
+        public static String marcarcomoleidos="http://10.0.2.2:54119/api/smartchat/ponerMensajesComoLeidos";*/
 
 
 
@@ -98,7 +98,7 @@ public class Rutas {
 
 
 
-  /*  public static String urlcrearusuario="https://sdi2.smartlabs.es:30002/api/smartchat/crearusuario/";
+    public static String urlcrearusuario="https://sdi2.smartlabs.es:30002/api/smartchat/crearusuario/";
     public static String urlmandarsms="https://sdi2.smartlabs.es:30002/api/smartchat/crearSMS";
 
 
@@ -114,13 +114,14 @@ public class Rutas {
 
 
 
-
     public static String rutamostrarlistadochats="https://sdi2.smartlabs.es:30002/api/smartchat/detallesmischats";
 
 
     public static String rutamostrargrupos="https://sdi2.smartlabs.es:30002/api/smartchat/misgrupos";
 
-    public static  String rutacrearmensaje="https://sdi2.smartlabs.es:30002/api/smartchat/crearmensaje";
+   public static  String rutacrearmensaje="https://sdi2.smartlabs.es:30002/api/smartchat/crearmensaje";
+
+
 
     public static String rutaurlcargarmensajeschat="https://sdi2.smartlabs.es:30002/api/smartchat/buscarmensajeschat";
 
@@ -133,7 +134,7 @@ public class Rutas {
     public static String rutacreargrupo="https://sdi2.smartlabs.es:30002/api/smartchat/creargrupo";
 
 
-    public static String marcarcomoleidos="https://sdi2.smartlabs.es:30002/api/smartchat/ponerMensajesComoLeidos";*/
+    public static String marcarcomoleidos="https://sdi2.smartlabs.es:30002/api/smartchat/ponerMensajesComoLeidos";
 
 
 

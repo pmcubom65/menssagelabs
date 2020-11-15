@@ -42,7 +42,7 @@ public class AdaptadorContactos extends RecyclerView.Adapter<AdaptadorContactos.
     public class ViewHolder extends RecyclerView.ViewHolder {
 
         TextView contacto1,contacto2, mibadge;
-        ImageView imageView;
+        ImageView imageView, imageView5;
         CheckBox checkBox;
 
 
@@ -51,6 +51,8 @@ public class AdaptadorContactos extends RecyclerView.Adapter<AdaptadorContactos.
             contacto1=itemView.findViewById(R.id.contacto1);
             contacto2=itemView.findViewById(R.id.contacto2);
             imageView=itemView.findViewById(R.id.imageView);
+            imageView5=itemView.findViewById(R.id.imageView5);
+
             checkBox=itemView.findViewById(R.id.checkBox);
             checkBox.setVisibility(View.GONE);
 
@@ -91,6 +93,11 @@ public class AdaptadorContactos extends RecyclerView.Adapter<AdaptadorContactos.
         }
 
 
+        if (!MostrarContactos.nolocalizacion){
+            holder.imageView5.setVisibility(View.VISIBLE);
+        }else {
+            holder.imageView5.setVisibility(View.GONE);
+        }
 
     }
 

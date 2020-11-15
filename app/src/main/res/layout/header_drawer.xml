@@ -5,7 +5,7 @@
     android:layout_width="match_parent"
     android:background="@color/lightred"
     android:padding="16dp"
-    android:layout_height="270dp"
+    android:layout_height="250dp"
     android:gravity="bottom"
     xmlns:tools="http://schemas.android.com/tools"
 

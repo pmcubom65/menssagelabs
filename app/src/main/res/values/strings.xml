@@ -11,6 +11,7 @@
     <string name="login_failed">"Login failed"</string>
 
     <string name="default_notification_channel_id">4444</string>
+    <string name="title_activity_mapas">Map</string>
 
 
 </resources>

@@ -22,6 +22,7 @@ import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 import com.android.volley.AuthFailureError;
 import com.android.volley.NetworkResponse;
 import com.android.volley.Request;
+import com.android.volley.RequestQueue;
 import com.android.volley.Response;
 import com.android.volley.RetryPolicy;
 import com.android.volley.ServerError;
@@ -29,11 +30,13 @@ import com.android.volley.VolleyError;
 import com.android.volley.toolbox.HttpHeaderParser;
 import com.android.volley.toolbox.StringRequest;
 import com.bumptech.glide.Glide;
+import com.example.mensajesactividad.controladores.Autenticacion;
 import com.example.mensajesactividad.controladores.MainActivity;
 import com.example.mensajesactividad.R;
 import com.example.mensajesactividad.controladores.MostrarContactos;
 import com.example.mensajesactividad.modelos.Chat;
 import com.example.mensajesactividad.modelos.Usuario;
+import com.google.android.material.snackbar.Snackbar;
 import com.google.firebase.messaging.FirebaseMessagingService;
 import com.google.firebase.messaging.RemoteMessage;
 
@@ -47,13 +50,13 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ExecutionException;
 
-public class MyFirebaseInstanceService extends FirebaseMessagingService {
+public class MyFirebaseInstanceService extends FirebaseMessagingService implements RequestHandlerInterface {
 
 
-    private final String canal="5555";
-    private final int notificationid=001;
+    private final String canal = "5555";
+    private final int notificationid = 001;
     String KEY_REPLY = "key_reply";
-    public static boolean flag=false;
+    public static boolean flag = false;
 
     String chat_id;
     String titulo;
@@ -61,43 +64,69 @@ public class MyFirebaseInstanceService extends FirebaseMessagingService {
     Usuario emisor;
     Usuario receptor;
 
-    Boolean esgrupo=false;
+    Boolean esgrupo = false;
 
     public static Chat michat;
+
+    RequestQueue requestQueue;
+    RequestHandlerInterface rh = this;
+
+
 
     @Override
     public void onNewToken(@NonNull String token) {
         Log.d("TOKEN", "Refreshed token: " + token);
 
+        if(Autenticacion.nombredelemisor!=null){
+            guardarUsuario(Autenticacion.numerotelefono, Autenticacion.nombredelemisor, token);
+        }
+
+
     }
 
+    private void guardarUsuario(String telefono, String nombre, String token) {
 
+        JSONObject jsonBody = new JSONObject();
+
+        try {
+            jsonBody.put("telefono", telefono);
+            jsonBody.put("nombre", nombre.toUpperCase());
+            jsonBody.put("token", token);
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+
+        CrearRequests cr = new CrearRequests(Rutas.urlcrearusuario, jsonBody, rh);
+
+        MySingleton.getInstance(getBaseContext()).addToRequest(cr.crearRequest());
+
+    }
 
 
     @RequiresApi(api = Build.VERSION_CODES.KITKAT_WATCH)
     @Override
     public void onMessageReceived(@NonNull RemoteMessage remoteMessage) {
-       System.out.println( "From: " + remoteMessage.toString());
+        System.out.println("From: " + remoteMessage.toString());
 
         Map<String, String> data = remoteMessage.getData();
 
-        chat_id=(String) data.get("michatid");
-        titulo=(String) data.get("titulo");
+        chat_id = (String) data.get("michatid");
+        titulo = (String) data.get("titulo");
 
-        String tokenemisor=(String) data.get("tokenaenviar");
-        String nombreemisor=(String) data.get("nombrereceptor");
-        String telefonoemisor=(String) data.get("telefonoreceptor");
+        String tokenemisor = (String) data.get("tokenaenviar");
+        String nombreemisor = (String) data.get("nombrereceptor");
+        String telefonoemisor = (String) data.get("telefonoreceptor");
 
-        String fotoemisor=(String) data.get("fotoemisor");
-        String fotoreceptor=(String) data.get("fotoreceptor");
+        String fotoemisor = (String) data.get("fotoemisor");
+        String fotoreceptor = (String) data.get("fotoreceptor");
 
-        emisor=new Usuario(telefonoemisor, nombreemisor, fotoreceptor, tokenemisor);
+        emisor = new Usuario(telefonoemisor, nombreemisor, fotoreceptor, tokenemisor);
 
-        String tokenreceptor=(String) data.get("tokenemisor");
-        String nombrereceptor=(String) data.get("nombreemisor");
-        String telefonoreceptor=(String) data.get("telefonoemisor");
+        String tokenreceptor = (String) data.get("tokenemisor");
+        String nombrereceptor = (String) data.get("nombreemisor");
+        String telefonoreceptor = (String) data.get("telefonoemisor");
 
-        receptor=new Usuario(telefonoreceptor, nombrereceptor, fotoemisor, tokenreceptor);
+        receptor = new Usuario(telefonoreceptor, nombrereceptor, fotoemisor, tokenreceptor);
 
         notificationChannel();
         crearNotificacion();
@@ -107,27 +136,27 @@ public class MyFirebaseInstanceService extends FirebaseMessagingService {
     @RequiresApi(api = Build.VERSION_CODES.KITKAT_WATCH)
     public void crearNotificacion() {
 
-        RemoteViews normal=new RemoteViews(getPackageName(), R.layout.cerrada);
-        RemoteViews expandida=new RemoteViews(getPackageName(), R.layout.expandida);
+        RemoteViews normal = new RemoteViews(getPackageName(), R.layout.cerrada);
+        RemoteViews expandida = new RemoteViews(getPackageName(), R.layout.expandida);
 
 
-        if (receptor.getUri()!=null && receptor.getUri().toString().length()>0){
+        if (receptor.getUri() != null && receptor.getUri().toString().length() > 0) {
 
 
             try {
 
-                if (!(receptor.getUri() instanceof String)){
+                if (!(receptor.getUri() instanceof String)) {
                     Bitmap bitmap = Glide.with(getApplicationContext())
                             .asBitmap()
                             .load(R.drawable.account_circle)
                             .submit(48, 48)
                             .get();
-                }else {
-                    String rutamal=receptor.getUri().toString();
+                } else {
+                    String rutamal = receptor.getUri().toString();
                     String fotohacia = rutamal.replaceAll("(?<!(http:|https:))/+", "/");
 
-                    if (fotohacia.lastIndexOf('.')+5!=-1){
-                        fotohacia=fotohacia.substring(0, fotohacia.lastIndexOf('.')+4);
+                    if (fotohacia.lastIndexOf('.') + 5 != -1) {
+                        fotohacia = fotohacia.substring(0, fotohacia.lastIndexOf('.') + 4);
                     }
 
                     Bitmap bitmap = Glide.with(getApplicationContext())
@@ -141,9 +170,6 @@ public class MyFirebaseInstanceService extends FirebaseMessagingService {
                 }
 
 
-
-
-
             } catch (ExecutionException e) {
                 e.printStackTrace();
 
@@ -152,8 +178,7 @@ public class MyFirebaseInstanceService extends FirebaseMessagingService {
             }
 
 
-
-        }else {
+        } else {
             normal.setImageViewResource(R.id.imagennotificacion, R.drawable.account_circle);
             expandida.setImageViewResource(R.id.imagennotificacion, R.drawable.account_circle);
         }
@@ -164,16 +189,13 @@ public class MyFirebaseInstanceService extends FirebaseMessagingService {
         normal.setTextViewText(R.id.tinfo, titulo);
         expandida.setTextViewText(R.id.tinfo, titulo);
 
-        NotificationCompat.Builder notification=new NotificationCompat.Builder(getApplicationContext(), canal);
+        NotificationCompat.Builder notification = new NotificationCompat.Builder(getApplicationContext(), canal);
         notification.setSmallIcon(R.drawable.smartlabs);
         notification.setContentTitle(receptor.getNombre().toString());
         notification.setStyle(new NotificationCompat.BigTextStyle()
                 .bigText(titulo));
         notification.setContentText(titulo);
         notification.setPriority(NotificationCompat.PRIORITY_DEFAULT);
-
-
-
 
 
         notification.setStyle(new NotificationCompat.DecoratedCustomViewStyle());
@@ -207,8 +229,6 @@ public class MyFirebaseInstanceService extends FirebaseMessagingService {
                         PendingIntent.FLAG_UPDATE_CURRENT);
 
 
-
-
         //Notification Action with RemoteInput instance added.
         NotificationCompat.Action replyAction = new NotificationCompat.Action.Builder(
                 android.R.drawable.sym_action_chat, "RESPONDER", replyPendingIntent)
@@ -231,24 +251,24 @@ public class MyFirebaseInstanceService extends FirebaseMessagingService {
         notification.addAction(android.R.drawable.ic_menu_close_clear_cancel, "Ver mensaje", dismissIntent);
 
 
-        NotificationManagerCompat notificationManagerCompat=NotificationManagerCompat.from(this);
+        NotificationManagerCompat notificationManagerCompat = NotificationManagerCompat.from(this);
 
         notificationManagerCompat.notify(notificationid, notification.build());
 
 
         broadcastIntent(emisor, receptor);
-  }
+    }
 
     public void broadcastIntent(Usuario emisora, Usuario receptora) {
         Intent intent = new Intent();
         intent.setAction("com.myApp.CUSTOM_EVENT");
-   //     intent.putExtra("chat_id", chat_id);
+        //     intent.putExtra("chat_id", chat_id);
         Bundle argsi = new Bundle();
         emisora.setUltimochat(chat_id);
         receptora.setUltimochat(chat_id);
-        argsi.putSerializable("emisor",(Serializable) emisora);
-        argsi.putSerializable("receptor",(Serializable) receptora);
-        intent.putExtra("DATA",argsi);
+        argsi.putSerializable("emisor", (Serializable) emisora);
+        argsi.putSerializable("receptor", (Serializable) receptora);
+        intent.putExtra("DATA", argsi);
 
         LocalBroadcastManager.getInstance(getApplicationContext()).sendBroadcast(intent);
 
@@ -256,15 +276,15 @@ public class MyFirebaseInstanceService extends FirebaseMessagingService {
 
 
     public void notificationChannel() {
-        if(Build.VERSION.SDK_INT>=Build.VERSION_CODES.O) {
-            String indicar= "mas cosas";
-            CharSequence personal=titulo;
-            String descripcion=titulo;
-            int importancia= NotificationManager.IMPORTANCE_DEFAULT;
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            String indicar = "mas cosas";
+            CharSequence personal = titulo;
+            String descripcion = titulo;
+            int importancia = NotificationManager.IMPORTANCE_DEFAULT;
 
-            NotificationChannel notificationChannel=new NotificationChannel(canal, personal, importancia);
+            NotificationChannel notificationChannel = new NotificationChannel(canal, personal, importancia);
             notificationChannel.setDescription(indicar);
-            NotificationManager notificationManager=(NotificationManager) getSystemService(NOTIFICATION_SERVICE);
+            NotificationManager notificationManager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
             notificationManager.createNotificationChannel(notificationChannel);
 
         }
@@ -276,5 +296,21 @@ public class MyFirebaseInstanceService extends FirebaseMessagingService {
     public void onCreate() {
         System.out.println("notificacion recibida");
 
+    }
+
+    @Override
+    public void onResponse(String response, String url) {
+        if (url.equals(Rutas.urlcrearusuario)) {
+            try {
+                JSONObject respuesta = new JSONObject(response);
+
+                Autenticacion.tokenorigen = respuesta.getString("TOKEN");
+
+                System.out.println("grabado");
+
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+        }
     }
 }

@@ -1,12 +1,18 @@
 package com.example.mensajesactividad.controladores;
 
+import androidx.annotation.NonNull;
 import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
 
+import android.Manifest;
+import android.app.ProgressDialog;
 import android.content.ContentResolver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.Build;
@@ -14,6 +20,10 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
 import android.provider.ContactsContract;
+import android.util.Log;
+import android.view.View;
+import android.widget.TextView;
+import android.widget.Toast;
 
 import com.android.volley.RequestQueue;
 import com.android.volley.toolbox.Volley;
@@ -23,6 +33,10 @@ import com.example.mensajesactividad.services.CrearRequests;
 import com.example.mensajesactividad.services.MySingleton;
 import com.example.mensajesactividad.services.RequestHandlerInterface;
 import com.example.mensajesactividad.services.Rutas;
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.Task;
+import com.google.firebase.iid.FirebaseInstanceId;
+import com.google.firebase.iid.InstanceIdResult;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -36,17 +50,40 @@ public class Presentacion extends AppCompatActivity implements RequestHandlerInt
 
 
     Boolean haypreferencias=false;
-
+    private static final int REQUEST_LOCATION_PERMISSION = 1;
     RequestQueue requestQueue;
     RequestHandlerInterface rh = this;
 
     ArrayList<Usuario> listacontactos;
+
+
+    private final int REQUEST_READ_PHONE_STATE=1;
+    private static final int READ_CONTACTS_PERMISSIONS_REQUEST = 1;
+    private static final int BIND_ACCESSIBILITY_SERVICE=1;
+    private static final int READ_SMS_PERMISSIONS_REQUEST = 1;
+    private static final int SEND_SMS_PERMISSIONS_REQUEST=1;
+    ProgressDialog progressDialog;
+    TextView wait;
 
     @RequiresApi(api = Build.VERSION_CODES.O)
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_presentacion);
+
+        wait=(TextView) findViewById(R.id.waiting);
+        progressDialog = new ProgressDialog(Presentacion.this);
+
+
+       if (getIntent().getExtras()!=null){
+           wait.setVisibility(View.VISIBLE);
+           wait.setText("Cargando Contactos...");
+
+           progressDialog.setMessage("Espere...");
+           progressDialog.show();
+       }
+
+
 
         requestQueue= Volley.newRequestQueue(getApplicationContext());
         cargarPreferencias();
@@ -60,31 +97,21 @@ public class Presentacion extends AppCompatActivity implements RequestHandlerInt
             Bundle args = new Bundle();
             args.putSerializable("ARRAYLIST",(Serializable) listacontactos);
             intent.putExtra("BUNDLE",args);
-
+            progressDialog.dismiss();
             new Handler(Looper.getMainLooper()).postDelayed(new Runnable() {
                 @Override
                 public void run() {
+
                     startActivity(intent);
                 }
             }, 3000);
 
 
         }else {
-            Thread mithread=new Thread(){
-                @Override
-                public void run() {
-                    try {
-                        sleep(3000);
-                    }catch (Exception e) {
 
-                    }finally {
+            pedirPermisos();
 
-                        Intent intent=new Intent(Presentacion.this, Autenticacion.class);
-                        startActivity(intent);
-                    }
-                }
-            };
-            mithread.start();
+
         }
 
 
@@ -98,21 +125,18 @@ public class Presentacion extends AppCompatActivity implements RequestHandlerInt
         System.out.println("cargando preferencias");
         SharedPreferences preferences=getSharedPreferences("com.example.mensajes.credenciales", Context.MODE_PRIVATE);
         String telefono=preferences.getString("telefono", "");
-        String token=preferences.getString("token", "");
-        String nombre=preferences.getString("nombre", "");
+        String idd=preferences.getString("id", "");
 
-        String id=preferences.getString("id", "");
 
-        if (telefono.length()>0 && token.length()>0 && nombre.length()>0){
-            System.out.println("preferencias funcionan");
+        if (telefono.length()>0){
+
             Autenticacion.numerotelefono=telefono;
-            Autenticacion.nombredelemisor=nombre;
-            Autenticacion.tokenorigen=token;
-            Autenticacion.idpropietario=id;
+            Autenticacion.idpropietario=idd;
             haypreferencias=true;
-            buscarFotoUsuario(id);
 
-            getContactList();
+            buscarUsuario(Autenticacion.numerotelefono, Autenticacion.idpropietario);
+
+         //   getContactList();
         }
 
     }
@@ -225,16 +249,24 @@ public class Presentacion extends AppCompatActivity implements RequestHandlerInt
                 String mensajesnoleidos=respuesta.getString("MENSAJES");
                 String ultimochat=respuesta.getString("ULTIMOCHAT");
 
-                Usuario usuarioagenda=new Usuario(telefono, nombre, Rutas.construirRuta(rutap), token, id);
-                usuarioagenda.setMensajesnoleidos(mensajesnoleidos);
-                usuarioagenda.setUltimochat(ultimochat);
+                if (telefono.equals(Autenticacion.numerotelefono)){
+                    Autenticacion.tokenorigen=token;
+                    Autenticacion.nombredelemisor=nombre;
+                    Autenticacion.rutafotoimportante=Rutas.construirRuta(rutap);
 
-                listacontactos.add(usuarioagenda);
-                Set<Usuario> set = new HashSet<>(listacontactos);
 
-                listacontactos.clear();
-                listacontactos.addAll(set);
+                }else {
 
+                    Usuario usuarioagenda=new Usuario(telefono, nombre, Rutas.construirRuta(rutap), token, id);
+                    usuarioagenda.setMensajesnoleidos(mensajesnoleidos);
+                    usuarioagenda.setUltimochat(ultimochat);
+
+                    listacontactos.add(usuarioagenda);
+                    Set<Usuario> set = new HashSet<>(listacontactos);
+
+                    listacontactos.clear();
+                    listacontactos.addAll(set);
+                }
 
             }catch (JSONException e) {
 
@@ -259,9 +291,133 @@ public class Presentacion extends AppCompatActivity implements RequestHandlerInt
                 e.printStackTrace();
 
             }
-
+            System.out.println("ruta foto "+response);
 
         }
 
     }
+
+    @RequiresApi(api = Build.VERSION_CODES.O)
+    public void pedirPermisos() {
+        getPermisosLocalizacion();
+
+        if (ActivityCompat.checkSelfPermission(this,
+                Manifest.permission.ACCESS_FINE_LOCATION)
+                == PackageManager.PERMISSION_GRANTED){
+
+
+           pedirPermisos2();
+        }
+
+    }
+
+
+    public void getPermisosLocalizacion(){
+        if (ActivityCompat.checkSelfPermission(this,
+                Manifest.permission.ACCESS_FINE_LOCATION)
+                != PackageManager.PERMISSION_GRANTED) {
+            ActivityCompat.requestPermissions(this, new String[]
+                            {Manifest.permission.ACCESS_FINE_LOCATION},
+                    REQUEST_LOCATION_PERMISSION);
+        }
+    }
+
+
+    @RequiresApi(api = Build.VERSION_CODES.O)
+    public void pedirPermisos2() {
+        getContactPermission();
+
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.READ_CONTACTS)
+                == PackageManager.PERMISSION_GRANTED){
+
+
+            getPermissionToSendSMS();
+        }
+
+    }
+
+
+    @RequiresApi(api = Build.VERSION_CODES.O)
+    public void getContactPermission() {
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.READ_CONTACTS)
+                != PackageManager.PERMISSION_GRANTED) {
+
+            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.READ_CONTACTS}, READ_CONTACTS_PERMISSIONS_REQUEST);
+
+        }
+    }
+
+
+    @RequiresApi(api = Build.VERSION_CODES.O)
+    public void getPermissionToSendSMS() {
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.SEND_SMS)
+                != PackageManager.PERMISSION_GRANTED) {
+
+            ActivityCompat.requestPermissions(Presentacion.this, new String[]{Manifest.permission.SEND_SMS}, SEND_SMS_PERMISSIONS_REQUEST);
+
+        }else {
+            terminarIntent();
+        }
+    }
+
+
+    @RequiresApi(api = Build.VERSION_CODES.O)
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        if (ActivityCompat.checkSelfPermission(this,
+                Manifest.permission.ACCESS_FINE_LOCATION)
+                == PackageManager.PERMISSION_GRANTED){
+
+            pedirPermisos2();
+
+        }else if (ActivityCompat.checkSelfPermission(this,
+                Manifest.permission.READ_CONTACTS)
+                == PackageManager.PERMISSION_GRANTED){
+
+
+            new Handler(Looper.getMainLooper()).postDelayed(new Runnable() {
+                @Override
+                public void run() {
+                    getPermissionToSendSMS();
+                }
+            }, 500);
+
+
+        }  else if (ActivityCompat.checkSelfPermission(this,
+                Manifest.permission.SEND_SMS)
+                == PackageManager.PERMISSION_GRANTED){
+
+                terminarIntent();
+
+        }else {
+            Toast.makeText(this, "Permisos no concedidos", Toast.LENGTH_LONG).show();
+
+        }
+    }
+
+
+    public void terminarIntent() {
+        Thread mithread=new Thread(){
+            @RequiresApi(api = Build.VERSION_CODES.O)
+            @Override
+            public void run() {
+                try {
+
+                    sleep(1000);
+                }catch (Exception e) {
+
+                }finally {
+
+                    Intent intent=new Intent(Presentacion.this, Autenticacion.class);
+                    startActivity(intent);
+                }
+            }
+        };
+        mithread.start();
+    }
+
+
+
+
+
 }
