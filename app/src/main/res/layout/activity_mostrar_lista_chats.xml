@@ -33,6 +33,16 @@
         />
 
 
+    <TextView
+        android:id="@+id/empty_view_chats"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:gravity="center"
+        android:visibility="gone"
+        android:textSize="18sp"
+        android:text="No hay Chats" />
+
+
 </LinearLayout>
 
 

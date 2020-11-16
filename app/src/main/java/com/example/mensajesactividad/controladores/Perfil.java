@@ -488,7 +488,8 @@ public class Perfil extends AppCompatActivity implements RequestHandlerInterface
 
                 }finally {
 
-                    Intent intent=new Intent(Perfil.this, MostrarContactos.class);
+                    Intent intent=new Intent(Perfil.this, Presentacion.class);
+                    intent.putExtra("wait", "wait");
                     startActivity(intent);
                 }
             }

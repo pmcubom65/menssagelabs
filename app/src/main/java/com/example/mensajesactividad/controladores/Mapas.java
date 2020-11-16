@@ -17,6 +17,8 @@ import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
 import android.provider.Settings;
 import android.widget.TextView;
 
@@ -96,15 +98,12 @@ import java.util.List;
 public class Mapas extends FragmentActivity implements OnMapReadyCallback{
 
     private GoogleMap mMap;
-    LocationManager locationManager;
-    private static final int REQUEST_LOCATION_PERMISSION = 1;
-    Marker marker;
-    LocationListener locationListener;
-    Polyline line;
 
-    String score;
+    Marker marker;
+
+
     int flag=0;
-    LatLng anterior = new LatLng(0, 0);
+
 
 
 
@@ -117,18 +116,39 @@ public class Mapas extends FragmentActivity implements OnMapReadyCallback{
         // Obtain the SupportMapFragment and get notified when the map is ready to be used.
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
                 .findFragmentById(R.id.map);
-        mapFragment.getMapAsync(this);
+
+        if (mapFragment != null) {
+            mapFragment.getMapAsync(this);
+        }
 
 
-     //   double latitude = location.getLatitude();
-    //    double longitude = location.getLongitude();
-    //    LatLng actual = new LatLng(latitude, longitude);
+
+
+        Intent intentmapas = getIntent();
+        String latitud= intentmapas.getStringExtra("latitud");
+        String longitud=intentmapas.getStringExtra("longitud");
+        String nombre=intentmapas.getStringExtra("nombre");
 
 
 
-     //   Geocoder geocoder = new Geocoder(getApplicationContext());
-        mMap.setMaxZoomPreference(20);
-    //    mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(actual, 12.0f));
+        double latitude = Double.parseDouble(latitud);
+       double longitude = Double.parseDouble(longitud);
+       LatLng actual = new LatLng(latitude, longitude);
+
+
+        new Handler(Looper.getMainLooper()).postDelayed(new Runnable() {
+            @Override
+            public void run() {
+
+                mMap.setMaxZoomPreference(20);
+                mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(actual, 12.0f));
+
+
+                mMap.addMarker(new MarkerOptions().position(actual).title(nombre));
+            }
+        }, 1000);
+
+
 
         }
 

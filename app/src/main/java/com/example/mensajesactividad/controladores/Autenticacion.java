@@ -156,8 +156,15 @@ public class Autenticacion extends AppCompatActivity  implements RequestHandlerI
 
         SmsManager smsManager = SmsManager.getDefault();
 
-        appSmsToken= smsManager.createAppSpecificSmsToken(createSmsTokenPendingIntent());
-        mandarSmsEnlaApi(numerotelefono);
+  //      appSmsToken= smsManager.createAppSpecificSmsToken(createSmsTokenPendingIntent());
+   //     mandarSmsEnlaApi(numerotelefono);
+
+
+        Intent intent=new Intent(this, Presentacion.class);
+
+        intent.putExtra("wait", "wait");
+
+        startActivity(intent);
 
     }
 

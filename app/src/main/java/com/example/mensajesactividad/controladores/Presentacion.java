@@ -127,14 +127,16 @@ public class Presentacion extends AppCompatActivity implements RequestHandlerInt
         String telefono=preferences.getString("telefono", "");
         String idd=preferences.getString("id", "");
 
+        System.out.println("cargando preferencias "+telefono);
+
 
         if (telefono.length()>0){
 
             Autenticacion.numerotelefono=telefono;
             Autenticacion.idpropietario=idd;
+            buscarUsuario(Autenticacion.numerotelefono, Autenticacion.idpropietario);
             haypreferencias=true;
 
-            buscarUsuario(Autenticacion.numerotelefono, Autenticacion.idpropietario);
 
          //   getContactList();
         }
@@ -249,6 +251,9 @@ public class Presentacion extends AppCompatActivity implements RequestHandlerInt
                 String mensajesnoleidos=respuesta.getString("MENSAJES");
                 String ultimochat=respuesta.getString("ULTIMOCHAT");
 
+                System.out.println("presentacio ulitmo chat "+ultimochat);
+
+
                 if (telefono.equals(Autenticacion.numerotelefono)){
                     Autenticacion.tokenorigen=token;
                     Autenticacion.nombredelemisor=nombre;
@@ -262,6 +267,8 @@ public class Presentacion extends AppCompatActivity implements RequestHandlerInt
                     usuarioagenda.setUltimochat(ultimochat);
 
                     listacontactos.add(usuarioagenda);
+
+                    System.out.println("usuario agenda "+usuarioagenda);
                     Set<Usuario> set = new HashSet<>(listacontactos);
 
                     listacontactos.clear();

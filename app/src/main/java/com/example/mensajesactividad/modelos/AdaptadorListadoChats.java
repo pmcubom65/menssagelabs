@@ -28,14 +28,14 @@ public class AdaptadorListadoChats  extends RecyclerView.Adapter<AdaptadorListad
 
     public class ViewHolder extends RecyclerView.ViewHolder {
 
-        TextView inicio, codigo, mibadge;
+        TextView inicio, codigo;
 
 
         public ViewHolder(@NonNull View itemView) {
             super(itemView);
             inicio=itemView.findViewById(R.id.iniciochat);
             codigo=itemView.findViewById(R.id.codigochat);
-            mibadge=itemView.findViewById(R.id.badge);
+
 
         }
     }
@@ -62,11 +62,7 @@ public class AdaptadorListadoChats  extends RecyclerView.Adapter<AdaptadorListad
         holder.codigo.setText("Chat con " +datos.get(position).getNombre().toString());
         holder.inicio.setText("Iniciado: "+datos.get(position).getInicio().replace('T', ' ').toString());
 
-        if (datos.contains(MyFirebaseInstanceService.michat)) {
 
-            holder.mibadge.setVisibility(View.VISIBLE);
-            holder.mibadge.setText("1");
-        }
 
     }
 

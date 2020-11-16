@@ -11,6 +11,7 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.provider.Settings;
+import android.view.View;
 import android.widget.Toast;
 
 import androidx.annotation.RequiresApi;
@@ -22,6 +23,7 @@ import com.android.volley.Response;
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.JsonObjectRequest;
 import com.android.volley.toolbox.Volley;
+import com.example.mensajesactividad.R;
 import com.example.mensajesactividad.controladores.Autenticacion;
 import com.example.mensajesactividad.modelos.Mensaje;
 import com.example.mensajesactividad.modelos.Usuario;
@@ -31,6 +33,7 @@ import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.Polyline;
+import com.google.android.material.snackbar.Snackbar;
 import com.google.firebase.analytics.FirebaseAnalytics;
 
 import org.json.JSONException;
@@ -58,6 +61,9 @@ public class MyService extends Service implements RequestHandlerInterface  {
     RequestQueue requestQueue;
 
     RequestHandlerInterface rh = this;
+
+    String latitud="";
+    String longitud="";
 
 
     public MyService() {
@@ -107,11 +113,11 @@ public class MyService extends Service implements RequestHandlerInterface  {
 
                 System.out.println("latitude y longitude "+latitude+longitude);
 
-                System.out.println(amandarlocalizacion);
-
-
-                if (amandarlocalizacion!=null){
+                if (amandarlocalizacion!=null && location!=null){
                     crearMensaje(amandarlocalizacion.getUltimochat(), amandarlocalizacion);
+
+                    latitud=String.valueOf(latitude);
+                    longitud=String.valueOf(longitude);
                 }
                 //insertar
 
@@ -179,6 +185,41 @@ public class MyService extends Service implements RequestHandlerInterface  {
         this.stopSelf();
 
     }
+
+
+
+
+    public void crearLocalizacion(String idmensaje) {
+
+
+        JSONObject jsonBody = new JSONObject();
+
+        try {
+
+
+            jsonBody.put("latitud", latitud);
+            jsonBody.put("longitud", longitud);
+            jsonBody.put("mensajeid", idmensaje);
+
+            System.out.println("mando esto "+jsonBody.toString());
+
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+
+        CrearRequests cr = new CrearRequests(Rutas.insertarlocalizacion, jsonBody, rh);
+
+        MySingleton.getInstance(getBaseContext()).addToRequest(cr.crearRequest());
+
+    }
+
+
+
+
+
+
+
+
 
 
     @Override
@@ -256,9 +297,45 @@ public class MyService extends Service implements RequestHandlerInterface  {
     public void onResponse(String response, String url) {
 
         if (url.equals(Rutas.rutacrearmensaje)){
-            System.out.println("mensaje creado");
-        }
+            try {
+                System.out.println("mensaje creado");
+                JSONObject respuesta = new JSONObject(response);
 
+                String idmensajecrado = respuesta.getString("ID");
+
+
+                System.out.println("id mensaje creado "+idmensajecrado);
+
+                crearLocalizacion(idmensajecrado);
+
+
+            }catch (JSONException e) {
+
+
+
+                System.out.println(e.toString());
+            }
+
+            System.out.println(response);
+
+
+
+        } else  if (url.equals(Rutas.insertarlocalizacion)){
+            try {
+
+                JSONObject respuesta = new JSONObject(response);
+
+                String idmensajecrado = respuesta.getString("MENSAJEID");
+
+            }catch (JSONException e) {
+                System.out.println(e.toString());
+            }
+
+            System.out.println(response);
+
+
+
+        }
 
     }
 

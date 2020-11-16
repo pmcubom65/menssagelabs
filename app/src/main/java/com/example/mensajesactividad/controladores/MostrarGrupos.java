@@ -10,6 +10,7 @@ import android.content.Intent;
 import android.os.Build;
 import android.os.Bundle;
 import android.view.View;
+import android.widget.TextView;
 
 import com.android.volley.RequestQueue;
 import com.android.volley.toolbox.Volley;
@@ -33,7 +34,7 @@ public class MostrarGrupos extends AppCompatActivity {
     RequestQueue requestQueue;
 
     public ArrayList<Grupo> listadogrupos;
-
+    private TextView emptyView;
 
 
     @Override
@@ -51,7 +52,7 @@ public class MostrarGrupos extends AppCompatActivity {
 
 
         recyclerView=findViewById(R.id.misgrupos);
-
+        emptyView = (TextView) findViewById(R.id.empty_view_grupos);
 
 
         toolbar=findViewById(R.id.mitoolbar3);
@@ -87,6 +88,15 @@ public class MostrarGrupos extends AppCompatActivity {
         layoutManager=new LinearLayoutManager(this);
         recyclerView.setLayoutManager(layoutManager);
 
+        if (listadogrupos.isEmpty()) {
+            recyclerView.setVisibility(View.GONE);
+            emptyView.setVisibility(View.VISIBLE);
+
+        }
+        else {
+            recyclerView.setVisibility(View.VISIBLE);
+            emptyView.setVisibility(View.GONE);
+        }
 
         myAdapter=new AdaptadorGrupos(this, listadogrupos);
         recyclerView.setAdapter(myAdapter);
@@ -103,6 +113,9 @@ public class MostrarGrupos extends AppCompatActivity {
         intent.putExtra("grupo", true);
 
         intent.putExtra("grupoinfo", listadogrupos.get(posicion));
+
+
+        System.out.println("empiezo grupos");
 
 
    //     intent.putExtra("tokenaenviar", usuario.getToken().toString());

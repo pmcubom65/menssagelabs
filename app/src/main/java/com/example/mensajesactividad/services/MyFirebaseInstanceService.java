@@ -66,6 +66,9 @@ public class MyFirebaseInstanceService extends FirebaseMessagingService implemen
 
     Boolean esgrupo = false;
 
+    String grupoahora="";
+
+
     public static Chat michat;
 
     RequestQueue requestQueue;
@@ -125,6 +128,10 @@ public class MyFirebaseInstanceService extends FirebaseMessagingService implemen
         String tokenreceptor = (String) data.get("tokenemisor");
         String nombrereceptor = (String) data.get("nombreemisor");
         String telefonoreceptor = (String) data.get("telefonoemisor");
+
+
+        grupoahora=data.get("esgrupo");
+
 
         receptor = new Usuario(telefonoreceptor, nombrereceptor, fotoemisor, tokenreceptor);
 
@@ -268,7 +275,11 @@ public class MyFirebaseInstanceService extends FirebaseMessagingService implemen
         receptora.setUltimochat(chat_id);
         argsi.putSerializable("emisor", (Serializable) emisora);
         argsi.putSerializable("receptor", (Serializable) receptora);
+
+        argsi.putString("esgrupo", grupoahora);
+
         intent.putExtra("DATA", argsi);
+
 
         LocalBroadcastManager.getInstance(getApplicationContext()).sendBroadcast(intent);
 

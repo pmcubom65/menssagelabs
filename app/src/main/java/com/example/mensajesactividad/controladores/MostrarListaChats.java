@@ -13,6 +13,7 @@ import android.os.Build;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
+import android.widget.TextView;
 
 import com.android.volley.AuthFailureError;
 import com.android.volley.NetworkResponse;
@@ -48,7 +49,7 @@ public class MostrarListaChats extends AppCompatActivity  {
     RecyclerView.LayoutManager layoutManager;
     private Toolbar toolbar;
     RequestQueue requestQueue;
-
+    private TextView emptyView;
 
     public ArrayList<Chat> listadodechats;
 
@@ -79,6 +80,7 @@ public class MostrarListaChats extends AppCompatActivity  {
         toolbar.setLogo(R.drawable.smart_prod);
 
         recyclerView=findViewById(R.id.milistadechats);
+        emptyView = (TextView) findViewById(R.id.empty_view_chats);
 
         requestQueue= Volley.newRequestQueue(getApplicationContext());
 
@@ -103,8 +105,21 @@ public class MostrarListaChats extends AppCompatActivity  {
         layoutManager=new LinearLayoutManager(this);
         recyclerView.setLayoutManager(layoutManager);
 
+        if (listadodechats.isEmpty()) {
+            recyclerView.setVisibility(View.GONE);
+            emptyView.setVisibility(View.VISIBLE);
+
+        }
+        else {
+            recyclerView.setVisibility(View.VISIBLE);
+            emptyView.setVisibility(View.GONE);
+        }
+
+
 
         myAdapter=new AdaptadorListadoChats(this, listadodechats);
+
+
 
         recyclerView.setAdapter(myAdapter);
 

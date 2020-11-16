@@ -93,6 +93,10 @@ public class MyAdapter extends RecyclerView.Adapter<MyAdapter.MyViewHolder> {
             holder.mitextview.setText(datos.get(position).getContenido().toString());
         }
 
+        if (datos.get(position).getL() instanceof  Localizacion){
+            holder.mitextview.setCompoundDrawablesWithIntrinsicBounds(R.drawable.mapa_blanco, 0, 0, 0);
+        }
+
 
         holder.fechayhora.setText(datos.get(position).getFecha().toString());
         holder.telefonodelmensaje.setText(datos.get(position).getNombre().toString());

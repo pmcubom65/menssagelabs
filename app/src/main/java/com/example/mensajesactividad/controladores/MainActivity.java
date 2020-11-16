@@ -61,6 +61,7 @@ import com.android.volley.toolbox.StringRequest;
 import com.android.volley.toolbox.Volley;
 import com.example.mensajesactividad.R;
 import com.example.mensajesactividad.modelos.Grupo;
+import com.example.mensajesactividad.modelos.Localizacion;
 import com.example.mensajesactividad.modelos.Mensaje;
 import com.example.mensajesactividad.modelos.Usuario;
 import com.example.mensajesactividad.services.CrearRequests;
@@ -163,9 +164,6 @@ public class MainActivity extends AppCompatActivity implements DialogoArchivo.Da
         usuarioemisor = (Usuario) llegada.getSerializableExtra("usuarioemisor");
         usuarioreceptor = (Usuario) llegada.getSerializableExtra("usuarioreceptor");
 
-        System.out.println("el usuario receptor es "+usuarioreceptor);
-
-
         esgrupo = llegada.getExtras().getBoolean("grupo");
 
         buscarSiEsGrupo(michatid);
@@ -179,6 +177,9 @@ public class MainActivity extends AppCompatActivity implements DialogoArchivo.Da
         if (esgrupo) {
             grupo = (Grupo) llegada.getSerializableExtra("grupoinfo");
             toolbar.setTitle("Conversando con Grupo " + grupo.getNombre().toString());
+
+
+
         } else {
             toolbar.setTitle("Conversando con " + usuarioreceptor.getNombre());
         }
@@ -229,7 +230,7 @@ public class MainActivity extends AppCompatActivity implements DialogoArchivo.Da
 
                     if (esgrupo) {
 
-                        mensaje = new Mensaje(textoenviar.getText().toString(), dia, usuarioemisor.getTelefono().toString(), usuarioemisor.getNombre().toString());
+                        mensaje = new Mensaje(textoenviar.getText().toString(), dia, Autenticacion.numerotelefono, Autenticacion.nombredelemisor);
                         datosAmostrar.add(datosAmostrar.size(), mensaje);
                         mAdapter.notifyItemChanged(datosAmostrar.size());
                         String id_mensaje = String.valueOf(zdt.toInstant().toEpochMilli());
@@ -325,6 +326,16 @@ public class MainActivity extends AppCompatActivity implements DialogoArchivo.Da
                         }
 
 
+                        if (datosAmostrar.get(position).getL() instanceof Localizacion) {
+                            Intent intentmapa=new Intent(MainActivity.this, Mapas.class);
+                            intentmapa.putExtra("latitud", datosAmostrar.get(position).getL().getLatitud());
+                            intentmapa.putExtra("longitud", datosAmostrar.get(position).getL().getLongitud());
+
+                            intentmapa.putExtra("nombre", datosAmostrar.get(position).getNombre());
+                            startActivity(intentmapa);
+                        }
+
+
                     }
 
                     @Override
@@ -334,6 +345,11 @@ public class MainActivity extends AppCompatActivity implements DialogoArchivo.Da
                 })
 
         );
+
+        if (mAdapter.getItemCount()>0){
+            recyclerView.smoothScrollToPosition(mAdapter.getItemCount()-1);
+        }
+
     }
 
 
@@ -443,7 +459,7 @@ public class MainActivity extends AppCompatActivity implements DialogoArchivo.Da
             if (m.getTelefono() != null) {
                 jsonBody.put("usuarioid", m.getTelefono().toString());
             } else {
-                jsonBody.put("usuarioid", Autenticacion.numerotelefono);
+                jsonBody.put("usuarioid", usuarioemisor.getTelefono());
             }
 
             jsonBody.put("chatid", michatid);
@@ -510,6 +526,8 @@ public class MainActivity extends AppCompatActivity implements DialogoArchivo.Da
 
                 getContactList();
 
+                System.out.println("vuelvvoooooo " +contactos);
+
                 args.putSerializable("ARRAYLIST", contactos);
 
 
@@ -567,6 +585,8 @@ public class MainActivity extends AppCompatActivity implements DialogoArchivo.Da
 
             jData.put("telefonoemisor", usuarioemisor.getTelefono().toString());
             jData.put("telefonoreceptor", usuarioreceptor.getTelefono().toString());
+
+            jData.put("esgrupo" , esgrupo);
 
             mainObj.put("priority", "high");
 
@@ -826,7 +846,7 @@ public class MainActivity extends AppCompatActivity implements DialogoArchivo.Da
                 usuarioagenda.setMensajesnoleidos(mensajesnoleidos);
                 usuarioagenda.setUltimochat(ultimochat);
 
-                if (contactos.lastIndexOf(usuarioagenda)!=-1){
+                if (contactos!=null && contactos.lastIndexOf(usuarioagenda)!=-1){
 
                     contactos.get(contactos.lastIndexOf(usuarioagenda)).setMensajesnoleidos(mensajesnoleidos);
                 }
@@ -862,6 +882,15 @@ public class MainActivity extends AppCompatActivity implements DialogoArchivo.Da
 
                         JSONObject archivodelmensaje = archivos.getJSONObject(arc);
                         m.setRutaarchivo(archivodelmensaje.getString("RUTA").toString());
+                    }
+
+                    JSONArray localizaciones = explrObject.getJSONArray("LOCALIZACION");
+
+                    for (int local = 0; local < localizaciones.length(); local++) {
+
+                        JSONObject punto = localizaciones.getJSONObject(local);
+                        m.setL(new Localizacion(punto.getString("LATITUD"), punto.getString("LONGITUD")));
+
                     }
 
 
@@ -946,7 +975,7 @@ public class MainActivity extends AppCompatActivity implements DialogoArchivo.Da
         try {
             jsonBody.put("telefono", telefonobuscar.toString().replaceAll("[\\D]", ""));
             jsonBody.put("id", idowner);
-            System.out.println("Busco este telefono " + jsonBody.toString());
+            System.out.println("Busco este telefono main activity " + jsonBody.toString());
 
         } catch (JSONException e) {
             e.printStackTrace();

@@ -22,6 +22,7 @@ import com.bumptech.glide.Glide;
 import com.example.mensajesactividad.R;
 import com.example.mensajesactividad.controladores.MainActivity;
 import com.example.mensajesactividad.controladores.MostrarContactos;
+import com.example.mensajesactividad.controladores.Presentacion;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -104,9 +105,7 @@ public class AdaptadorContactos extends RecyclerView.Adapter<AdaptadorContactos.
     @Override
     public int getItemCount()  {
 
-
-
-            return datos.size();
+             return datos.size();
 
 
     }

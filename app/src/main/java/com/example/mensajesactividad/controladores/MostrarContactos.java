@@ -45,6 +45,7 @@ import com.example.mensajesactividad.services.MySingleton;
 import com.example.mensajesactividad.services.RecyclerItemClickListener;
 import com.example.mensajesactividad.services.RequestHandlerInterface;
 import com.example.mensajesactividad.services.Rutas;
+
 import com.google.android.material.navigation.NavigationView;
 import com.google.android.material.snackbar.Snackbar;
 
@@ -108,6 +109,11 @@ public class MostrarContactos extends AppCompatActivity  implements RequestHandl
     TextView nombrepropheader, mibadge, textview2;
 
     public static Boolean nolocalizacion=true;
+    private TextView emptyView;
+
+    String nomuestres;
+
+
 
 
     private BroadcastReceiver onMessage= new BroadcastReceiver() {
@@ -122,47 +128,63 @@ public class MostrarContactos extends AppCompatActivity  implements RequestHandl
 
             System.out.println("usuario llegada broadcast "+ llegada);
 
-            int indice=0;
-            if (!contactos.contains(llegada)){
-                indice=contactos.size();
-                contactos.add(indice, llegada);
-            }else {
-                indice=contactos.indexOf(llegada);
-            }
+           nomuestres= args.getString("esgrupo");
 
-            mibadge=(TextView) recyclerView.findViewHolderForAdapterPosition(indice).itemView.findViewById(R.id.badgecontacto);
+           System.out.println("valor de nomuestres "+nomuestres);
 
-            System.out.println("voy a añadir al badge al "+ contactos.get(indice).toString());
+           if (nomuestres.equals("false")){
+               int indice=0;
+               if (!contactos.contains(llegada)){
+                   indice=contactos.size();
+                   contactos.add(indice, llegada);
+               }else {
+                   indice=contactos.indexOf(llegada);
+               }
 
-            String aumento=String.valueOf(Integer.valueOf(contactos.get(indice).getMensajesnoleidos())+1);
-
-
-
-            System.out.println("aumento "+aumento);
-
+               if (recyclerView.findViewHolderForAdapterPosition(indice)!=null){
+                   mibadge=(TextView) recyclerView.findViewHolderForAdapterPosition(indice).itemView.findViewById(R.id.badgecontacto);
+               }
 
 
 
+               System.out.println("voy a añadir al badge al "+ contactos.get(indice).toString());
+
+               try {
+
+                   String aumento=String.valueOf(Integer.valueOf(contactos.get(indice).getMensajesnoleidos())+1);
+
+                   if (mibadge!=null){
+                       mibadge.setVisibility(View.VISIBLE);
+                       mibadge.setText(aumento);
+                   }
+
+               }catch (NumberFormatException e){
+
+               }
 
 
-            contactos.get(indice).setMensajesnoleidos(aumento);
 
-            mibadge.setText(aumento);
-            mibadge.setVisibility(View.VISIBLE);
+               contactos.get(indice).setMensajesnoleidos("1");
 
 
 
 
 
-            System.out.println("este es el broadcast "+miusuario);
 
-            usuario=miusuario;
 
-            idcodigo=miusuario.getUltimochat().toString();
 
-            contactos.get(indice).setUltimochat(miusuario.getUltimochat());
+               System.out.println("este es el broadcast "+miusuario);
 
-            myAdapter.notifyItemChanged(indice);
+               usuario=miusuario;
+
+               idcodigo=miusuario.getUltimochat().toString();
+
+               contactos.get(indice).setUltimochat(miusuario.getUltimochat());
+
+               myAdapter.notifyItemChanged(indice);
+           }
+
+
 
 
         }
@@ -181,6 +203,9 @@ public class MostrarContactos extends AppCompatActivity  implements RequestHandl
         setSupportActionBar(toolbar);
 
         getSupportActionBar().setTitle(null);
+
+        emptyView = (TextView) findViewById(R.id.empty_view);
+        emptyView.setVisibility(View.GONE);
 
         drawerLayout=findViewById(R.id.midrawer);
         navigationView=findViewById(R.id.minavegacion);
@@ -312,19 +337,8 @@ public class MostrarContactos extends AppCompatActivity  implements RequestHandl
 
                         System.out.println("localizacion "+nolocalizacion);
 
-                        if (usuario.getUltimochat()!="" && nolocalizacion) {
 
-                            System.out.println("aqui hay ulitmo chat "+usuario.getUltimochat());
-
-                            crearIntent(usuario.getUltimochat(), Rutas.crearfechaHora(), usuario);
-
-                        }else if (usuario.getUltimochat()!="" && !nolocalizacion){
-
-                            crearServicio(usuario);
-
-                            crearIntent(usuario.getUltimochat(), Rutas.crearfechaHora(), usuario);
-
-                        } else if (usuario.getUltimochat()=="" && !nolocalizacion){
+                        if (usuario.getUltimochat()==""){
 
                             LocalDateTime fechaactual= LocalDateTime.now();
                             ZonedDateTime zdt = fechaactual.atZone(ZoneId.of("Europe/Madrid"));
@@ -333,15 +347,21 @@ public class MostrarContactos extends AppCompatActivity  implements RequestHandl
                             System.out.println("aqui nOOO hay ulitmo chat "+usuario.getUltimochat());
                             crearChat(idcodigo, Rutas.crearfechaHora());
                             crearIntent(idcodigo, inicio, usuario);
-                        }else {
-                       /*     LocalDateTime fechaactual= LocalDateTime.now();
-                            ZonedDateTime zdt = fechaactual.atZone(ZoneId.of("Europe/Madrid"));
-                            idcodigo= String.valueOf(zdt.toInstant().toEpochMilli());
 
-                            System.out.println("aqui nOOO hay ulitmo chat "+usuario.getUltimochat());
-                            crearChat(idcodigo, Rutas.crearfechaHora());*/
+
+                        } else if (usuario.getUltimochat()!="" && nolocalizacion) {
+
+                            System.out.println("aqui hay ulitmo chat "+usuario.getUltimochat());
 
                             crearIntent(usuario.getUltimochat(), Rutas.crearfechaHora(), usuario);
+
+
+                        }else if (usuario.getUltimochat()!="" && !nolocalizacion){
+
+                            crearServicio(usuario);
+
+                            crearIntent(usuario.getUltimochat(), Rutas.crearfechaHora(), usuario);
+
                         }
 
 
@@ -377,9 +397,20 @@ public class MostrarContactos extends AppCompatActivity  implements RequestHandl
         recyclerView.setLayoutManager(layoutManager);
 
 
-        myAdapter=new AdaptadorContactos(this, contactos);
+        if (contactos.isEmpty()){
+            recyclerView.setVisibility(View.GONE);
+            emptyView.setVisibility(View.VISIBLE);
+        }else {
+            myAdapter=new AdaptadorContactos(this, contactos);
+            recyclerView.setVisibility(View.VISIBLE);
+            emptyView.setVisibility(View.GONE);
+
+        }
+
+
 
         recyclerView.setAdapter(myAdapter);
+
 
     }
 
@@ -412,7 +443,7 @@ public class MostrarContactos extends AppCompatActivity  implements RequestHandl
 
         try {
             jsonBody.put("telefono", telefonobuscar);
-            System.out.println("Busco este telefono "+jsonBody.toString());
+            System.out.println("Busco este telefono mostrar contactos"+jsonBody.toString());
         } catch (JSONException e) {
             e.printStackTrace();
         }
@@ -466,6 +497,12 @@ public class MostrarContactos extends AppCompatActivity  implements RequestHandl
 
                 DialogoGrupo dialogoGrupo=new DialogoGrupo(true);
 
+                Bundle argscreargrupo = new Bundle();
+                argscreargrupo.putInt("num", 1);
+
+
+                dialogoGrupo.setArguments(argscreargrupo);
+
                 dialogoGrupo.show(getSupportFragmentManager(), " dialogoGrupo");
 
 
@@ -475,6 +512,12 @@ public class MostrarContactos extends AppCompatActivity  implements RequestHandl
             case R.id.Anadir_grupo:
 
                 DialogoGrupo dialogoGrupo2=new DialogoGrupo(false);
+
+                Bundle argscreargrupo2 = new Bundle();
+                argscreargrupo2.putInt("num", 2);
+
+
+                dialogoGrupo2.setArguments(argscreargrupo2);
 
                 dialogoGrupo2.show(getSupportFragmentManager(), " dialogoGrupo2");
 
@@ -494,9 +537,26 @@ public class MostrarContactos extends AppCompatActivity  implements RequestHandl
         System.out.println("on resuuuuume");
         nolocalizacion=true;
 
+        System.out.println("seguro  "+(ArrayList<Usuario>) args.getSerializable("ARRAYLIST"));
+
+        recyclerView.setAdapter(null);
+        recyclerView.setLayoutManager(null);
+        recyclerView.setAdapter(myAdapter);
+        recyclerView.setLayoutManager(layoutManager);
+
+        if (myAdapter!=null) {
+            myAdapter.notifyDataSetChanged();
+        }
+
+
+
+
+
         if (args!=null) {
+
             contactos = (ArrayList<Usuario>) args.getSerializable("ARRAYLIST");
             System.out.println("ONRESUME " +contactos.toString());
+
             myAdapter=new AdaptadorContactos(this, contactos);
          //   recyclerView.setAdapter(myAdapter);
 
