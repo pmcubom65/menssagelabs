@@ -176,7 +176,7 @@ public class Autenticacion extends AppCompatActivity  implements RequestHandlerI
 
         intent.putExtra("wait", "wait");
 
-        return PendingIntent.getActivity(this, 1234, new Intent(this, Presentacion.class),0);
+        return PendingIntent.getActivity(this, 1234, intent,0);
     }
 
 

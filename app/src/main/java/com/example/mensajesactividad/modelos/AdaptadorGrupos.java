@@ -35,7 +35,7 @@ public class AdaptadorGrupos  extends RecyclerView.Adapter<AdaptadorGrupos.ViewH
             nombre=itemView.findViewById(R.id.nombregrupo);
             membresia=itemView.findViewById(R.id.membresia);
 
-            sinleertext=itemView.findViewById(R.id.textViewsinleer);
+            sinleertext=itemView.findViewById(R.id.textviewssinleer);
 
 
         }
@@ -62,8 +62,15 @@ public class AdaptadorGrupos  extends RecyclerView.Adapter<AdaptadorGrupos.ViewH
 
         holder.nombre.setText(datos.get(position).getNombre().toString());
         holder.membresia.setText(datos.get(position).getMiembros().toString());
-        holder.sinleertext.setVisibility(View.VISIBLE);
-        holder.sinleertext.setText(datos.get(position).getSinleer().toString());
+
+
+        if (Integer.valueOf(datos.get(position).getSinleer())>0){
+            holder.sinleertext.setText(datos.get(position).getSinleer().toString());
+        } else {
+            holder.sinleertext.setVisibility(View.GONE);
+        }
+
+
 
 
 

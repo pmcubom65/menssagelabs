@@ -522,7 +522,10 @@ public class MainActivity extends AppCompatActivity implements DialogoArchivo.Da
 
 
                 Bundle args = new Bundle();
-                usuarioreceptor.setMensajesnoleidos("0");
+                if (usuarioreceptor!=null){
+                    usuarioreceptor.setMensajesnoleidos("0");
+                }
+
 
                 getContactList();
 

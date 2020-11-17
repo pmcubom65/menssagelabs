@@ -423,7 +423,7 @@ public class MostrarContactos extends AppCompatActivity  implements RequestHandl
 
 
 
-        if (contactos.isEmpty()){
+        if (contactos!=null && contactos.isEmpty()){
             recyclerView.setVisibility(View.GONE);
             emptyView.setVisibility(View.VISIBLE);
         }else {
