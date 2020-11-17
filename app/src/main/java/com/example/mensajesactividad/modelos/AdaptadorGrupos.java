@@ -27,7 +27,7 @@ public class AdaptadorGrupos  extends RecyclerView.Adapter<AdaptadorGrupos.ViewH
 
     public class ViewHolder extends RecyclerView.ViewHolder {
 
-        TextView nombre, membresia;
+        TextView nombre, membresia, sinleertext;
 
 
         public ViewHolder(@NonNull View itemView) {
@@ -35,6 +35,7 @@ public class AdaptadorGrupos  extends RecyclerView.Adapter<AdaptadorGrupos.ViewH
             nombre=itemView.findViewById(R.id.nombregrupo);
             membresia=itemView.findViewById(R.id.membresia);
 
+            sinleertext=itemView.findViewById(R.id.textViewsinleer);
 
 
         }
@@ -61,6 +62,11 @@ public class AdaptadorGrupos  extends RecyclerView.Adapter<AdaptadorGrupos.ViewH
 
         holder.nombre.setText(datos.get(position).getNombre().toString());
         holder.membresia.setText(datos.get(position).getMiembros().toString());
+        holder.sinleertext.setVisibility(View.VISIBLE);
+        holder.sinleertext.setText(datos.get(position).getSinleer().toString());
+
+
+
 
     }
 

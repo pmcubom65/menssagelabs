@@ -113,7 +113,7 @@ public class MostrarContactos extends AppCompatActivity  implements RequestHandl
 
     String nomuestres;
 
-
+    Usuario llegada;
 
 
     private BroadcastReceiver onMessage= new BroadcastReceiver() {
@@ -124,19 +124,31 @@ public class MostrarContactos extends AppCompatActivity  implements RequestHandl
           Bundle args = intent.getBundleExtra("DATA");
             Usuario miusuario = (Usuario) args.getSerializable("receptor");
 
-            Usuario llegada=new Usuario(miusuario.getTelefono(),miusuario.getNombre(),miusuario.getUri(), miusuario.getToken(), miusuario.getId());
+            llegada=new Usuario(miusuario.getTelefono(),miusuario.getNombre(),miusuario.getUri(), miusuario.getToken(), miusuario.getId());
+
+            llegada.setUltimochat(miusuario.getUltimochat());
 
             System.out.println("usuario llegada broadcast "+ llegada);
 
            nomuestres= args.getString("esgrupo");
 
-           System.out.println("valor de nomuestres "+nomuestres);
-
            if (nomuestres.equals("false")){
+
+
                int indice=0;
                if (!contactos.contains(llegada)){
+
                    indice=contactos.size();
                    contactos.add(indice, llegada);
+                   recyclerView.setVisibility(View.VISIBLE);
+
+                   recyclerView.setAdapter(null);
+                   recyclerView.setLayoutManager(null);
+                   myAdapter=new AdaptadorContactos(MostrarContactos.this, contactos);
+
+                   recyclerView.setAdapter(myAdapter);
+                   recyclerView.setLayoutManager(layoutManager);
+                   myAdapter.notifyDataSetChanged();
                }else {
                    indice=contactos.indexOf(llegada);
                }
@@ -284,6 +296,8 @@ public class MostrarContactos extends AppCompatActivity  implements RequestHandl
                         recyclerView.setAdapter(null);
                         recyclerView.setLayoutManager(null);
                         recyclerView.setAdapter(myAdapter);
+                        recyclerView.setHasFixedSize(true);
+                        layoutManager=new LinearLayoutManager(MostrarContactos.this);
                         recyclerView.setLayoutManager(layoutManager);
                         myAdapter.notifyDataSetChanged();
 
@@ -336,6 +350,10 @@ public class MostrarContactos extends AppCompatActivity  implements RequestHandl
                         System.out.println("este que datos tiene "+usuario);
 
                         System.out.println("localizacion "+nolocalizacion);
+
+                        if (llegada!=null){
+                            llegada.setMensajesnoleidos("0");
+                        }
 
 
                         if (usuario.getUltimochat()==""){
@@ -393,8 +411,16 @@ public class MostrarContactos extends AppCompatActivity  implements RequestHandl
 
 
         recyclerView.setHasFixedSize(true);
-        layoutManager=new LinearLayoutManager(this);
-        recyclerView.setLayoutManager(layoutManager);
+
+        if (contactos!=null){
+            layoutManager=new LinearLayoutManager(this);
+            recyclerView.setLayoutManager(layoutManager);
+        } else {
+            recyclerView.setVisibility(View.GONE);
+            emptyView.setVisibility(View.VISIBLE);
+        }
+
+
 
 
         if (contactos.isEmpty()){
@@ -776,10 +802,12 @@ public class MostrarContactos extends AppCompatActivity  implements RequestHandl
                             e.getString("NOMBRE").toString(),
                             e.getString("ID").toString(),
                             nombremiembros,
-                            mg
+                            mg,
+                            e.getString("MENSAJESSINLEER")
 
                     );
 
+                    System.out.println(grupoaincluir);
 
                     nombremiembros="Miembros: ";
 
@@ -803,6 +831,8 @@ public class MostrarContactos extends AppCompatActivity  implements RequestHandl
             Intent intentlistagrupos=new Intent(MostrarContactos.this, MostrarGrupos.class);
             intentlistagrupos.putExtra("BUNDLE",args);
             startActivity( intentlistagrupos);
+
+
         }
 
 

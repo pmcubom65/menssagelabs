@@ -14,6 +14,8 @@ public class Grupo implements Serializable {
         private String id;
         private String miembros;
 
+        private String sinleer;
+
         private ArrayList<Usuario> detallesmiembros;
 
 
@@ -33,6 +35,23 @@ public class Grupo implements Serializable {
         this.detallesmiembros=detallesmiembros;
     }
 
+
+    public Grupo(String nombre, String id, String miembros, ArrayList<Usuario> detallesmiembros, String sinleer) {
+        this.nombre = nombre;
+        this.id = id;
+        this.miembros = miembros;
+        this.detallesmiembros=detallesmiembros;
+        this.sinleer=sinleer;
+    }
+
+
+    public String getSinleer() {
+        return sinleer;
+    }
+
+    public void setSinleer(String sinleer) {
+        this.sinleer = sinleer;
+    }
 
     public ArrayList<Usuario> getDetallesmiembros() {
         return detallesmiembros;
@@ -73,6 +92,7 @@ public class Grupo implements Serializable {
                 "nombre='" + nombre + '\'' +
                 ", id='" + id + '\'' +
                 ", miembros='" + miembros + '\'' +
+                ", sinleer='" + sinleer + '\'' +
                 ", detallesmiembros=" + detallesmiembros +
                 '}';
     }

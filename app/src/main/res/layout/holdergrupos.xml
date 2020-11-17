@@ -60,6 +60,21 @@
     </LinearLayout>
 
 
+    <TextView
+        android:id="@+id/textViewsinleer"
+        android:layout_width="40dp"
+        android:layout_height="40dp"
+        android:layout_gravity="right|end|top"
+        android:layout_marginStart="90dp"
+        android:layout_marginTop="3dp"
+        android:visibility="visible"
+        android:background="@drawable/badge_background"
+        android:gravity="center"
+        android:padding="3dp"
+android:text="1"
+        android:textColor="#ffffff"
+        android:textSize="10sp"
+        android:layout_marginLeft="90dp" />
 
 
 </LinearLayout>
