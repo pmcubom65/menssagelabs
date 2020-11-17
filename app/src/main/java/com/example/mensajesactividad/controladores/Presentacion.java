@@ -127,7 +127,7 @@ public class Presentacion extends AppCompatActivity implements RequestHandlerInt
         String telefono=preferences.getString("telefono", "");
         String idd=preferences.getString("id", "");
 
-        System.out.println("cargando preferencias "+telefono);
+
 
 
         if (telefono.length()>0){
@@ -251,7 +251,7 @@ public class Presentacion extends AppCompatActivity implements RequestHandlerInt
                 String mensajesnoleidos=respuesta.getString("MENSAJES");
                 String ultimochat=respuesta.getString("ULTIMOCHAT");
 
-                System.out.println("presentacio ulitmo chat "+ultimochat);
+
 
 
                 if (telefono.equals(Autenticacion.numerotelefono)){
@@ -268,7 +268,7 @@ public class Presentacion extends AppCompatActivity implements RequestHandlerInt
 
                     listacontactos.add(usuarioagenda);
 
-                    System.out.println("usuario agenda "+usuarioagenda);
+
                     Set<Usuario> set = new HashSet<>(listacontactos);
 
                     listacontactos.clear();
@@ -277,7 +277,7 @@ public class Presentacion extends AppCompatActivity implements RequestHandlerInt
 
             }catch (JSONException e) {
 
-                System.out.println(e.toString());
+
 
             }
 
