@@ -33,10 +33,7 @@ import com.example.mensajesactividad.services.CrearRequests;
 import com.example.mensajesactividad.services.MySingleton;
 import com.example.mensajesactividad.services.RequestHandlerInterface;
 import com.example.mensajesactividad.services.Rutas;
-import com.google.android.gms.tasks.OnCompleteListener;
-import com.google.android.gms.tasks.Task;
-import com.google.firebase.iid.FirebaseInstanceId;
-import com.google.firebase.iid.InstanceIdResult;
+
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -55,6 +52,8 @@ public class Presentacion extends AppCompatActivity implements RequestHandlerInt
     RequestHandlerInterface rh = this;
 
     ArrayList<Usuario> listacontactos;
+
+    int pendingRequests;
 
 
     private final int REQUEST_READ_PHONE_STATE=1;
@@ -83,28 +82,23 @@ public class Presentacion extends AppCompatActivity implements RequestHandlerInt
            progressDialog.show();
        }
 
-
-
         requestQueue= Volley.newRequestQueue(getApplicationContext());
         cargarPreferencias();
 
 
         if (haypreferencias){
 
+            wait.setVisibility(View.VISIBLE);
+            wait.setText("Cargando Contactos...");
+
+            progressDialog.setMessage("Espere...");
+            progressDialog.show();
+
             getContactList();
 
-            Intent intent=new Intent(this, MostrarContactos.class);
-            Bundle args = new Bundle();
-            args.putSerializable("ARRAYLIST",(Serializable) listacontactos);
-            intent.putExtra("BUNDLE",args);
-            progressDialog.dismiss();
-            new Handler(Looper.getMainLooper()).postDelayed(new Runnable() {
-                @Override
-                public void run() {
 
-                    startActivity(intent);
-                }
-            }, 3000);
+
+
 
 
         }else {
@@ -115,6 +109,16 @@ public class Presentacion extends AppCompatActivity implements RequestHandlerInt
         }
 
 
+    }
+
+
+
+    public void crearIntentAgenda() {
+        Intent intent=new Intent(this, MostrarContactos.class);
+        Bundle args = new Bundle();
+        args.putSerializable("ARRAYLIST",(Serializable) listacontactos);
+        intent.putExtra("BUNDLE",args);
+        startActivity(intent);
     }
 
 
@@ -199,6 +203,24 @@ public class Presentacion extends AppCompatActivity implements RequestHandlerInt
                     pCur.close();
                 }
             }
+            new Handler(Looper.getMainLooper()).postDelayed(new Runnable() {
+                @Override
+                public void run() {
+
+                    while (true){
+
+                        if(pendingRequests==0) {
+                            crearIntentAgenda();
+                            progressDialog.dismiss();
+                            break;
+                        }
+                    }
+                }
+
+
+
+            }, 7000);
+
         }
         if(cur!=null){
             cur.close();
@@ -207,6 +229,7 @@ public class Presentacion extends AppCompatActivity implements RequestHandlerInt
 
 
     }
+
 
 
 
@@ -221,13 +244,19 @@ public class Presentacion extends AppCompatActivity implements RequestHandlerInt
             jsonBody.put("id", idowner);
             System.out.println("Busco este telefono "+jsonBody.toString());
 
+
         } catch (JSONException e) {
             e.printStackTrace();
         }
 
         CrearRequests cr = new CrearRequests(Rutas.buscarusuario, jsonBody, rh);
 
+        pendingRequests++;
+
+        System.out.println(pendingRequests);
+
         MySingleton.getInstance(getBaseContext()).addToRequest(cr.crearRequest());
+
 
     }
 
@@ -280,6 +309,9 @@ public class Presentacion extends AppCompatActivity implements RequestHandlerInt
 
 
             }
+
+            pendingRequests--;
+            System.out.println(pendingRequests);
 
         }  else  if (url.equals(Rutas.urlbuscarfoto)) {
             try {
@@ -409,14 +441,10 @@ public class Presentacion extends AppCompatActivity implements RequestHandlerInt
             @Override
             public void run() {
                 try {
-
-                    sleep(1000);
+                    startActivity(new Intent(Presentacion.this, Autenticacion.class));
+                    sleep(100);
                 }catch (Exception e) {
 
-                }finally {
-
-                    Intent intent=new Intent(Presentacion.this, Autenticacion.class);
-                    startActivity(intent);
                 }
             }
         };

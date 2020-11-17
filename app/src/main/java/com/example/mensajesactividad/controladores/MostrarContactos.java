@@ -130,9 +130,11 @@ public class MostrarContactos extends AppCompatActivity  implements RequestHandl
 
             System.out.println("usuario llegada broadcast "+ llegada);
 
+            System.out.println("nomuestres "+nomuestres);
+
            nomuestres= args.getString("esgrupo");
 
-           if (nomuestres.equals("false")){
+           if (nomuestres !=null && nomuestres.equals("false") && contactos!=null){
 
 
                int indice=0;
@@ -563,7 +565,6 @@ public class MostrarContactos extends AppCompatActivity  implements RequestHandl
         System.out.println("on resuuuuume");
         nolocalizacion=true;
 
-        System.out.println("seguro  "+(ArrayList<Usuario>) args.getSerializable("ARRAYLIST"));
 
         recyclerView.setAdapter(null);
         recyclerView.setLayoutManager(null);
@@ -581,7 +582,12 @@ public class MostrarContactos extends AppCompatActivity  implements RequestHandl
         if (args!=null) {
 
             contactos = (ArrayList<Usuario>) args.getSerializable("ARRAYLIST");
-            System.out.println("ONRESUME " +contactos.toString());
+
+            if (contactos==null) {
+                recyclerView.setVisibility(View.GONE);
+                textview2.setVisibility(View.VISIBLE);
+            }
+
 
             myAdapter=new AdaptadorContactos(this, contactos);
          //   recyclerView.setAdapter(myAdapter);

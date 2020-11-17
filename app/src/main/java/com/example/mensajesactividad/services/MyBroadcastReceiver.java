@@ -6,6 +6,8 @@ import android.content.Context;
 import android.content.Intent;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
 import android.util.Log;
 
 import androidx.annotation.RequiresApi;
@@ -34,6 +36,7 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.Serializable;
 import java.io.UnsupportedEncodingException;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
@@ -66,6 +69,7 @@ public class MyBroadcastReceiver extends BroadcastReceiver implements RequestHan
     boolean esgrupo=false;
     Grupo grupo;
     Context micontext;
+    String grupoahora="false";
 
 
     private static final int notificationid=001;
@@ -195,7 +199,7 @@ public class MyBroadcastReceiver extends BroadcastReceiver implements RequestHan
                 public void onResponse(JSONObject response) {
                     System.out.println(response);
                     System.out.println("Notificación enviada");
-                    broadcastIntent(context);
+                    broadcastIntent(context, usuarioemisor, usuarioreceptor);
                 }
             }, new Response.ErrorListener() {
                 @Override
@@ -221,11 +225,35 @@ public class MyBroadcastReceiver extends BroadcastReceiver implements RequestHan
 
     }
 
-    public void broadcastIntent(Context context) {
+    public void broadcastIntent(Context context, Usuario emisora, Usuario receptora) {
         Intent intent = new Intent();
         intent.setAction("com.myApp.CUSTOM_EVENT");
 
-        LocalBroadcastManager.getInstance(context).sendBroadcast(intent);
+
+        Bundle argsi = new Bundle();
+        emisora.setUltimochat(chat_id);
+        receptora.setUltimochat(chat_id);
+        argsi.putSerializable("emisor", (Serializable) emisora);
+        argsi.putSerializable("receptor", (Serializable) receptora);
+
+        argsi.putString("esgrupo", grupoahora);
+
+        intent.putExtra("DATA", argsi);
+
+        new Handler(Looper.getMainLooper()).postDelayed(new Runnable() {
+            @Override
+            public void run() {
+
+                LocalBroadcastManager.getInstance(context).sendBroadcast(intent);
+            }
+
+
+
+        }, 2000);
+
+
+
+
     }
 
 
@@ -295,6 +323,8 @@ public class MyBroadcastReceiver extends BroadcastReceiver implements RequestHan
 
                 esgrupo=true;
 
+                grupoahora="true";
+
                 //    grupo=(Grupo) llegada.getSerializableExtra("grupoinfo");
 
 
@@ -318,9 +348,13 @@ public class MyBroadcastReceiver extends BroadcastReceiver implements RequestHan
 
 
             }catch (JSONException e) {
+                esgrupo=false;
 
+                grupoahora="false";
 
             }
+
+
 
         }
 

@@ -22,6 +22,7 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 
+import android.widget.TextView;
 import android.widget.Toast;
 
 
@@ -68,6 +69,8 @@ public class Autenticacion extends AppCompatActivity  implements RequestHandlerI
     public static String idpropietario;
     String appSmsToken;
 
+    TextView alerta;
+
 
     public static String rutafotoimportante="";
 
@@ -82,6 +85,9 @@ public class Autenticacion extends AppCompatActivity  implements RequestHandlerI
         textoponertelefono= findViewById(R.id.confirmar);
         ponernombre=findViewById(R.id.nombre);
         botonempezar=findViewById(R.id.botonempiece);
+
+        alerta=findViewById(R.id.alerta);
+        alerta.setVisibility(View.GONE);
 
         pantalla=findViewById(R.id.autenticacionlayout);
 
@@ -119,6 +125,7 @@ public class Autenticacion extends AppCompatActivity  implements RequestHandlerI
                     public void onComplete(@NonNull Task<InstanceIdResult> task) {
                         if (!task.isSuccessful()) {
                             Log.w("TOKEN", "getInstanceId failed", task.getException());
+                            mostrarError(task.getException().toString());
                             return;
                         }
 
@@ -156,15 +163,15 @@ public class Autenticacion extends AppCompatActivity  implements RequestHandlerI
 
         SmsManager smsManager = SmsManager.getDefault();
 
-        appSmsToken= smsManager.createAppSpecificSmsToken(createSmsTokenPendingIntent());
-        mandarSmsEnlaApi(numerotelefono);
+   //     appSmsToken= smsManager.createAppSpecificSmsToken(createSmsTokenPendingIntent());
+   //     mandarSmsEnlaApi(numerotelefono);
 
 
-     /*   Intent intent=new Intent(this, Presentacion.class);
+        Intent intent=new Intent(this, Presentacion.class);
 
         intent.putExtra("wait", "wait");
 
-        startActivity(intent);*/
+        startActivity(intent);
 
     }
 
@@ -172,7 +179,7 @@ public class Autenticacion extends AppCompatActivity  implements RequestHandlerI
     private PendingIntent createSmsTokenPendingIntent() {
 
 
-        Intent intent=new Intent(this, Presentacion.class);
+        Intent intent=new Intent(Autenticacion.this, Presentacion.class);
 
         intent.putExtra("wait", "wait");
 
@@ -182,7 +189,7 @@ public class Autenticacion extends AppCompatActivity  implements RequestHandlerI
 
 
    public void mostrarError(String error){
-        Toast.makeText(this, error, Toast.LENGTH_SHORT).show();
+        Toast.makeText(this, error, Toast.LENGTH_LONG).show();
     }
 
 
@@ -231,7 +238,12 @@ public class Autenticacion extends AppCompatActivity  implements RequestHandlerI
 
                 idpropietario=respuesta.getString("id").toString();
 
+                botonempezar.setEnabled(false);
+
                 guardarPreferencias(Autenticacion.numerotelefono, Autenticacion.nombredelemisor, Autenticacion.tokenorigen, idpropietario);
+
+                alerta.setVisibility(View.VISIBLE);
+                alerta.setText("GRABANDO...");
 
                 System.out.println("grabado");
 
