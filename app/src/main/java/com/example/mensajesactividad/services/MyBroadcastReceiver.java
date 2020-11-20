@@ -235,8 +235,10 @@ public class MyBroadcastReceiver extends BroadcastReceiver implements RequestHan
         receptora.setUltimochat(chat_id);
         argsi.putSerializable("emisor", (Serializable) emisora);
         argsi.putSerializable("receptor", (Serializable) receptora);
+        argsi.putSerializable("esgrupo", (String) grupoahora);
 
-        argsi.putString("esgrupo", grupoahora);
+        System.out.println("este es el broadcast grupo "+grupoahora);
+    //    argsi.putString("esgrupo", grupoahora);
 
         intent.putExtra("DATA", argsi);
 

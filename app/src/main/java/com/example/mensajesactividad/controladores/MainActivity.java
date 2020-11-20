@@ -852,6 +852,7 @@ public class MainActivity extends AppCompatActivity implements DialogoArchivo.Da
                 if (contactos!=null && contactos.lastIndexOf(usuarioagenda)!=-1){
 
                     contactos.get(contactos.lastIndexOf(usuarioagenda)).setMensajesnoleidos(mensajesnoleidos);
+                    contactos.get(contactos.lastIndexOf(usuarioagenda)).setUltimochat(ultimochat);
                 }
 
                 //  contactos.add(usuarioagenda);
@@ -971,6 +972,7 @@ public class MainActivity extends AppCompatActivity implements DialogoArchivo.Da
 
 
     private void buscarUsuario(String telefonobuscar, String idowner) {
+
 
 
         JSONObject jsonBody = new JSONObject();

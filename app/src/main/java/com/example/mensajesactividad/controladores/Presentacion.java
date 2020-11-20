@@ -22,6 +22,7 @@ import android.os.Looper;
 import android.provider.ContactsContract;
 import android.util.Log;
 import android.view.View;
+import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -30,6 +31,7 @@ import com.android.volley.toolbox.Volley;
 import com.example.mensajesactividad.R;
 import com.example.mensajesactividad.modelos.Usuario;
 import com.example.mensajesactividad.services.CrearRequests;
+
 import com.example.mensajesactividad.services.MySingleton;
 import com.example.mensajesactividad.services.RequestHandlerInterface;
 import com.example.mensajesactividad.services.Rutas;
@@ -42,7 +44,7 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Set;
-
+//http://android-coding.blogspot.com/2011/11/pass-data-from-service-to-activity.html
 public class Presentacion extends AppCompatActivity implements RequestHandlerInterface {
 
 
@@ -56,6 +58,7 @@ public class Presentacion extends AppCompatActivity implements RequestHandlerInt
     int pendingRequests;
 
 
+
     private final int REQUEST_READ_PHONE_STATE=1;
     private static final int READ_CONTACTS_PERMISSIONS_REQUEST = 1;
     private static final int BIND_ACCESSIBILITY_SERVICE=1;
@@ -63,6 +66,7 @@ public class Presentacion extends AppCompatActivity implements RequestHandlerInt
     private static final int SEND_SMS_PERMISSIONS_REQUEST=1;
     ProgressDialog progressDialog;
     TextView wait;
+    ImageView imageView3;
 
     @RequiresApi(api = Build.VERSION_CODES.O)
     @Override
@@ -70,17 +74,15 @@ public class Presentacion extends AppCompatActivity implements RequestHandlerInt
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_presentacion);
 
+        imageView3=findViewById(R.id.imageView3);
+
         wait=(TextView) findViewById(R.id.waiting);
+        wait.setVisibility(View.VISIBLE);
+        wait.setText("Cargando Contactos...");
         progressDialog = new ProgressDialog(Presentacion.this);
 
-
-       if (getIntent().getExtras()!=null){
-           wait.setVisibility(View.VISIBLE);
-           wait.setText("Cargando Contactos...");
-
-           progressDialog.setMessage("Espere...");
-           progressDialog.show();
-       }
+        progressDialog.setMessage("Espere...");
+        progressDialog.show();
 
         requestQueue= Volley.newRequestQueue(getApplicationContext());
         cargarPreferencias();
@@ -88,26 +90,14 @@ public class Presentacion extends AppCompatActivity implements RequestHandlerInt
 
         if (haypreferencias){
 
-            wait.setVisibility(View.VISIBLE);
-            wait.setText("Cargando Contactos...");
-
-            progressDialog.setMessage("Espere...");
-            progressDialog.show();
 
             getContactList();
-
-
-
-
-
 
         }else {
 
             pedirPermisos();
 
-
         }
-
 
     }
 
@@ -141,33 +131,9 @@ public class Presentacion extends AppCompatActivity implements RequestHandlerInt
             buscarUsuario(Autenticacion.numerotelefono, Autenticacion.idpropietario);
             haypreferencias=true;
 
-
-         //   getContactList();
         }
 
     }
-
-
-
-
-
-    public void buscarFotoUsuario(String id) {
-        System.out.println("buscando la foto");
-        JSONObject jsonBody = new JSONObject();
-
-        try {
-            jsonBody.put("ID", id);
-
-        } catch (JSONException e) {
-            e.printStackTrace();
-        }
-
-        CrearRequests cr = new CrearRequests(Rutas.urlbuscarfoto, jsonBody, rh);
-
-        MySingleton.getInstance(getBaseContext()).addToRequest(cr.crearRequest());
-    }
-
-
 
 
     @RequiresApi(api = Build.VERSION_CODES.O)
@@ -203,30 +169,11 @@ public class Presentacion extends AppCompatActivity implements RequestHandlerInt
                     pCur.close();
                 }
             }
-            new Handler(Looper.getMainLooper()).postDelayed(new Runnable() {
-                @Override
-                public void run() {
-
-                    while (true){
-
-                        if(pendingRequests==0) {
-                            crearIntentAgenda();
-                            progressDialog.dismiss();
-                            break;
-                        }
-                    }
-                }
-
-
-
-            }, 7000);
 
         }
         if(cur!=null){
             cur.close();
         }
-
-
 
     }
 
@@ -236,27 +183,26 @@ public class Presentacion extends AppCompatActivity implements RequestHandlerInt
 
     private void buscarUsuario(String telefonobuscar, String idowner) {
 
+        if (telefonobuscar.toString().replaceAll("[\\D]", "").startsWith("6") || telefonobuscar.toString().replaceAll("[\\D]", "").startsWith("7")){
+            JSONObject jsonBody=new JSONObject();
 
-        JSONObject jsonBody=new JSONObject();
-
-        try {
-            jsonBody.put("telefono", telefonobuscar.toString().replaceAll("[\\D]", ""));
-            jsonBody.put("id", idowner);
-            System.out.println("Busco este telefono "+jsonBody.toString());
+            try {
+                jsonBody.put("telefono", telefonobuscar.toString().replaceAll("[\\D]", ""));
+                jsonBody.put("id", idowner);
 
 
-        } catch (JSONException e) {
-            e.printStackTrace();
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+
+            CrearRequests cr = new CrearRequests(Rutas.buscarusuario, jsonBody, rh);
+
+            pendingRequests++;
+
+            System.out.println(pendingRequests);
+
+            MySingleton.getInstance(getBaseContext()).addToRequest(cr.crearRequest());
         }
-
-        CrearRequests cr = new CrearRequests(Rutas.buscarusuario, jsonBody, rh);
-
-        pendingRequests++;
-
-        System.out.println(pendingRequests);
-
-        MySingleton.getInstance(getBaseContext()).addToRequest(cr.crearRequest());
-
 
     }
 
@@ -311,26 +257,16 @@ public class Presentacion extends AppCompatActivity implements RequestHandlerInt
             }
 
             pendingRequests--;
+            System.out.println(response.toString());
             System.out.println(pendingRequests);
 
-        }  else  if (url.equals(Rutas.urlbuscarfoto)) {
-            try {
-                JSONObject respuesta = new JSONObject(response);
 
-                String nuevaruta = respuesta.getString("RUTA").toString();
+            if (pendingRequests==0) {
+                System.out.println("Fiiiiiin");
 
-                if (nuevaruta.length()>0) {
-
-                    Autenticacion.rutafotoimportante=Rutas.construirRuta(nuevaruta);
-
-                }
-
-
-            } catch (JSONException   e) {
-                e.printStackTrace();
-
+                progressDialog.dismiss();
+                crearIntentAgenda();
             }
-            System.out.println("ruta foto "+response);
 
         }
 
@@ -345,7 +281,7 @@ public class Presentacion extends AppCompatActivity implements RequestHandlerInt
                 == PackageManager.PERMISSION_GRANTED){
 
 
-           pedirPermisos2();
+            pedirPermisos2();
         }
 
     }
@@ -426,7 +362,7 @@ public class Presentacion extends AppCompatActivity implements RequestHandlerInt
                 Manifest.permission.SEND_SMS)
                 == PackageManager.PERMISSION_GRANTED){
 
-                terminarIntent();
+            terminarIntent();
 
         }else {
             Toast.makeText(this, "Permisos no concedidos", Toast.LENGTH_LONG).show();

@@ -130,11 +130,17 @@ public class MostrarContactos extends AppCompatActivity  implements RequestHandl
 
             System.out.println("usuario llegada broadcast "+ llegada);
 
-            System.out.println("nomuestres "+nomuestres);
 
-           nomuestres= args.getString("esgrupo");
+            nomuestres= args.getString("esgrupo");
 
-           if (nomuestres !=null && nomuestres.equals("false") && contactos!=null){
+            if (nomuestres==null && miusuario.getUltimochat().length()>10){
+
+                nomuestres="false";
+
+            }
+
+
+             if (nomuestres !=null && nomuestres.equals("false") && contactos!=null){
 
 
                int indice=0;
@@ -179,13 +185,6 @@ public class MostrarContactos extends AppCompatActivity  implements RequestHandl
 
 
                contactos.get(indice).setMensajesnoleidos("1");
-
-
-
-
-
-
-
 
                System.out.println("este es el broadcast "+miusuario);
 
@@ -466,19 +465,24 @@ public class MostrarContactos extends AppCompatActivity  implements RequestHandl
 
     private void buscarUsuario(String telefonobuscar) {
 
+        if (!telefonobuscar.startsWith("9")){
+            JSONObject jsonBody=new JSONObject();
 
-        JSONObject jsonBody=new JSONObject();
+            try {
+                jsonBody.put("telefono", telefonobuscar);
+                System.out.println("Busco este telefono mostrar contactos"+jsonBody.toString());
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
 
-        try {
-            jsonBody.put("telefono", telefonobuscar);
-            System.out.println("Busco este telefono mostrar contactos"+jsonBody.toString());
-        } catch (JSONException e) {
-            e.printStackTrace();
+            CrearRequests cr = new CrearRequests(Rutas.buscarusuario, jsonBody, rh);
+
+            MySingleton.getInstance(getBaseContext()).addToRequest(cr.crearRequest());
+        }else {
+            Snackbar.make((View) findViewById(R.id.linearcontactos), "El usuario no está registrado", Snackbar.LENGTH_LONG).show();
         }
 
-        CrearRequests cr = new CrearRequests(Rutas.buscarusuario, jsonBody, rh);
 
-        MySingleton.getInstance(getBaseContext()).addToRequest(cr.crearRequest());
 
     }
 
