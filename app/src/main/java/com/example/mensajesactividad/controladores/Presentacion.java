@@ -183,7 +183,7 @@ public class Presentacion extends AppCompatActivity implements RequestHandlerInt
 
     private void buscarUsuario(String telefonobuscar, String idowner) {
 
-        if (telefonobuscar.toString().replaceAll("[\\D]", "").startsWith("6") || telefonobuscar.toString().replaceAll("[\\D]", "").startsWith("7")){
+  //      if (telefonobuscar.toString().replaceAll("[\\D]", "").startsWith("6") || telefonobuscar.toString().replaceAll("[\\D]", "").startsWith("7")){
             JSONObject jsonBody=new JSONObject();
 
             try {
@@ -202,7 +202,7 @@ public class Presentacion extends AppCompatActivity implements RequestHandlerInt
             System.out.println(pendingRequests);
 
             MySingleton.getInstance(getBaseContext()).addToRequest(cr.crearRequest());
-        }
+       // }
 
     }
 
@@ -241,6 +241,8 @@ public class Presentacion extends AppCompatActivity implements RequestHandlerInt
                     usuarioagenda.setMensajesnoleidos(mensajesnoleidos);
                     usuarioagenda.setUltimochat(ultimochat);
 
+
+                    System.out.println("usuario añadido ");
                     listacontactos.add(usuarioagenda);
 
 
@@ -265,6 +267,8 @@ public class Presentacion extends AppCompatActivity implements RequestHandlerInt
                 System.out.println("Fiiiiiin");
 
                 progressDialog.dismiss();
+
+                System.out.println("estos son los contactos "+listacontactos);
                 crearIntentAgenda();
             }
 

@@ -35,6 +35,7 @@ import com.android.volley.toolbox.Volley;
 import com.bumptech.glide.Glide;
 import com.example.mensajesactividad.DialogoGrupo;
 import com.example.mensajesactividad.R;
+import com.example.mensajesactividad.Scanner;
 import com.example.mensajesactividad.modelos.AdaptadorContactos;
 import com.example.mensajesactividad.modelos.Chat;
 import com.example.mensajesactividad.modelos.Grupo;
@@ -302,6 +303,14 @@ public class MostrarContactos extends AppCompatActivity  implements RequestHandl
                         recyclerView.setLayoutManager(layoutManager);
                         myAdapter.notifyDataSetChanged();
 
+                        return true;
+
+
+
+                    case R.id.web:
+                        drawerLayout.closeDrawers();
+                        Intent intentcamara=new Intent(MostrarContactos.this, Scanner.class);
+                        startActivity(intentcamara);
                         return true;
                 }
 

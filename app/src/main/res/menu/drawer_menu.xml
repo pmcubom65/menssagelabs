@@ -44,6 +44,15 @@
 
 
         <item
+            android:id="@+id/web"
+            android:title="Autenticacion web"
+            android:icon="@drawable/navegacionweb"
+
+            />
+
+
+
+        <item
             android:id="@+id/miexit"
             android:title="Salir"
             android:icon="@drawable/exit"
